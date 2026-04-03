@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Opportunities E-mobility Projects</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body{background:#071a2b;color:white;font-family:Arial;padding:20px}
-.card{background:#0c2438;padding:15px;margin:10px 0;border-radius:10px}
+.card{background:#0c2438;padding:15px;margin:10px;border-radius:10px;display:inline-block;width:260px}
+.green{color:#00ff9c}
+.yellow{color:#ffd166}
+.red{color:#ff4d4d}
 </style>
 </head>
 
@@ -18,12 +20,23 @@ body{background:#071a2b;color:white;font-family:Arial;padding:20px}
 <script>
 
 const metas = {
-  "Bruno": 50000000,
-  "Felipe": 12000000
+  "Bruno Reis": 50000000,
+  "Felipe Hanker": 12000000
 };
+
+function parseBR(v){
+  if(!v) return 0;
+  return Number(v.replace(/\./g,'').replace(',','.')) || 0;
+}
 
 function fmt(v){
   return 'R$ '+Math.round(v/1000).toLocaleString('pt-BR')+'k'
+}
+
+function statusColor(p){
+  if(p >= 100) return "green"
+  if(p >= 70) return "yellow"
+  return "red"
 }
 
 function render(data){
@@ -31,32 +44,43 @@ function render(data){
 let vendedores = {}
 
 data.forEach(o=>{
-  const nome = o["VENDEDOR"];
-  const valor = Number(o["TOTAL NET (R$)"]||0);
+  const vendedor = o["VENDEDOR"];
+  const valor = parseBR(o["TOTAL NET (R$)"]);
 
-  if(!nome) return;
+  if(!vendedor) return;
 
-  if(!vendedores[nome]){
-    vendedores[nome]={pipeline:0}
+  if(!vendedores[vendedor]){
+    vendedores[vendedor]={pipeline:0}
   }
 
-  vendedores[nome].pipeline += valor;
+  vendedores[vendedor].pipeline += valor;
 })
 
-let html = ""
+let ranking = Object.keys(vendedores)
+.map(v=>({nome:v,pipeline:vendedores[v].pipeline}))
+.sort((a,b)=>b.pipeline-a.pipeline)
+
+let html = "<h3>Ranking</h3>"
+
+ranking.forEach((r,i)=>{
+  html += `<div>${i+1}. ${r.nome} - ${fmt(r.pipeline)}</div>`
+})
+
+html += "<h3>Performance</h3>"
 
 Object.keys(metas).forEach(v=>{
   const pipeline = vendedores[v]?.pipeline || 0
   const meta = metas[v]
-  const ating = meta ? (pipeline/meta)*100 : 0
+  const ating = (pipeline/meta)*100
   const gap = meta - pipeline
+  const cor = statusColor(ating)
 
   html += `
   <div class="card">
     <b>${v}</b><br>
     Pipeline: ${fmt(pipeline)}<br>
     Meta: ${fmt(meta)}<br>
-    Atingimento: ${ating.toFixed(1)}%<br>
+    <span class="${cor}">Atingimento: ${ating.toFixed(1)}%</span><br>
     Gap: ${fmt(gap)}
   </div>
   `
@@ -68,8 +92,8 @@ document.getElementById("app").innerHTML = html
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv")
 .then(r=>r.text())
 .then(text=>{
-  const rows = text.split("\n").map(r=>r.split(","))
-  const headers = rows[0]
+  const rows = text.split("\n").map(r=>r.split(","));
+  const headers = rows[0];
 
   const data = rows.slice(1).map(r=>{
     let obj={}
