@@ -7,12 +7,11 @@
 
 <style>
 body{background:#071a2b;color:white;font-family:Arial;padding:20px}
-h2{margin-bottom:5px}
-.kpi{display:inline-block;background:#0c2438;padding:15px;margin:10px;border-radius:10px;width:180px}
+.kpi{display:inline-block;background:#0c2438;padding:15px;margin:10px;border-radius:10px;width:200px}
 .card{background:#0c2438;padding:15px;margin:10px;border-radius:10px;display:inline-block;width:260px}
-.green{color:#00ff9c}
-.yellow{color:#ffd166}
 .red{color:#ff4d4d}
+.yellow{color:#ffd166}
+.green{color:#00ff9c}
 table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #1e3a52;font-size:12px}
 th{color:#8aa0b6;text-align:left}
@@ -24,7 +23,7 @@ th{color:#8aa0b6;text-align:left}
 <h2>Opportunities E-mobility Projects</h2>
 <div id="kpis"></div>
 <div id="performance"></div>
-<div id="ranking"></div>
+<div id="alerts"></div>
 <div id="table"></div>
 
 <script>
@@ -45,37 +44,44 @@ function fmt(v){
   return 'R$ '+Math.round(v/1000).toLocaleString('pt-BR')+'k'
 }
 
-function statusColor(p){
-  if(p >= 100) return "green"
-  if(p >= 70) return "yellow"
+function color(p){
+  if(p>=100) return "green"
+  if(p>=70) return "yellow"
   return "red"
 }
 
 function render(data){
 
 let pipeline = 0
-let ganhos = 0
-let perdidos = 0
 let vendedores = {}
+let riscos = []
+let pendencias = []
 
 data.forEach(o=>{
-  const valor = parseBR(o["TOTAL NET (R$)"])
+
+  const valor = parseBR(o["TOTAL NET LVK (R$)"])
+  const vendedor = o["VENDEDOR"]
+
   pipeline += valor
 
-  if(o["STATUS"]==="Ganho") ganhos++
-  if(o["STATUS"]==="Perdido") perdidos++
+  if(!vendedor) return
 
-  const v = o["VENDEDOR"]
-  if(!v) return
+  if(!vendedores[vendedor]){
+    vendedores[vendedor]={pipeline:0}
+  }
 
-  if(!vendedores[v]) vendedores[v]={pipeline:0}
-  vendedores[v].pipeline += valor
+  vendedores[vendedor].pipeline += valor
+
+  if(o["RISCO"] === "Alto") riscos.push(o)
+
+  if(!o["PROX PASSO"]) pendencias.push(o)
+
 })
 
 document.getElementById("kpis").innerHTML = `
-<div class="kpi">Pipeline<br><b>${fmt(pipeline)}</b></div>
-<div class="kpi">Ganhos<br><b>${ganhos}</b></div>
-<div class="kpi">Perdidos<br><b>${perdidos}</b></div>
+<div class="kpi">Pipeline Aprovado<br><b>${fmt(pipeline)}</b></div>
+<div class="kpi">Riscos Altos<br><b>${riscos.length}</b></div>
+<div class="kpi">Pendências<br><b>${pendencias.length}</b></div>
 `
 
 let perf = "<h3>Performance</h3>"
@@ -85,12 +91,12 @@ Object.keys(metas).forEach(v=>{
   const meta = metas[v]
   const ating = (pipe/meta)*100
   const gap = meta - pipe
-  const cor = statusColor(ating)
+  const cor = color(ating)
 
   perf += `
   <div class="card">
     <b>${v}</b><br>
-    Pipeline: ${fmt(pipe)}<br>
+    Pipeline LVK: ${fmt(pipe)}<br>
     Meta: ${fmt(meta)}<br>
     <span class="${cor}">Atingimento: ${ating.toFixed(1)}%</span><br>
     Gap: ${fmt(gap)}
@@ -100,16 +106,17 @@ Object.keys(metas).forEach(v=>{
 
 document.getElementById("performance").innerHTML = perf
 
-let ranking = Object.keys(vendedores)
-.map(v=>({nome:v,pipeline:vendedores[v].pipeline}))
-.sort((a,b)=>b.pipeline-a.pipeline)
+let alertHTML = "<h3>⚠️ Prioridades</h3>"
 
-let rankHTML = "<h3>Ranking</h3>"
-ranking.forEach((r,i)=>{
-  rankHTML += `<div>${i+1}. ${r.nome} - ${fmt(r.pipeline)}</div>`
+riscos.slice(0,5).forEach(o=>{
+  alertHTML += `<div class="red">RISCO: ${o["CUSTOMER"]} - ${fmt(parseBR(o["TOTAL NET LVK (R$)"]))}</div>`
 })
 
-document.getElementById("ranking").innerHTML = rankHTML
+pendencias.slice(0,5).forEach(o=>{
+  alertHTML += `<div class="yellow">PENDÊNCIA: ${o["CUSTOMER"]}</div>`
+})
+
+document.getElementById("alerts").innerHTML = alertHTML
 
 let table = "<h3>Oportunidades</h3><table><tr>"
 Object.keys(data[0]).forEach(h=>{
@@ -128,6 +135,7 @@ data.slice(0,20).forEach(o=>{
 table += "</table>"
 
 document.getElementById("table").innerHTML = table
+
 }
 
 Papa.parse(url,{
