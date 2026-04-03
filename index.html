@@ -3,137 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Executivo · Mobility</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Opportunities E-mobility Projects</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body{margin:0;font-family:Inter,sans-serif;background:#071a2b;color:#e6edf3}
-.container{padding:24px;max-width:1400px;margin:auto}
-.title{font-size:28px;font-weight:700}
-.subtitle{font-size:13px;color:#8aa0b6}
-
-.kpis{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
-.card{flex:1;background:#0c2438;border-radius:14px;padding:16px;min-width:180px}
-.label{font-size:12px;color:#8aa0b6}
-.value{font-size:24px;font-weight:700;margin-top:6px}
-
-.alert{margin-top:20px;background:#2a1f12;border:1px solid #f0b429;color:#f0b429;padding:16px;border-radius:12px}
-
-.section{margin-top:30px}
-.section-title{font-size:14px;color:#f0b429;margin-bottom:10px}
-
-.grid{display:flex;gap:20px;flex-wrap:wrap}
-.panel{flex:1;background:#0c2438;border-radius:14px;padding:16px;min-width:300px}
-
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:10px;font-size:12px;border-bottom:1px solid #1e3a52}
-.table th{color:#8aa0b6;text-align:left}
-
-.badge{padding:4px 8px;border-radius:6px;background:#123a52;font-size:11px}
-canvas{max-height:260px}
-</style>
 </head>
+<body style="background:#071a2b;color:white;font-family:Arial;padding:20px">
 
-<body>
-<div class="container">
-<div id="app"></div>
-</div>
+<h2>Opportunities E-mobility Projects</h2>
+<div id="app">Carregando...</div>
 
 <script>
-
 function fmt(v){return 'R$ '+Math.round(v/1000).toLocaleString('pt-BR')+'k'}
 
 function render(data){
-
-const abertas = data.filter(o=>o.STATUS_COMPARATIVO!=='GANHO' && o.STATUS_COMPARATIVO!=='PERDIDO')
-const pipeline = data.reduce((s,o)=>s+(o.valor||0),0)
-const ponderado = data.reduce((s,o)=>s+((o.valor||0)*(o.probabilidade||0)),0)
-const ganhos = data.filter(o=>o.STATUS_COMPARATIVO==='GANHO')
-const perdidos = data.filter(o=>o.STATUS_COMPARATIVO==='PERDIDO')
-const parados = data.filter(o=>o.RESUMO==='PARADO')
-
-const valorParado = parados.reduce((s,o)=>s+(o.valor||0),0)
-
-const top = [...parados].sort((a,b)=>(b.valor||0)-(a.valor||0)).slice(0,5)
-
-const vendedores = {}
-data.forEach(o=>{
-  if(!o.vendedor) return
-  if(!vendedores[o.vendedor]) vendedores[o.vendedor]={pipeline:0,ganhos:0}
-  vendedores[o.vendedor].pipeline += (o.valor||0)
-  if(o.STATUS_COMPARATIVO==='GANHO') vendedores[o.vendedor].ganhos++
-})
-
-const funil = {}
-data.forEach(o=>{
-  if(!o.estagio) return
-  if(!funil[o.estagio]) funil[o.estagio]=0
-  funil[o.estagio] += (o.valor||0)
-})
+const pipeline = data.reduce((s,o)=>s+(Number(o["TOTAL NET (R$)"]||0)),0)
+const ganhos = data.filter(o=>o["STATUS"]==="Ganho").length
+const perdidos = data.filter(o=>o["STATUS"]==="Perdido").length
 
 document.getElementById('app').innerHTML = `
-
-<div class="title">Direção · Mobility</div>
-<div class="subtitle">Performance e pipeline</div>
-
-<div class="kpis">
-<div class="card"><div class="label">Abertas</div><div class="value">${abertas.length}</div></div>
-<div class="card"><div class="label">Pipeline</div><div class="value">${fmt(pipeline)}</div></div>
-<div class="card"><div class="label">Ponderado</div><div class="value">${fmt(ponderado)}</div></div>
-<div class="card"><div class="label">Ganhos</div><div class="value">${ganhos.length}</div></div>
-<div class="card"><div class="label">Perdidos</div><div class="value">${perdidos.length}</div></div>
-</div>
-
-<div class="alert">⚠️ ${fmt(valorParado)} parados em ${parados.length} oportunidades</div>
-
-<div class="section">
-<div class="section-title">Top oportunidades paradas</div>
-<table class="table">
-<thead><tr><th>Cliente</th><th>Valor</th><th>Estágio</th><th>Responsável</th></tr></thead>
-<tbody>
-${top.map(o=>`<tr><td>${o.cliente||'-'}</td><td>${fmt(o.valor||0)}</td><td><span class="badge">${o.estagio||'-'}</span></td><td>${o.vendedor||'-'}</td></tr>`).join('')}
-</tbody>
-</table>
-</div>
-
-<div class="section grid">
-<div class="panel">
-<div class="section-title">Vendedores</div>
-${Object.entries(vendedores).map(([n,v])=>`<div><b>${n}</b><br>Pipeline: ${fmt(v.pipeline)}<br>Ganhos: ${v.ganhos}</div><br>`).join('')}
-</div>
-
-<div class="panel">
-<div class="section-title">Funil</div>
-<canvas id="funilChart"></canvas>
-</div>
-
-<div class="panel">
-<div class="section-title">Pipeline por vendedor</div>
-<canvas id="pipeChart"></canvas>
-</div>
-</div>
+Pipeline: ${fmt(pipeline)}<br>
+Ganhos: ${ganhos}<br>
+Perdidos: ${perdidos}
 `
-
-new Chart(document.getElementById('funilChart'),{
-type:'bar',
-data:{labels:Object.keys(funil),datasets:[{data:Object.values(funil)}]}
-})
-
-new Chart(document.getElementById('pipeChart'),{
-type:'bar',
-data:{labels:Object.keys(vendedores),datasets:[{data:Object.values(vendedores).map(v=>v.pipeline)}]}
-})
 }
 
-render([
-{valor:500000,cliente:'Cliente A',vendedor:'Bruno',estagio:'Proposta',probabilidade:0.7,RESUMO:'PARADO'},
-{valor:400000,cliente:'Cliente B',vendedor:'Felipe',estagio:'Negociação',probabilidade:0.5,RESUMO:'PARADO'},
-{valor:300000,vendedor:'Bruno',estagio:'Lead',probabilidade:1,STATUS_COMPARATIVO:'GANHO'},
-{valor:200000,vendedor:'Felipe',estagio:'Lead',probabilidade:0,STATUS_COMPARATIVO:'PERDIDO'},
-{valor:100000,vendedor:'Bruno',estagio:'Lead',probabilidade:0.3,STATUS_COMPARATIVO:'NOVO'}
-])
-
+fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv")
+.then(res => res.text())
+.then(text => {
+const rows = text.split("\n").map(r => r.split(","));
+const headers = rows[0];
+const data = rows.slice(1).map(r => {
+let obj = {};
+headers.forEach((h,i)=> obj[h.trim()] = r[i]);
+return obj;
+});
+render(data);
+});
 </script>
 
 </body>
