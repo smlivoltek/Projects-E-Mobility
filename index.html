@@ -34,7 +34,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
 /* HEADER */
 .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:12px}
 .hdr-l{display:flex;align-items:center;gap:14px}
-.hdr-ico{width:44px;height:44px;border-radius:11px;flex-shrink:0;background:linear-gradient(140deg,#00C8E6,#0060A8);display:grid;place-items:center;font-size:20px;box-shadow:0 0 28px rgba(0,200,230,.3)}
+
 .hdr-t{font-family:var(--fh);font-size:1.6rem;font-weight:800;letter-spacing:-.01em;line-height:1;color:var(--text)}
 .hdr-t em{color:var(--teal);font-style:normal}
 .hdr-s{font-size:.7rem;color:var(--muted2);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
@@ -225,7 +225,6 @@ tr.rg td{background:rgba(18,161,82,.05)}
 
 <header class="hdr">
   <div class="hdr-l">
-    <div class="hdr-ico">⚡</div>
     <div>
       <div class="hdr-t">CRM PROJECTS <em>E-MOBILITY</em></div>
       <div class="hdr-s">Dashboard Executivo · Livoltek Power Brasil · Sales Management</div>
@@ -275,33 +274,7 @@ tr.rg td{background:rgba(18,161,82,.05)}
 <!-- DASHBOARD -->
 <div id="dash" style="display:none">
 
-  <div class="filters">
-    <span class="flbl">Filtros</span>
-    <input class="fsrch" id="f-s" type="text" placeholder="🔍 Buscar cliente..." oninput="applyF()" style="min-width:155px">
-    <select class="fsel" id="f-v" onchange="applyF()"><option value="">Todos os vendedores</option></select>
-    <select class="fsel" id="f-sol" onchange="applyF()"><option value="">Todas as soluções</option></select>
-    <select class="fsel" id="f-e" onchange="applyF()">
-      <option value="">Todos os estágios</option>
-      <option>Lead</option><option>Proposta</option><option>Negociação</option><option>Fechamento</option>
-    </select>
-    <select class="fsel" id="f-st" onchange="applyF()">
-      <option value="">Todos os status</option><option>Aberto</option><option>Ganho</option><option>Perdido</option>
-    </select>
-    <select class="fsel" id="f-fech" onchange="applyF()"><option value="">Todos os fechamentos</option></select>
-    <select class="fsel" id="f-prob" onchange="applyF()">
-      <option value="">Todas as probs.</option>
-      <option value="alta">Alta (&gt;70%)</option>
-      <option value="media">Média (40-70%)</option>
-      <option value="baixa">Baixa (&lt;40%)</option>
-    </select>
-    <select class="fsel" id="f-alerta" onchange="applyF()">
-      <option value="">Todos os alertas</option>
-      <option value="urgente4m">⏳ Fecha em 4 meses</option>
-      <option value="sem_acao">⚠ Sem próximo passo</option>
-      <option value="desatualizado">⏰ Desatualizado</option>
-    </select>
-    <button class="btn" onclick="clearF()">✕ Limpar</button>
-  </div>
+  
 
   <div class="sec"><span class="sn">1</span>Resumo Executivo</div>
   <div class="g6 mb" id="kpi-grid"></div>
@@ -327,6 +300,35 @@ tr.rg td{background:rgba(18,161,82,.05)}
   </div>
 
   <div class="sec"><span class="sn">5</span>Tabela Detalhada</div>
+  
+
+  <div class="filters" style="margin-bottom:14px;padding:14px 16px;background:var(--s2);border:1px solid var(--brd);border-radius:10px;">
+    <span class="flbl">Filtros da tabela</span>
+    <input class="fsrch" id="f-s" type="text" placeholder="🔍 Buscar cliente..." oninput="applyF()" style="min-width:160px">
+    <select class="fsel" id="f-v" onchange="applyF()"><option value="">Todos os vendedores</option></select>
+    <select class="fsel" id="f-sol" onchange="applyF()"><option value="">Todas as soluções</option></select>
+    <select class="fsel" id="f-e" onchange="applyF()">
+      <option value="">Todos os estágios</option>
+      <option>Lead</option><option>Proposta</option><option>Negociação</option><option>Fechamento</option>
+    </select>
+    <select class="fsel" id="f-st" onchange="applyF()">
+      <option value="">Todos os status</option><option>Aberto</option><option>Ganho</option><option>Perdido</option>
+    </select>
+    <select class="fsel" id="f-fech" onchange="applyF()"><option value="">Todos os fechamentos</option></select>
+    <select class="fsel" id="f-prob" onchange="applyF()">
+      <option value="">Todas as probs.</option>
+      <option value="alta">Alta (&gt;70%)</option>
+      <option value="media">Média (40-70%)</option>
+      <option value="baixa">Baixa (&lt;40%)</option>
+    </select>
+    <select class="fsel" id="f-alerta" onchange="applyF()">
+      <option value="">Todos os alertas</option>
+      <option value="urgente4m">⏳ Fecha em 4 meses</option>
+      <option value="sem_acao">⚠ Sem próximo passo</option>
+      <option value="desatualizado">⏰ Desatualizado</option>
+    </select>
+    <button class="btn" onclick="clearF()">✕ Limpar</button>
+  </div>
   <div class="card" style="padding:0">
     <div class="twrap">
       <table>
@@ -458,9 +460,16 @@ function brNum(n, decimals) {
 }
 const fBRL = v => 'R$ ' + brNum(v, 0);
 function fK(v) {
+  // Always full Brazilian format: R$ 1.950.000 (dot = thousands, no abbreviation)
   if (!v && v !== 0) return '—';
-  if (v >= 1e9) return 'R$ ' + brNum(v / 1e9, 2) + ' B';
-  if (v >= 1e6) return 'R$ ' + brNum(v / 1e6, 2) + ' M';
+  if (v === 0) return 'R$ 0';
+  return 'R$ ' + brNum(Math.round(v), 0);
+}
+function fKshort(v) {
+  // Short format for charts only: 1,5 M etc
+  if (!v && v !== 0) return '—';
+  if (v >= 1e9) return 'R$ ' + brNum(v / 1e9, 1) + ' B';
+  if (v >= 1e6) return 'R$ ' + brNum(v / 1e6, 1) + ' M';
   if (v >= 1e3) return 'R$ ' + brNum(v / 1e3, 0) + 'k';
   return fBRL(v);
 }
@@ -502,20 +511,39 @@ function gcol(row, ...names) {
 }
 
 // Auto-detect the TOTAL NET LVK column by scanning all column names
+// strip all special chars for comparison: only alphanumeric + space
+function normKey(s) {
+  return (s||'').toUpperCase().normalize('NFD').replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+}
 function detectLVKColumn(sampleRow) {
   const keys = Object.keys(sampleRow);
-  // Strategy 1: column contains both "LVK" and "R"
+  // Log all keys to console for debugging
+  console.log('All column keys:', keys);
+  // Strategy 1: exact normalized match - "TOTAL NET LVK R" (stripped)
   for (const k of keys) {
-    const n = nCol(k);
-    if (n.includes('LVK') && (n.includes('R$') || n.includes('(R)'))) return k;
+    const n = normKey(k);
+    if (n.includes('LVK') && n.includes('R')) {
+      console.log('LVK column found (S1):', k);
+      return k;
+    }
   }
-  // Strategy 2: column contains "LVK"
+  // Strategy 2: any column with LVK
   for (const k of keys) {
-    if (nCol(k).includes('LVK')) return k;
+    if (normKey(k).includes('LVK')) {
+      console.log('LVK column found (S2):', k);
+      return k;
+    }
   }
-  // Strategy 3: last column with "TOTAL NET" in the name (usually the BRL total)
-  const totalNetCols = keys.filter(k => nCol(k).startsWith('TOTAL NET') || nCol(k).includes('TOTAL NET'));
-  if (totalNetCols.length > 0) return totalNetCols[totalNetCols.length - 1];
+  // Strategy 3: look for TOTAL NET R (BRL total, not USD)
+  // Exclude USD columns
+  const brlCols = keys.filter(k => normKey(k).includes('TOTAL NET') && !normKey(k).includes('USD'));
+  if (brlCols.length > 0) {
+    console.log('LVK column found (S3 - BRL):', brlCols[brlCols.length-1]);
+    return brlCols[brlCols.length - 1];
+  }
+  // Strategy 4: last TOTAL NET column of any kind
+  const allTotalNet = keys.filter(k => normKey(k).includes('TOTAL NET'));
+  if (allTotalNet.length > 0) return allTotalNet[allTotalNet.length - 1];
   return '';
 }
 
@@ -538,7 +566,18 @@ function normRow(raw, idx) {
 
   // Get LVK value using detected column first, then fallbacks
   const lvkRaw = _lvkKey ? raw[_lvkKey] : '';
-  const val = parseBRL(lvkRaw) || parseBRL(gcol(raw,'TOTAL NET LVK (R$)','TOTAL NET LVK','TOTALNETLVK','LVK'));
+  // Try detected col → then BRL variants → never fallback to USD
+  let val = parseBRL(lvkRaw);
+  if (!val) {
+    // Try all column names that contain LVK directly
+    const lvkFallbacks = Object.keys(raw).filter(k => normKey(k).includes('LVK'));
+    for (const fk of lvkFallbacks) { val = parseBRL(raw[fk]); if (val) break; }
+  }
+  if (!val) {
+    // Try TOTAL NET (R$) — BRL total
+    const brlFallback = Object.keys(raw).find(k => normKey(k).includes('TOTAL NET') && !normKey(k).includes('USD'));
+    if (brlFallback) val = parseBRL(raw[brlFallback]);
+  }
 
   const prob   = parseProb(gcol(raw,'PROBABILIDADE','PROB','PROBABILITY','% PROBABILIDADE'));
   const dtF    = parseDt(gcol(raw,'DATA DE FECHAMENTO','DATA FECHAMENTO','FECHAMENTO','DT FECHAMENTO','DATA_FECHAMENTO'));
@@ -800,21 +839,7 @@ function clearF() {
   applyF();
 }
 
-function popFilters() {
-  const pop = (id, vals) => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const first = sel.options[0].cloneNode(true);
-    sel.innerHTML = '';
-    sel.appendChild(first);
-    [...new Set(vals)].filter(Boolean).sort().forEach(v => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = v; sel.appendChild(o);
-    });
-  };
-  pop('f-v',    RAW.map(r => r.VENDEDOR));
-  pop('f-prod', RAW.map(r => r.PRODUCT));
-}
+
 
 function applyF() {
   const s  = (document.getElementById('f-s').value || '').toLowerCase();
@@ -835,13 +860,7 @@ function applyF() {
   _pg = 1;
   renderAll();
 }
-function clearF() {
-  ['f-s','f-v','f-e','f-r','f-st'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el.tagName === 'INPUT') el.value = ''; else el.value = '';
-  });
-  applyF();
-}
+
 
 // ════════════════════════════════════════════════════
 // COMPUTE
@@ -1152,7 +1171,7 @@ function renderFC(d) {
       },
       scales: {
         x: { ticks:{color:'#5A849A',font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.05)'} },
-        y: { ticks:{color:'#5A849A',callback:v=>fK(v),font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.07)'} }
+        y: { ticks:{color:'#5A849A',callback:v=>fKshort(v),font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.07)'} }
       }
     }
   });
@@ -1316,8 +1335,16 @@ function pgCh(d) {
 }
 
 function renderAll() {
-  const d = compute(FIL);
-  renderKPIs(d); renderVend(d); renderFC(d); renderAct(d); renderTbl();
+  try {
+    const d = compute(FIL);
+    renderKPIs(d);
+    renderVend(d);
+    try { renderFC(d); } catch(e) { console.warn('renderFC error:', e); }
+    renderAct(d);
+    renderTbl();
+  } catch(e) {
+    console.error('renderAll error:', e);
+  }
 }
 
 // ════════════════════════════════════════════════════
