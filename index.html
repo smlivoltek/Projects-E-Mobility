@@ -279,29 +279,26 @@ tr.rg td{background:rgba(32,199,101,.03)}
 
   <div class="filters">
     <span class="flbl">Filtros</span>
-    <input class="fsrch" id="f-s" type="text" placeholder="🔍 Buscar cliente, ID..." oninput="applyF()">
+    <input class="fsrch" id="f-s" type="text" placeholder="🔍 Buscar cliente..." oninput="applyF()" style="min-width:155px">
     <select class="fsel" id="f-v" onchange="applyF()"><option value="">Todos os vendedores</option></select>
-
+    <select class="fsel" id="f-sol" onchange="applyF()"><option value="">Todas as soluções</option></select>
     <select class="fsel" id="f-e" onchange="applyF()">
       <option value="">Todos os estágios</option>
       <option>Lead</option><option>Proposta</option><option>Negociação</option><option>Fechamento</option>
     </select>
-    <select class="fsel" id="f-r" onchange="applyF()">
-      <option value="">Todos os riscos</option><option>Baixo</option><option>Médio</option><option>Alto</option>
-    </select>
     <select class="fsel" id="f-st" onchange="applyF()">
       <option value="">Todos os status</option><option>Aberto</option><option>Ganho</option><option>Perdido</option>
     </select>
-    <select class="fsel" id="f-prod" onchange="applyF()"><option value="">Todos os produtos</option></select>
+    <select class="fsel" id="f-fech" onchange="applyF()"><option value="">Todos os fechamentos</option></select>
     <select class="fsel" id="f-prob" onchange="applyF()">
       <option value="">Todas as probs.</option>
       <option value="alta">Alta (&gt;70%)</option>
-      <option value="media">Média (40–70%)</option>
+      <option value="media">Média (40-70%)</option>
       <option value="baixa">Baixa (&lt;40%)</option>
     </select>
     <select class="fsel" id="f-alerta" onchange="applyF()">
       <option value="">Todos os alertas</option>
-      <option value="critico">🔴 Crítico (risco alto)</option>
+      <option value="urgente4m">⏳ Fecha em 4 meses</option>
       <option value="sem_acao">⚠ Sem próximo passo</option>
       <option value="desatualizado">⏰ Desatualizado</option>
     </select>
@@ -339,7 +336,7 @@ tr.rg td{background:rgba(32,199,101,.03)}
           <th onclick="srt('ID_OPP')">ID</th>
           <th onclick="srt('CUSTOMER')">Cliente</th>
           <th onclick="srt('VENDEDOR')">Vendedor</th>
-          <th onclick="srt('COUNTRY')">País</th>
+          <th onclick="srt('SOLUTION')">Solução/BID</th>
           <th onclick="srt('PRODUCT')">Produto</th>
           <th onclick="srt('ESTAGIO')">Estágio</th>
           <th onclick="srt('STATUS')">Status</th>
@@ -560,10 +557,13 @@ function normRow(raw, idx) {
   const estagio= gcol(raw,'ESTAGIO','ESTÁGIO','STAGE','FASE','ETAPA') || '—';
 
   const semProx  = !prox || prox.trim() === '' || prox.trim() === '-' || prox.trim() === 'N/A';
-  const isCrit   = norm(risco) === 'alto';
-  const isStale  = dAgo(dtA) > DIAS_STALE;
   const dClose   = dUntil(dtF);
+  const isStale  = dAgo(dtA) > DIAS_STALE;
   const isAberto = norm(status) === 'aberto' || !status || status === '—';
+  // CRÍTICO = risco alto OU (fecha em ≤4 meses E sem ação/desatualizado)
+  // 4 meses = 120 dias — prazo mínimo para pedido + frete da China
+  const urgente4m = dClose >= 0 && dClose <= 120;
+  const isCrit   = norm(risco) === 'alto' || (urgente4m && (semProx || isStale));
 
   return {
     _idx: idx,
@@ -572,13 +572,14 @@ function normRow(raw, idx) {
     VENDEDOR: gcol(raw,'VENDEDOR','SALESPERSON','RESPONSAVEL','RESPONSÁVEL') || '—',
     COUNTRY:  gcol(raw,'COUNTRY','PAIS','PAÍS','PAÍS/REGIÃO') || '—',
     PROVINCE: gcol(raw,'PROVINCE','ESTADO','UF','CIDADE') || '—',
-    PRODUCT:  gcol(raw,'PRODUCT','PRODUTO','SOLUÇÃO','SOLUTION/BID','SOLUTION') || '—',
+    PRODUCT:  gcol(raw,'PRODUCT','PRODUTO') || '—',
+    SOLUTION: gcol(raw,'SOLUTION/BID','SOLUTION','SOLUCAO','BID','SOLUÇÃO') || '—',
     ESTAGIO: estagio, STATUS: status, RISCO: risco,
     PROX_PASSO: prox,
     ALERTA: gcol(raw,'ALERTA AUTOMATICO','ALERTA AUTOMÁTICO','ALERTA','STATUS_DADOS') || '',
     _val: val, _prob: prob, _dtF: dtF, _dtA: dtA,
     _semProx: semProx, _isCrit: isCrit, _isStale: isStale,
-    _dClose: dClose, _isAberto: isAberto,
+    _dClose: dClose, _isAberto: isAberto, _urgente4m: urgente4m,
     _lvkRaw: lvkRaw, // keep raw for debug
   };
 }
@@ -728,7 +729,7 @@ async function loadData() {
 // FILTERS
 // ════════════════════════════════════════════════════
 function popFilters() {
-  const pop = (id, vals) => {
+  const pop = (id, vals, labelFn) => {
     const sel = document.getElementById(id);
     if (!sel) return;
     const first = sel.options[0].cloneNode(true);
@@ -736,42 +737,64 @@ function popFilters() {
     sel.appendChild(first);
     [...new Set(vals)].filter(Boolean).sort().forEach(v => {
       const o = document.createElement('option');
-      o.value = v; o.textContent = v; sel.appendChild(o);
+      o.value = v; o.textContent = labelFn ? labelFn(v) : v; sel.appendChild(o);
     });
   };
-  pop('f-v',    RAW.map(r => r.VENDEDOR));
-  pop('f-prod', RAW.map(r => r.PRODUCT));
+  pop('f-v',   RAW.map(r => r.VENDEDOR));
+  pop('f-sol', RAW.map(r => r.SOLUTION));
+  // Fechamento: build "YYYY-MM" keys + display "Mmm/YY" labels
+  const fechMap = {};
+  RAW.forEach(r => {
+    if (!r._dtF) return;
+    const d = r._dtF;
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    const lbl = d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
+      .replace(' de ','/').replace('.','').replace(/^\w/,c=>c.toUpperCase());
+    fechMap[key] = lbl;
+  });
+  const fechSel = document.getElementById('f-fech');
+  if (fechSel) {
+    const first = fechSel.options[0].cloneNode(true);
+    fechSel.innerHTML = ''; fechSel.appendChild(first);
+    Object.keys(fechMap).sort().forEach(k => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = fechMap[k]; fechSel.appendChild(o);
+    });
+  }
 }
 
 function applyF() {
   const s      = (document.getElementById('f-s').value    || '').toLowerCase();
-  const v      = document.getElementById('f-v').value;
-  const e      = document.getElementById('f-e').value;
-  const r      = document.getElementById('f-r').value;
-  const st     = document.getElementById('f-st').value;
-  const prod   = (document.getElementById('f-prod')   || {}).value || '';
-  const prob   = (document.getElementById('f-prob')   || {}).value || '';
-  const alerta = (document.getElementById('f-alerta') || {}).value || '';
+  const v      = (document.getElementById('f-v')      || {value:''}).value;
+  const sol    = (document.getElementById('f-sol')    || {value:''}).value;
+  const e      = (document.getElementById('f-e')      || {value:''}).value;
+  const st     = (document.getElementById('f-st')     || {value:''}).value;
+  const fech   = (document.getElementById('f-fech')   || {value:''}).value;
+  const prob   = (document.getElementById('f-prob')   || {value:''}).value;
+  const alerta = (document.getElementById('f-alerta') || {value:''}).value;
   FIL = RAW.filter(o => {
-    if (s    && !`${o.CUSTOMER} ${o.ID_OPP} ${o.PRODUCT} ${o.VENDEDOR}`.toLowerCase().includes(s)) return false;
-    if (v    && o.VENDEDOR !== v)            return false;
-    if (e    && norm(o.ESTAGIO) !== norm(e)) return false;
-    if (r    && norm(o.RISCO)   !== norm(r)) return false;
+    if (s    && !`${o.CUSTOMER} ${o.ID_OPP} ${o.PRODUCT} ${o.VENDEDOR} ${o.SOLUTION}`.toLowerCase().includes(s)) return false;
+    if (v    && o.VENDEDOR !== v)             return false;
+    if (sol  && norm(o.SOLUTION) !== norm(sol)) return false;
+    if (e    && norm(o.ESTAGIO) !== norm(e))  return false;
     if (st   && norm(o.STATUS)  !== norm(st)) return false;
-    if (prod && norm(o.PRODUCT) !== norm(prod)) return false;
-    if (prob === 'alta'  && o._prob < .7)          return false;
-    if (prob === 'media' && (o._prob < .4 || o._prob >= .7)) return false;
-    if (prob === 'baixa' && o._prob >= .4)         return false;
-    if (alerta === 'critico'       && !o._isCrit)  return false;
-    if (alerta === 'sem_acao'      && !o._semProx) return false;
-    if (alerta === 'desatualizado' && !o._isStale) return false;
+    if (fech && o._dtF) {
+      const key = o._dtF.getFullYear()+'-'+String(o._dtF.getMonth()+1).padStart(2,'0');
+      if (key !== fech) return false;
+    } else if (fech && !o._dtF) return false;
+    if (prob === 'alta'  && o._prob < .7)                      return false;
+    if (prob === 'media' && (o._prob < .4 || o._prob >= .7))   return false;
+    if (prob === 'baixa' && o._prob >= .4)                     return false;
+    if (alerta === 'urgente4m'     && !o._urgente4m) return false;
+    if (alerta === 'sem_acao'      && !o._semProx)   return false;
+    if (alerta === 'desatualizado' && !o._isStale)   return false;
     return true;
   });
   _pg = 1;
   renderAll();
 }
 function clearF() {
-  ['f-s','f-v','f-e','f-r','f-st','f-prod','f-prob','f-alerta'].forEach(id => {
+  ['f-s','f-v','f-sol','f-e','f-st','f-fech','f-prob','f-alerta'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     if (el.tagName === 'INPUT') el.value = ''; else el.value = '';
@@ -861,9 +884,10 @@ function compute(data) {
       pct: pipeCoverage,         // pipeline aberto vs meta (barra de potencial)
       pctReal: meta > 0 ? Math.min(vReal / meta, 1) : 0, // realizado vs meta
       gap, atingido,
-      crit:  va.filter(r => r._isCrit).length,
-      pend:  va.filter(r => r._semProx).length,
-      stale: va.filter(r => r._isStale).length,
+      crit:   va.filter(r => r._isCrit).length,
+      urg4m:  va.filter(r => r._urgente4m).length,
+      pend:   va.filter(r => r._semProx).length,
+      stale:  va.filter(r => r._isStale).length,
     };
   }).sort((a, b) => b.pipe - a.pipe);
 
@@ -905,7 +929,7 @@ function renderKPIs(d) {
     <div class="kpi b"><div class="kl">Pipeline Ponderado</div><div class="kv b">${fK(d.pond)}</div><div class="ks">${(pp*100).toFixed(0)}% do total · valor confiável</div><div class="kico">⚖️</div></div>
     <div class="kpi a"><div class="kl">Total de Registros</div><div class="kv a">${d.total}</div><div class="ks">todos os status incluídos</div><div class="kico">📋</div></div>
     <div class="kpi p"><div class="kl">Ticket Médio</div><div class="kv p">${fK(d.ticket)}</div><div class="ks">média por oportunidade aberta</div><div class="kico">🏷️</div></div>
-    <div class="kpi r"><div class="kl">Críticos</div><div class="kv r">${d.crit}</div><div class="ks">risco alto no pipeline</div><div class="kico">🚨</div>
+    <div class="kpi r"><div class="kl">Oportunidades Críticas</div><div class="kv r">${d.crit}</div><div class="ks">risco alto ou fechamento ≤4 meses sem ação</div><div class="kico">🚨</div>
       <div class="ktag ${d.crit>0?'r':'g'}">${d.crit>0?'⚠ Requer atenção':'✓ Nenhum crítico'}</div></div>
     <div class="kpi ${d.pend>0?'a':'g'}"><div class="kl">Pendências</div><div class="kv ${d.pend>0?'a':'g'}">${d.pend}</div><div class="ks">sem próximo passo${d.stale>0?' · '+d.stale+' desatualiz.':''}</div><div class="kico">⚠️</div>
       <div class="ktag ${d.pend>0?'a':'g'}">${d.pend>0?'Definir ação':'✓ Todas com plano'}</div></div>`;
@@ -935,6 +959,7 @@ function renderVend(d) {
                 :                     ['vb-r','🔴 Abaixo da meta'];
 
     const pills = [
+      v.urg4m > 0 ? `<span class="vpill vp-r">⏳ ${v.urg4m} fecha ≤4 meses</span>` : '',
       v.crit  > 0 ? `<span class="vpill vp-r">🔴 ${v.crit} crítico(s)</span>` : '',
       v.pend  > 0 ? `<span class="vpill vp-a">⚠ ${v.pend} sem ação</span>` : '',
       v.stale > 0 ? `<span class="vpill vp-m">⏰ ${v.stale} desatualiz.</span>` : '',
@@ -1140,21 +1165,28 @@ function renderFC(d) {
 function renderAct(d) {
   const scored = d.ab.map(r => {
     let sc = 0;
-    if (r._isCrit)  sc += 40;
-    if (r._semProx) sc += 30;
-    if (r._isStale) sc += 20;
-    if (r._dClose >= 0 && r._dClose <= DIAS_CLOSE) sc += 15;
-    sc += (r._val / 1e6) * 8;
+    if (r._urgente4m) sc += 50;  // fecha em ≤4 meses → precisa agir AGORA
+    if (r._semProx)   sc += 35;  // sem próximo passo definido
+    if (r._isStale)   sc += 25;  // sem atualização recente
+    if (norm(r.RISCO) === 'alto') sc += 20;
+    if (r._dClose >= 0 && r._dClose <= 30) sc += 20; // fecha em ≤1 mês: urgência extrema
+    sc += (r._val / 1e6) * 6;
     return { ...r, _sc: sc };
-  }).filter(r => r._sc >= 20).sort((a,b) => b._sc - a._sc).slice(0, 6);
+  }).filter(r => r._sc >= 35).sort((a,b) => b._sc - a._sc).slice(0, 6);
 
   document.getElementById('act-opps').innerHTML = scored.length
     ? scored.map(r => {
         const rs = [];
-        if (r._isCrit) rs.push('🔴 Risco Alto');
+        if (r._urgente4m) {
+          const diasStr = r._dClose >= 0 ? `${r._dClose}d` : 'VENCIDA';
+          rs.push(`⏳ Fecha em ${diasStr} — pedido China precisa sair JÁ`);
+        }
         if (r._semProx) rs.push('⚠ Sem próximo passo');
-        if (r._isStale) rs.push(`⏰ ${dAgo(r._dtA)}d sem atualização`);
-        if (r._dClose >= 0 && r._dClose <= DIAS_CLOSE) rs.push(`📅 Fecha em ${r._dClose}d`);
+        if (r._isStale) {
+          const da = dAgo(r._dtA);
+          rs.push(da >= 9990 ? '⏰ Nunca atualizada' : `⏰ ${da}d sem atualização`);
+        }
+        if (norm(r.RISCO) === 'alto') rs.push('🔴 Risco Alto');
         const cls = r._isCrit ? 'crit' : 'warn';
         const tag = r._isCrit ? ['at-r','CRÍTICO'] : ['at-a','ATENÇÃO'];
         return `<div class="aitem ${cls}">
@@ -1224,7 +1256,7 @@ function renderTbl() {
       <td class="tm" style="color:var(--muted2);white-space:nowrap">${r.ID_OPP}</td>
       <td style="font-weight:600;max-width:145px;word-break:break-word">${r.CUSTOMER}${flags}</td>
       <td style="white-space:nowrap">${r.VENDEDOR}</td>
-      <td style="color:var(--muted2);font-size:.72rem">${r.COUNTRY}</td>
+      <td style="color:var(--muted2);font-size:.72rem;max-width:120px">${r.SOLUTION}</td>
       <td style="color:var(--muted2);font-size:.71rem;max-width:120px">${r.PRODUCT}</td>
       <td><span class="tb ${stCls(r.ESTAGIO)}">${r.ESTAGIO}</span></td>
       <td><span class="tb ${stsCls(r.STATUS)}">${r.STATUS}</span></td>
@@ -1236,7 +1268,7 @@ function renderTbl() {
       <td style="max-width:140px;font-size:.69rem;color:${r._semProx?'var(--amber)':'var(--muted2)'}">
         ${r.PROX_PASSO || '<span style="color:var(--amber);font-weight:600">⚠ Não definido</span>'}
       </td>
-      <td style="${daC};font-size:.69rem;white-space:nowrap">${fDt(r._dtA)}</td>
+      <td style="${daC};font-size:.69rem;white-space:nowrap">${fDt(r._dtA)}${r._dtA&&dAgo(r._dtA)>0&&dAgo(r._dtA)<9990?'<br><span style="font-size:.61rem;color:var(--muted)">'+dAgo(r._dtA)+'d atrás</span>':r._dtA?'':'<br><span style="font-size:.61rem;color:var(--red)">Nunca</span>'}</td>
       <td style="font-size:.68rem;color:var(--muted2);max-width:110px">${al||'—'}</td>
     </tr>`;
   }).join('');
