@@ -226,7 +226,7 @@ tr.rg td{background:rgba(18,161,82,.05)}
 <header class="hdr">
   <div class="hdr-l">
     <div>
-      <div class="hdr-t">CRM PROJECTS <em>E-MOBILITY</em></div>
+      <div class="hdr-t"><em>CRM PROJECTS E-MOBILITY</em></div>
       <div class="hdr-s">Dashboard Executivo · Livoltek Power Brasil · Sales Management</div>
     </div>
   </div>
@@ -287,7 +287,29 @@ tr.rg td{background:rgba(18,161,82,.05)}
   <div class="sec"><span class="sn">3</span>Forecast por Vendedor</div>
   <div id="fc-all" style="margin-bottom:18px"></div>
 
-  <div class="sec"><span class="sn">4</span>Painel de Ação — O que tratar hoje?</div>
+  <div class="sec"><span class="sn">4</span>Evolução Semanal do Pipeline</div>
+  <div class="card mb" id="snap-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="ct" style="margin-bottom:4px"><span class="cdot" style="background:var(--purple)"></span>Comparativo Semana Anterior vs Atual</div>
+        <div style="font-size:.72rem;color:var(--muted2)">Baseado na aba <strong>COMPARATIVO_AUTO</strong> do Google Sheets</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="snap-dates" style="font-size:.72rem;color:var(--muted2);font-family:var(--fm)"></span>
+        <button class="btn" onclick="loadSnap()" style="font-size:.71rem">↻ Atualizar snapshot</button>
+      </div>
+    </div>
+    <div id="snap-body">
+      <div style="color:var(--muted);font-size:.8rem;padding:20px 0;text-align:center">
+        ⚠ Configure o GID da aba COMPARATIVO_AUTO e clique em "Atualizar snapshot"<br>
+        <span style="font-size:.72rem;color:var(--muted2);margin-top:4px;display:block">
+          No Google Sheets: abra a aba COMPARATIVO_AUTO → veja o número após <code style="background:var(--s2);padding:1px 5px;border-radius:3px">&gid=</code> na URL do browser → substitua em SNAP_URL no código
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sn">5</span>Painel de Ação — O que tratar hoje?</div>
   <div class="g2 mb">
     <div class="card">
       <div class="ct" style="color:var(--red)"><span class="cdot" style="background:var(--red);box-shadow:0 0 6px rgba(240,68,68,.5)"></span>Oportunidades Críticas</div>
@@ -299,7 +321,7 @@ tr.rg td{background:rgba(18,161,82,.05)}
     </div>
   </div>
 
-  <div class="sec"><span class="sn">5</span>Tabela Detalhada</div>
+  <div class="sec"><span class="sn">6</span>Tabela Detalhada</div>
   
 
   <div class="filters" style="margin-bottom:14px;padding:14px 16px;background:var(--s2);border:1px solid var(--brd);border-radius:10px;">
@@ -363,14 +385,17 @@ tr.rg td{background:rgba(18,161,82,.05)}
 
 </div><!-- /dash -->
 
-<div class="footer">Livoltek Power Brasil · Sales Management · CRM Projects E-Mobility 2026 · Dados: Google Sheets</div>
+<div class="footer">Livoltek Power Brasil · Sales Management · Cristiane Marques — CRM Projects E-Mobility 2026 · Dados: Google Sheets</div>
 </div><!-- /wrap -->
 
 <script>
 // ════════════════════════════════════════════════════
 // CONFIG
 // ════════════════════════════════════════════════════
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv';
+const CSV_URL  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv';
+// COMPARATIVO_AUTO tab — substitua o gid abaixo pelo gid correto da aba
+// Para encontrar: abra a aba no Sheets e veja o número após &gid= na URL
+const SNAP_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=SUBSTITUA_GID_AQUI&single=true&output=csv';
 const DIAS_STALE = 14;
 const DIAS_CLOSE = 30;
 const PAGE_SZ    = 12;
@@ -1090,92 +1115,102 @@ function renderFun(d)  { /* merged into vendor cards */ }
 
 function renderFC(d) {
   if (_chart) { _chart.destroy(); _chart = null; }
-
   const container = document.getElementById('fc-all');
   if (!container) return;
 
-  // Build per-vendor forecast
   const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
-
   if (!vendors.length) {
-    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px">Sem dados</div>';
+    container.innerHTML = '<div class="card" style="padding:18px;color:var(--muted);text-align:center;font-size:.8rem">Sem dados de forecast</div>';
     return;
   }
 
-  // Build month map per vendor
-  const allMonths = d.perM.map(m => m.key); // global sorted months
-
-  const vendorData = vendors.map(v => {
-    const vItems = d.ab.filter(r => r.VENDEDOR === v);
-    const mMap = {};
-    vItems.forEach(r => {
-      if (!r._dtF) return;
-      const dd = r._dtF;
-      const key = `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}`;
-      const lb  = dd.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
-        .replace(' de ','/').replace('.','').replace(/^\w/,c=>c.toUpperCase());
-      if (!mMap[key]) mMap[key] = {key,lb,tot:0,pond:0,cnt:0};
-      mMap[key].tot  += r._val;
-      mMap[key].pond += r._val * r._prob;
-      mMap[key].cnt++;
-    });
-    const months = Object.values(mMap).sort((a,b)=>a.key.localeCompare(b.key));
-    return { v, months, total: vItems.reduce((s,r)=>s+r._val,0) };
-  }).filter(vd => vd.months.length > 0).sort((a,b)=>b.total-a.total);
-
-  if (!vendorData.length) {
-    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:.8rem">Sem datas de fechamento preenchidas</div>';
-    return;
-  }
-
-  // Canvas chart with grouped data
-  const canvas = document.createElement('canvas');
-  canvas.id = 'ch-fc';
-  container.innerHTML = '';
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:14px;padding:18px;position:relative';
-  wrap.appendChild(canvas);
-  container.appendChild(wrap);
-
-  // Union of all months across vendors
-  const allMonthKeys = [...new Set(vendorData.flatMap(vd => vd.months.map(m => m.key)))].sort();
-  const allMonthLabels = allMonthKeys.map(key => {
-    const [y, m] = key.split('-');
-    return new Date(+y, +m-1, 1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
+  // Union of all months across all vendors
+  const monthSet = {};
+  d.ab.forEach(r => {
+    if (!r._dtF) return;
+    const dd = r._dtF;
+    const key = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0');
+    const lb  = dd.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
       .replace(' de ','/').replace('.','').replace(/^\w/,c=>c.toUpperCase());
+    monthSet[key] = lb;
+  });
+  const allKeys   = Object.keys(monthSet).sort();
+  const allLabels = allKeys.map(k => monthSet[k]);
+
+  if (!allKeys.length) {
+    container.innerHTML = '<div class="card" style="padding:18px;color:var(--muted);text-align:center;font-size:.8rem">Sem datas de fechamento preenchidas</div>';
+    return;
+  }
+
+  // Dataset per vendor (pipeline + ponderado side by side)
+  const COLORS_PIPE  = ['rgba(37,99,235,.85)','rgba(16,185,129,.85)','rgba(245,158,11,.85)','rgba(124,58,237,.85)'];
+  const COLORS_POND  = ['rgba(37,99,235,.4)', 'rgba(16,185,129,.4)','rgba(245,158,11,.4)','rgba(124,58,237,.4)'];
+
+  const datasets = [];
+  vendors.forEach((v, i) => {
+    const vItems = d.ab.filter(r => r.VENDEDOR === v);
+    const pipeData = allKeys.map(k => {
+      return vItems.filter(r => r._dtF && r._dtF.getFullYear()+'-'+String(r._dtF.getMonth()+1).padStart(2,'0') === k)
+                   .reduce((s,r) => s + r._val, 0);
+    });
+    const pondData = allKeys.map(k => {
+      return vItems.filter(r => r._dtF && r._dtF.getFullYear()+'-'+String(r._dtF.getMonth()+1).padStart(2,'0') === k)
+                   .reduce((s,r) => s + r._val * r._prob, 0);
+    });
+    datasets.push({
+      label: v + ' (Pipeline)',
+      data: pipeData,
+      backgroundColor: COLORS_PIPE[i % COLORS_PIPE.length],
+      borderRadius: 5,
+      borderSkipped: false,
+    });
+    datasets.push({
+      label: v + ' (Ponderado)',
+      data: pondData,
+      backgroundColor: COLORS_POND[i % COLORS_POND.length],
+      borderRadius: 5,
+      borderSkipped: false,
+    });
   });
 
-  const COLORS = ['rgba(37,99,235,.8)','rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(124,58,237,.8)','rgba(239,68,68,.8)'];
-  const datasets = vendorData.map((vd, i) => ({
-    label: vd.v,
-    data: allMonthKeys.map(key => {
-      const m = vd.months.find(mm => mm.key === key);
-      return m ? m.tot : 0;
-    }),
-    backgroundColor: COLORS[i % COLORS.length],
-    borderRadius: 5,
-    borderSkipped: false,
-  }));
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06)';
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ch-fc';
+  canvas.style.height = '260px';
+  wrap.appendChild(canvas);
+  container.innerHTML = '';
+  container.appendChild(wrap);
 
   _chart = new Chart(canvas, {
     type: 'bar',
-    data: { labels: allMonthLabels, datasets },
+    data: { labels: allLabels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color:'#5A849A', font:{family:'DM Sans',size:11}, boxWidth:12, padding:16 } },
-        tooltip: { callbacks: {
-          label: c => `${c.dataset.label}: ${fK(c.raw)}`,
-        }}
+        legend: {
+          position: 'top',
+          labels: { color:'#5A6E96', font:{family:'DM Sans',size:11}, boxWidth:12, padding:14 }
+        },
+        tooltip: {
+          callbacks: {
+            label: c => `${c.dataset.label}: ${fK(c.raw)}`,
+          }
+        }
       },
       scales: {
-        x: { ticks:{color:'#5A849A',font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.05)'} },
-        y: { ticks:{color:'#5A849A',callback:v=>fKshort(v),font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.07)'} }
+        x: {
+          ticks:{ color:'#7B8FB5', font:{family:'DM Sans',size:11} },
+          grid:{ color:'rgba(30,80,160,.06)' }
+        },
+        y: {
+          ticks:{ color:'#7B8FB5', callback:v=>fKshort(v), font:{family:'DM Sans',size:11} },
+          grid:{ color:'rgba(30,80,160,.07)' }
+        }
       }
     }
   });
-  canvas.style.height = '230px';
 }
 
 
@@ -1385,6 +1420,107 @@ function toggleCols() {
   }
 }
 function reload() { loadData(); }
+
+// ════════════════════════════════════════════════════
+// SNAPSHOT COMPARATIVO
+// ════════════════════════════════════════════════════
+async function loadSnap() {
+  const body = document.getElementById('snap-body');
+  if (!body) return;
+  if (SNAP_URL.includes('SUBSTITUA_GID')) {
+    body.innerHTML = `<div style="background:rgba(201,122,0,.08);border:1px solid rgba(201,122,0,.2);border-radius:8px;padding:14px 16px;font-size:.78rem;color:var(--amber)">
+      <strong>⚙ Configuração necessária:</strong> substitua <code style="background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px">SUBSTITUA_GID_AQUI</code> no código pelo GID real da aba COMPARATIVO_AUTO.<br>
+      <span style="color:var(--muted2);margin-top:4px;display:block">No Sheets: abra a aba COMPARATIVO_AUTO → copie o número após <code style="background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px">&gid=</code> na URL do navegador.</span>
+    </div>`;
+    return;
+  }
+  body.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:16px 0;text-align:center">⟳ Carregando snapshot...</div>';
+  try {
+    let txt;
+    try {
+      const r = await fetch(SNAP_URL, { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      txt = await r.text();
+    } catch {
+      const r2 = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SNAP_URL), { signal: AbortSignal.timeout(12000) });
+      txt = (await r2.json()).contents;
+    }
+    renderSnap(txt);
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);font-size:.78rem;padding:10px 0">⚠ Erro ao carregar snapshot: ${e.message}</div>`;
+  }
+}
+
+function renderSnap(txt) {
+  const body  = document.getElementById('snap-body');
+  const dates = document.getElementById('snap-dates');
+  if (!txt || txt.length < 10) { body.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Dados vazios</div>'; return; }
+
+  const res   = Papa.parse(txt.replace(/^﻿/,'').trim(), { header: false, skipEmptyLines: true });
+  const rows  = res.data;
+  if (!rows || rows.length < 2) { body.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Formato inesperado</div>'; return; }
+
+  // Row 0: headers  [Última data, Última data, PIPELINE ATUAL, PIPELINE ANTERIOR, Snapshot atual, Snapshot anterior, CUSTOMER, Pipeline Anterior, RISCO ALTO, PENDÊNCIAS, TEXTO AUTOMÁTICO]
+  // Row 1: values   [03/04/2026, 03/04/2026, #N/A, R$ 122.244.000,00, #VALUE!, ...]
+  const dataRow   = rows[1] || [];
+  const dateAtual = dataRow[0] || '—';
+  const dateAnt   = dataRow[1] || '—';
+  const pipeAtual = parseBRL(dataRow[2]);
+  const pipeAnt   = parseBRL(dataRow[3]);
+  const textoAuto = dataRow[10] || '';
+
+  if (dates) dates.textContent = `Semana atual: ${dateAtual}  |  Semana anterior: ${dateAnt}`;
+
+  // Customer rows: from row 2 onwards, col 6=CUSTOMER, col 7=Pipeline Anterior
+  const customers = rows.slice(2).filter(r => r[6] && r[6].trim() !== '').map(r => ({
+    customer:    r[6] || '',
+    pipeAnt:     parseBRL(r[7]),
+  }));
+
+  const varPipe   = pipeAtual - pipeAnt;
+  const varPct    = pipeAnt > 0 ? (varPipe / pipeAnt * 100) : 0;
+  const varColor  = varPipe > 0 ? 'var(--green)' : varPipe < 0 ? 'var(--red)' : 'var(--muted2)';
+  const varArrow  = varPipe > 0 ? '▲' : varPipe < 0 ? '▼' : '→';
+  const pipeOK    = pipeAtual > 0 || pipeAnt > 0;
+
+  body.innerHTML = `
+  <!-- KPI STRIP -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:14px 16px">
+      <div style="font-size:.67rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Pipeline Atual</div>
+      <div style="font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--blue)">${pipeOK && pipeAtual > 0 ? fK(pipeAtual) : '—'}</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:14px 16px">
+      <div style="font-size:.67rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Pipeline Anterior</div>
+      <div style="font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--muted2)">${pipeAnt > 0 ? fK(pipeAnt) : '—'}</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:14px 16px">
+      <div style="font-size:.67rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Variação</div>
+      <div style="font-family:var(--fh);font-size:1.5rem;font-weight:800;color:${varColor}">${varArrow} ${Math.abs(varPct).toFixed(1)}%</div>
+      <div style="font-size:.68rem;color:${varColor};margin-top:2px">${varPipe !== 0 ? (varPipe > 0 ? '+' : '') + fK(varPipe) : 'Sem variação'}</div>
+    </div>
+  </div>
+
+  ${textoAuto ? `
+  <!-- TEXTO AUTOMÁTICO -->
+  <div style="background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:9px;padding:12px 16px;margin-bottom:16px;font-size:.78rem;color:var(--text);line-height:1.6">
+    <div style="font-size:.65rem;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">📊 Análise automática</div>
+    ${textoAuto}
+  </div>` : ''}
+
+  ${customers.length > 0 ? `
+  <!-- CUSTOMER TABLE -->
+  <div style="font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">Clientes — pipeline semana anterior</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:7px">
+    ${customers.filter(c => c.pipeAnt > 0).sort((a,b) => b.pipeAnt - a.pipeAnt).slice(0, 12).map(c => `
+      <div style="background:var(--s2);border:1px solid var(--brd2);border-radius:8px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-size:.74rem;font-weight:600;color:var(--text)">${c.customer}</span>
+        <span style="font-family:var(--fm);font-size:.72rem;color:var(--muted2);white-space:nowrap">${fK(c.pipeAnt)}</span>
+      </div>`).join('')}
+  </div>` : ''}
+  `;
+}
+
 
 // ════════════════════════════════════════════════════
 // INIT
