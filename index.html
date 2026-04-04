@@ -292,6 +292,19 @@ tr.rg td{background:rgba(32,199,101,.03)}
     <select class="fsel" id="f-st" onchange="applyF()">
       <option value="">Todos os status</option><option>Aberto</option><option>Ganho</option><option>Perdido</option>
     </select>
+    <select class="fsel" id="f-prod" onchange="applyF()"><option value="">Todos os produtos</option></select>
+    <select class="fsel" id="f-prob" onchange="applyF()">
+      <option value="">Todas as probs.</option>
+      <option value="alta">Alta (&gt;70%)</option>
+      <option value="media">Média (40–70%)</option>
+      <option value="baixa">Baixa (&lt;40%)</option>
+    </select>
+    <select class="fsel" id="f-alerta" onchange="applyF()">
+      <option value="">Todos os alertas</option>
+      <option value="critico">🔴 Crítico (risco alto)</option>
+      <option value="sem_acao">⚠ Sem próximo passo</option>
+      <option value="desatualizado">⏰ Desatualizado</option>
+    </select>
     <button class="btn" onclick="clearF()">✕ Limpar</button>
   </div>
 
@@ -299,23 +312,14 @@ tr.rg td{background:rgba(32,199,101,.03)}
   <div class="g6 mb" id="kpi-grid"></div>
 
   <div class="sec"><span class="sn">2</span>Performance por Vendedor</div>
-  <div class="g3 mb" id="vend-grid"></div>
+  <div class="g2" id="vend-grid" style="margin-bottom:18px"></div>
 
-  <div class="g2 mb">
-    <div class="card">
-      <div class="ct"><span class="cdot"></span>3 — Qualidade do Pipeline</div>
-      <div id="qual-body"></div>
-    </div>
-    <div class="card">
-      <div class="ct"><span class="cdot" style="background:var(--amber);box-shadow:0 0 6px rgba(245,166,35,.45)"></span>4 — Funil de Vendas</div>
-      <div id="fun-body"></div>
-    </div>
-  </div>
 
-  <div class="sec"><span class="sn">5</span>Forecast — Fechamentos por Mês</div>
-  <div class="card mb"><div class="fc-wrap"><canvas id="ch-fc"></canvas></div></div>
 
-  <div class="sec"><span class="sn">6</span>Painel de Ação — O que tratar hoje?</div>
+  <div class="sec"><span class="sn">3</span>Forecast por Vendedor</div>
+  <div id="fc-all" style="margin-bottom:18px"></div>
+
+  <div class="sec"><span class="sn">4</span>Painel de Ação — O que tratar hoje?</div>
   <div class="g2 mb">
     <div class="card">
       <div class="ct" style="color:var(--red)"><span class="cdot" style="background:var(--red);box-shadow:0 0 6px rgba(240,68,68,.5)"></span>Oportunidades Críticas</div>
@@ -327,7 +331,7 @@ tr.rg td{background:rgba(32,199,101,.03)}
     </div>
   </div>
 
-  <div class="sec"><span class="sn">7</span>Tabela Detalhada</div>
+  <div class="sec"><span class="sn">5</span>Tabela Detalhada</div>
   <div class="card" style="padding:0">
     <div class="twrap">
       <table>
@@ -726,6 +730,7 @@ async function loadData() {
 function popFilters() {
   const pop = (id, vals) => {
     const sel = document.getElementById(id);
+    if (!sel) return;
     const first = sel.options[0].cloneNode(true);
     sel.innerHTML = '';
     sel.appendChild(first);
@@ -734,7 +739,60 @@ function popFilters() {
       o.value = v; o.textContent = v; sel.appendChild(o);
     });
   };
-  pop('f-v', RAW.map(r => r.VENDEDOR));
+  pop('f-v',    RAW.map(r => r.VENDEDOR));
+  pop('f-prod', RAW.map(r => r.PRODUCT));
+}
+
+function applyF() {
+  const s      = (document.getElementById('f-s').value    || '').toLowerCase();
+  const v      = document.getElementById('f-v').value;
+  const e      = document.getElementById('f-e').value;
+  const r      = document.getElementById('f-r').value;
+  const st     = document.getElementById('f-st').value;
+  const prod   = (document.getElementById('f-prod')   || {}).value || '';
+  const prob   = (document.getElementById('f-prob')   || {}).value || '';
+  const alerta = (document.getElementById('f-alerta') || {}).value || '';
+  FIL = RAW.filter(o => {
+    if (s    && !`${o.CUSTOMER} ${o.ID_OPP} ${o.PRODUCT} ${o.VENDEDOR}`.toLowerCase().includes(s)) return false;
+    if (v    && o.VENDEDOR !== v)            return false;
+    if (e    && norm(o.ESTAGIO) !== norm(e)) return false;
+    if (r    && norm(o.RISCO)   !== norm(r)) return false;
+    if (st   && norm(o.STATUS)  !== norm(st)) return false;
+    if (prod && norm(o.PRODUCT) !== norm(prod)) return false;
+    if (prob === 'alta'  && o._prob < .7)          return false;
+    if (prob === 'media' && (o._prob < .4 || o._prob >= .7)) return false;
+    if (prob === 'baixa' && o._prob >= .4)         return false;
+    if (alerta === 'critico'       && !o._isCrit)  return false;
+    if (alerta === 'sem_acao'      && !o._semProx) return false;
+    if (alerta === 'desatualizado' && !o._isStale) return false;
+    return true;
+  });
+  _pg = 1;
+  renderAll();
+}
+function clearF() {
+  ['f-s','f-v','f-e','f-r','f-st','f-prod','f-prob','f-alerta'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'INPUT') el.value = ''; else el.value = '';
+  });
+  applyF();
+}
+
+function popFilters() {
+  const pop = (id, vals) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const first = sel.options[0].cloneNode(true);
+    sel.innerHTML = '';
+    sel.appendChild(first);
+    [...new Set(vals)].filter(Boolean).sort().forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  };
+  pop('f-v',    RAW.map(r => r.VENDEDOR));
+  pop('f-prod', RAW.map(r => r.PRODUCT));
 }
 
 function applyF() {
@@ -858,136 +916,226 @@ function renderVend(d) {
     document.getElementById('vend-grid').innerHTML = '<div style="color:var(--muted)">Sem dados de vendedor</div>';
     return;
   }
+  const stages = ['Lead','Proposta','Negociação','Fechamento'];
+  const SC = {Lead:'#5A849A',Proposta:'#F5A623','Negociação':'#3B8BF6',Fechamento:'#20C765'};
+
   document.getElementById('vend-grid').innerHTML = d.perV.map((v, i) => {
     const hasMeta  = v.meta > 0;
-    const pctMeta  = hasMeta ? Math.min(v.pct * 100, 100) : 0;
     const pctPond  = v.pipe > 0 ? v.pond / v.pipe : 0;
-    // bar color by pipeline coverage of meta (potential)
+    // BARRA: mostra realizado (ganho) vs meta — NÃO pipeline aberto
+    const pctReal  = hasMeta ? Math.min(v.realizado / v.meta, 1) : 0;
+    const pctPipe  = hasMeta ? Math.min(v.pipe / v.meta, 1) : 0; // pipeline aberto como potencial
     const barColor = !hasMeta ? 'var(--teal)'
-                   : v.pct >= 1   ? 'var(--green)'
-                   : v.pct >= .7  ? 'var(--amber)'
-                   :                'var(--red)';
-    // badge: ATINGIDO only when actual WON deals >= meta
+                   : v.atingido     ? 'var(--green)'
+                   : v.pct >= .7    ? 'var(--amber)'
+                   :                  'var(--red)';
     const badge = !hasMeta ? null
-                : v.atingido      ? ['vb-g','✅ Meta atingida']
-                : v.pct >= .7     ? ['vb-a','🟡 Em andamento']
-                :                   ['vb-r','🔴 Abaixo da meta'];
+                : v.atingido        ? ['vb-g','✅ Meta atingida']
+                : v.pct >= .7       ? ['vb-a','🟡 Em andamento']
+                :                     ['vb-r','🔴 Abaixo da meta'];
+
     const pills = [
       v.crit  > 0 ? `<span class="vpill vp-r">🔴 ${v.crit} crítico(s)</span>` : '',
       v.pend  > 0 ? `<span class="vpill vp-a">⚠ ${v.pend} sem ação</span>` : '',
       v.stale > 0 ? `<span class="vpill vp-m">⏰ ${v.stale} desatualiz.</span>` : '',
     ].filter(Boolean).join('');
+
+    // Mini funil: filter by this vendor
+    const vFunStages = stages.map(e => {
+      const items = d.ab.filter(r => r.VENDEDOR === v.v && norm(r.ESTAGIO) === norm(e));
+      return { e, count: items.length, tot: items.reduce((s,r) => s + r._val, 0) };
+    });
+    const funMax = Math.max(...vFunStages.map(s => s.tot), 1);
+    const miniFunil = vFunStages.map(s => {
+      const pct = Math.max(3, Math.round(s.tot / funMax * 80));
+      return `<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+        <span style="font-family:var(--fh);font-size:.68rem;font-weight:600;color:var(--muted2);width:80px;text-transform:uppercase;letter-spacing:.03em">${s.e}</span>
+        <div style="flex:1;height:20px;background:rgba(255,255,255,.04);border-radius:5px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${SC[s.e]};display:flex;align-items:center;padding:0 7px;font-size:.65rem;font-weight:700;color:rgba(0,0,0,.75)">
+            ${s.count > 0 ? s.count+' neg.' : ''}
+          </div>
+        </div>
+        <span style="font-family:var(--fm);font-size:.68rem;color:var(--text);min-width:70px;text-align:right">${fK(s.tot)}</span>
+      </div>`;
+    }).join('');
+
+    // Mini quality bars for this vendor
+    const va = d.ab.filter(r => r.VENDEDOR === v.v);
+    const vLen = va.length || 1;
+    const qCP = (va.length - va.filter(r => r._semProx).length) / vLen;
+    const qAR = va.filter(r => r._isCrit).length / vLen;
+    const qAP = va.filter(r => r._prob >= .7).length / vLen;
+    const qualScore = qCP*.4 + (1-qAR)*.3 + qAP*.3;
+    const qualLabel = qualScore >= .7 ? ['var(--green)','✅ Pipeline Forte']
+                    : qualScore >= .5 ? ['var(--amber)','⚠ Pipeline Regular']
+                    :                   ['var(--red)','🔴 Pipeline Fraco'];
+    const miniQual = [
+      {ico:'📋',lbl:'Com próx. passo',pct:qCP,c:'#20C765'},
+      {ico:'⭐',lbl:'Alta prob. (>70%)',pct:qAP,c:'#00C8E6'},
+      {ico:'🚨',lbl:'Risco alto',pct:qAR,c:'#F04444'},
+    ].map(m => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <span style="font-size:.75rem;width:16px;text-align:center">${m.ico}</span>
+      <span style="flex:1;font-size:.69rem;color:var(--text)">${m.lbl}</span>
+      <div style="width:80px;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden">
+        <div style="width:${m.pct*100}%;height:100%;background:${m.c};border-radius:3px"></div>
+      </div>
+      <span style="font-family:var(--fm);font-size:.69rem;color:${m.c};min-width:28px;text-align:right">${(m.pct*100).toFixed(0)}%</span>
+    </div>`).join('') +
+    `<div style="padding:4px 8px;border-radius:5px;font-size:.69rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;margin-top:4px;background:rgba(255,255,255,.04)">${qualLabel[1]}</div>`;
+
     return `<div class="card" style="padding:16px;position:relative">
-      ${i===0?'<span style="position:absolute;top:11px;right:40px;font-size:.9rem" title="Maior pipeline">🏆</span>':''}
-      <div class="vc-hd">
+      ${i===0?'<span style="position:absolute;top:13px;right:14px;font-size:.95rem" title="Maior pipeline">🏆</span>':''}
+
+      <!-- HEADER -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px;padding-right:${i===0?'28px':'0'}">
         <div>
           <div class="vc-name">${v.v}</div>
-          <div class="vc-cnt">${v.count} oportunidade(s) · ${v.clients} cliente(s)</div>
+          <div class="vc-cnt">${v.count} opp. abertas · ${v.clients} cliente(s)</div>
         </div>
         ${badge ? `<span class="vc-badge ${badge[0]}">${badge[1]}</span>` : ''}
       </div>
-      <div class="vc-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
+
+      <!-- KPI STATS -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
         <div class="vs"><div class="vs-l">Pipeline LVK</div><div class="vs-v" style="color:var(--teal)">${fK(v.pipe)}</div></div>
         <div class="vs"><div class="vs-l">Ponderado</div><div class="vs-v">${fK(v.pond)}</div></div>
-        ${hasMeta ? `<div class="vs"><div class="vs-l">Meta</div><div class="vs-v">${fK(v.meta)}</div></div>
-        <div class="vs"><div class="vs-l">Gap para meta</div><div class="vs-v" style="color:${v.atingido?'var(--green)':'var(--red)'}">${v.atingido?'✅ Atingido':'- '+fK(v.gap)}</div></div>` :
-        `<div class="vs"><div class="vs-l">Negócios</div><div class="vs-v">${v.count}</div></div>
-        <div class="vs"><div class="vs-l">Pond. %</div><div class="vs-v">${(pctPond*100).toFixed(0)}%</div></div>`}
+        ${hasMeta
+          ? `<div class="vs"><div class="vs-l">Meta</div><div class="vs-v">${fK(v.meta)}</div></div>
+             <div class="vs"><div class="vs-l">Gap</div><div class="vs-v" style="color:${v.atingido?'var(--green)':'var(--red)'}">${v.atingido?'✅ Atingido':'- '+fK(v.gap)}</div></div>`
+          : `<div class="vs"><div class="vs-l">Pond. %</div><div class="vs-v">${(pctPond*100).toFixed(0)}%</div></div>
+             <div class="vs"><div class="vs-l">Negócios</div><div class="vs-v">${v.count}</div></div>`}
       </div>
+
       ${hasMeta ? `
-      <div style="margin-top:4px">
-        <div style="display:flex;justify-content:space-between;font-size:.67rem;margin-bottom:3px;color:var(--muted2)">
-          <span>Cobertura de meta (pipeline aberto)</span>
-          <span style="font-weight:700;color:${barColor}">${(v.pct*100).toFixed(0)}%</span>
+      <!-- META BAR: realizado/meta -->
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:.67rem;margin-bottom:4px;color:var(--muted2)">
+          <span>Realizado (Ganhos) vs Meta</span>
+          <span style="font-weight:700;color:${v.atingido?'var(--green)':'var(--red)'}">${(v.pctReal*100).toFixed(1)}%</span>
         </div>
-        <div class="prog-bg"><div class="prog-fill" style="width:${pctMeta}%;background:${barColor}"></div></div>
+        <!-- background = pipeline potential -->
+        <div style="height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;position:relative">
+          <div style="position:absolute;top:0;left:0;width:${Math.min(pctPipe*100,100)}%;height:100%;background:rgba(0,200,230,.25);border-radius:5px"></div>
+          <div style="position:absolute;top:0;left:0;width:${pctReal*100}%;height:100%;background:${barColor};border-radius:5px"></div>
+        </div>
         <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-top:3px">
-          <span>Realizado: ${fK(v.realizado)}</span><span>Meta: ${fK(v.meta)}</span>
+          <span>🟩 Realizado: ${fK(v.realizado)} &nbsp;|&nbsp; 🟦 Pipeline aberto: ${fK(v.pipe)}</span>
+          <span>Meta: ${fK(v.meta)}</span>
         </div>
-      </div>` : `
-      <div class="prog-bg" style="margin-top:4px"><div class="prog-fill" style="width:${v.pipe>0?60:0}%;background:var(--teal)"></div></div>`}
-      ${pills ? `<div class="vc-pills" style="margin-top:8px">${pills}</div>` : ''}
+      </div>` : ''}
+
+      ${pills ? `<div class="vc-pills" style="margin-bottom:12px">${pills}</div>` : ''}
+
+      <!-- MINI FUNIL -->
+      <div style="border-top:1px solid var(--brd2);padding-top:10px;margin-bottom:10px">
+        <div style="font-family:var(--fh);font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:8px">Funil de Vendas</div>
+        ${miniFunil}
+      </div>
+
+      <!-- MINI QUALITY -->
+      <div style="border-top:1px solid var(--brd2);padding-top:10px">
+        <div style="font-family:var(--fh);font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:8px">Qualidade do Pipeline</div>
+        ${miniQual}
+      </div>
     </div>`;
   }).join('');
 }
 
-function renderQual(d) {
-  const sc = d.qCP * .4 + (1 - d.qAR) * .3 + d.qAP * .3;
-  const vd = sc >= .7
-    ? {bg:'background:rgba(32,199,101,.08);border:1px solid rgba(32,199,101,.2);color:var(--green)',ico:'✅',txt:'Pipeline Forte — boa qualidade e dados completos'}
-    : sc >= .5
-    ? {bg:'background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.18);color:var(--amber)',ico:'⚠',txt:'Pipeline Regular — ações necessárias'}
-    : {bg:'background:rgba(240,68,68,.07);border:1px solid rgba(240,68,68,.17);color:var(--red)',ico:'🔴',txt:'Pipeline Fraco — alta concentração de riscos'};
 
-  document.getElementById('qual-body').innerHTML = [
-    { ico:'📋', lbl:'Com próximo passo',    pct:d.qCP,  c:'#20C765' },
-    { ico:'⭐', lbl:'Alta prob. (>70%)',    pct:d.qAP,  c:'#00C8E6' },
-    { ico:'🚨', lbl:'Risco alto',           pct:d.qAR,  c:'#F04444' },
-    { ico:'⏰', lbl:`Desatualizados (+${DIAS_STALE}d)`, pct:d.qSt, c:'#F5A623' },
-  ].map(m => `<div class="qrow">
-    <span style="font-size:.85rem;width:20px;text-align:center">${m.ico}</span>
-    <div class="qlbl">${m.lbl}</div>
-    <div class="qbar"><div class="qfill" style="width:${m.pct*100}%;background:${m.c}"></div></div>
-    <div class="qpct" style="color:${m.c}">${(m.pct*100).toFixed(0)}%</div>
-  </div>`).join('')
-  + `<div class="qverdict" style="${vd.bg}"><span style="font-size:1.1rem">${vd.ico}</span>${vd.txt}</div>`;
-}
+function renderQual(d) { /* merged into vendor cards */ }
 
-function renderFun(d) {
-  const maxV = Math.max(...d.perSt.map(s => s.tot), 1);
-  const totP = d.pipe || 1;
-  const SC   = { Lead:'#5A849A', Proposta:'#F5A623', 'Negociação':'#3B8BF6', Fechamento:'#20C765' };
-  const pL   = (d.perSt[0]?.tot || 0) / totP;
-  const pF   = (d.perSt[3]?.tot || 0) / totP;
-  const warn = pL > .55
-    ? `<div class="fn-warn" style="background:var(--amber2);color:var(--amber)">⚠ Muito volume em Lead</div>`
-    : pF < .1
-    ? `<div class="fn-warn" style="background:var(--red2);color:var(--red)">⚠ Poucos negócios no Fechamento</div>`
-    : `<div class="fn-warn" style="background:var(--green2);color:var(--green)">✓ Distribuição saudável</div>`;
-  document.getElementById('fun-body').innerHTML = d.perSt.map(s => {
-    const pct = Math.max(4, Math.round(s.tot / maxV * 86));
-    return `<div class="fn-row">
-      <div class="fn-st">${s.e}</div>
-      <div class="fn-bg"><div class="fn-fill" style="width:${pct}%;background:${SC[s.e]||'#5A849A'}">
-        <span>${s.count > 0 ? s.count + ' neg.' : ''}</span>
-      </div></div>
-      <div class="fn-meta"><div class="fn-v">${fK(s.tot)}</div><div class="fn-s">${totP > 0 ? (s.tot/totP*100).toFixed(0)+'%' : ''}</div></div>
-    </div>`;
-  }).join('') + warn;
-}
+function renderFun(d)  { /* merged into vendor cards */ }
 
 function renderFC(d) {
   if (_chart) { _chart.destroy(); _chart = null; }
-  const canvas = document.getElementById('ch-fc');
-  if (!canvas) return;
-  if (!d.perM.length) {
-    canvas.parentElement.innerHTML = '<div style="color:var(--muted);padding:60px 0;text-align:center;font-size:.8rem">Sem datas de fechamento disponíveis</div>';
+
+  const container = document.getElementById('fc-all');
+  if (!container) return;
+
+  // Build per-vendor forecast
+  const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
+
+  if (!vendors.length) {
+    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px">Sem dados</div>';
     return;
   }
-  const avg = d.perM.reduce((s, m) => s + m.tot, 0) / (d.perM.length || 1);
-  const bg  = d.perM.map(m => m.tot >= avg*1.3 ? 'rgba(32,199,101,.7)' : m.tot <= avg*.5 ? 'rgba(240,68,68,.6)' : 'rgba(0,200,230,.65)');
+
+  // Build month map per vendor
+  const allMonths = d.perM.map(m => m.key); // global sorted months
+
+  const vendorData = vendors.map(v => {
+    const vItems = d.ab.filter(r => r.VENDEDOR === v);
+    const mMap = {};
+    vItems.forEach(r => {
+      if (!r._dtF) return;
+      const dd = r._dtF;
+      const key = `${dd.getFullYear()}-${String(dd.getMonth()+1).padStart(2,'0')}`;
+      const lb  = dd.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
+        .replace(' de ','/').replace('.','').replace(/^\w/,c=>c.toUpperCase());
+      if (!mMap[key]) mMap[key] = {key,lb,tot:0,pond:0,cnt:0};
+      mMap[key].tot  += r._val;
+      mMap[key].pond += r._val * r._prob;
+      mMap[key].cnt++;
+    });
+    const months = Object.values(mMap).sort((a,b)=>a.key.localeCompare(b.key));
+    return { v, months, total: vItems.reduce((s,r)=>s+r._val,0) };
+  }).filter(vd => vd.months.length > 0).sort((a,b)=>b.total-a.total);
+
+  if (!vendorData.length) {
+    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px;font-size:.8rem">Sem datas de fechamento preenchidas</div>';
+    return;
+  }
+
+  // Canvas chart with grouped data
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ch-fc';
+  container.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:14px;padding:18px;position:relative';
+  wrap.appendChild(canvas);
+  container.appendChild(wrap);
+
+  // Union of all months across vendors
+  const allMonthKeys = [...new Set(vendorData.flatMap(vd => vd.months.map(m => m.key)))].sort();
+  const allMonthLabels = allMonthKeys.map(key => {
+    const [y, m] = key.split('-');
+    return new Date(+y, +m-1, 1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
+      .replace(' de ','/').replace('.','').replace(/^\w/,c=>c.toUpperCase());
+  });
+
+  const COLORS = ['rgba(0,200,230,.75)','rgba(32,199,101,.75)','rgba(245,166,35,.75)','rgba(159,103,245,.75)','rgba(240,68,68,.75)'];
+  const datasets = vendorData.map((vd, i) => ({
+    label: vd.v,
+    data: allMonthKeys.map(key => {
+      const m = vd.months.find(mm => mm.key === key);
+      return m ? m.tot : 0;
+    }),
+    backgroundColor: COLORS[i % COLORS.length],
+    borderRadius: 5,
+    borderSkipped: false,
+  }));
+
   _chart = new Chart(canvas, {
     type: 'bar',
-    data: {
-      labels: d.perM.map(m => m.lb),
-      datasets: [
-        { label:'Pipeline LVK', data:d.perM.map(m=>m.tot),  backgroundColor:bg,                          borderRadius:6, borderSkipped:false, order:2 },
-        { label:'Ponderado',    data:d.perM.map(m=>m.pond), backgroundColor:'rgba(59,139,246,.35)', borderRadius:6, borderSkipped:false, order:1 },
-      ]
-    },
+    data: { labels: allMonthLabels, datasets },
     options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{labels:{color:'#5A849A',font:{family:'DM Sans',size:11},boxWidth:12}},
-        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fK(c.raw)}`, afterBody:items=>{const m=d.perM[items[0].dataIndex];return m?[`  ${m.cnt} negócio(s)`]:[];}}}
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color:'#5A849A', font:{family:'DM Sans',size:11}, boxWidth:12, padding:16 } },
+        tooltip: { callbacks: {
+          label: c => `${c.dataset.label}: ${fK(c.raw)}`,
+        }}
       },
-      scales:{
-        x:{ ticks:{color:'#5A849A',font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.05)'} },
-        y:{ ticks:{color:'#5A849A',callback:v=>fK(v),font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.07)'} }
+      scales: {
+        x: { ticks:{color:'#5A849A',font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.05)'} },
+        y: { ticks:{color:'#5A849A',callback:v=>fK(v),font:{family:'DM Sans'}}, grid:{color:'rgba(0,200,230,.07)'} }
       }
     }
   });
+  canvas.style.height = '230px';
 }
+
 
 function renderAct(d) {
   const scored = d.ab.map(r => {
@@ -1101,7 +1249,7 @@ function pgCh(d) {
 
 function renderAll() {
   const d = compute(FIL);
-  renderKPIs(d); renderVend(d); renderQual(d); renderFun(d); renderFC(d); renderAct(d); renderTbl();
+  renderKPIs(d); renderVend(d); renderFC(d); renderAct(d); renderTbl();
 }
 
 // ════════════════════════════════════════════════════
