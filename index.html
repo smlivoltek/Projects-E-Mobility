@@ -1138,12 +1138,12 @@ function renderFC() {
   const d = compute();
   const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
 
-  if (!vendors.length || !d.perM.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem datas de fechamento preenchidas</div>';
+  if (!vendors.length) {
+    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados de forecast</div>';
     return;
   }
 
-  // Meses únicos (union de todos os vendedores)
+  // Meses únicos (union)
   const monthSet = {};
   d.ab.forEach(r => {
     if (!r._dtF) return;
@@ -1156,81 +1156,52 @@ function renderFC() {
   const allKeys   = Object.keys(monthSet).sort();
   const allLabels = allKeys.map(k => monthSet[k]);
 
-  // Só ponderado — capado na meta de cada vendedor
-  // Lógica: se o vendedor tem meta, o ponderado mensal é limitado a meta/12 (spread uniforme no cap)
-  // Na prática: valor ponderado real, mas o eixo Y é capado na maior meta
-  const COLORS = [
-    'rgba(26,63,212,.80)',
-    'rgba(10,143,72,.80)',
-    'rgba(168,98,0,.80)',
-    'rgba(96,32,200,.80)',
-  ];
-
-  const datasets = [];
-  let maxMeta = 0;
-
-  vendors.forEach((v, i) => {
-    const meta  = getMeta(v);
-    if (meta > maxMeta) maxMeta = meta;
-    const vItems = d.ab.filter(r => r.VENDEDOR === v);
-
-    // Ponderado por mês — capado na meta do vendedor
-    const pondData = allKeys.map(k => {
-      const monthItems = vItems.filter(r =>
-        r._dtF && r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0') === k
-      );
-      const raw = monthItems.reduce((s, r) => s + r._val * r._prob, 0);
-      // Cap no total da meta do vendedor (não faz sentido mostrar mais que a meta)
-      return meta > 0 ? Math.min(raw, meta) : raw;
-    });
-
-    // Só adiciona dataset se tiver algum valor real
-    const hasData = pondData.some(v => v > 0);
-    if (hasData) {
-      datasets.push({
-        label: v,
-        data: pondData,
-        backgroundColor: COLORS[i % COLORS.length],
-        borderRadius: 5,
-        borderSkipped: false,
-      });
-    }
-  });
-
-  if (!datasets.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem ponderado disponível — preencha probabilidades nas oportunidades</div>';
+  if (!allKeys.length) {
+    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem datas de fechamento preenchidas</div>';
     return;
   }
 
-  const wrap   = document.createElement('div');
+  const COLORS = [
+    'rgba(26,63,212,.82)',
+    'rgba(10,143,72,.82)',
+    'rgba(168,98,0,.82)',
+    'rgba(96,32,200,.82)',
+  ];
+
+  const datasets = vendors.map((v, i) => {
+    const vItems = d.ab.filter(r => r.VENDEDOR === v);
+    const key4row = r => r._dtF
+      ? r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0')
+      : null;
+    const data = allKeys.map(k =>
+      vItems.filter(r => key4row(r) === k).reduce((s, r) => s + r._val, 0)
+    );
+    const cnt = allKeys.map(k =>
+      vItems.filter(r => key4row(r) === k).length
+    );
+    return {
+      label: v,
+      data,
+      _cnt: cnt,
+      backgroundColor: COLORS[i % COLORS.length],
+      borderRadius: 5,
+      borderSkipped: false,
+    };
+  }).filter(ds => ds.data.some(v => v > 0));
+
+  if (!datasets.length) {
+    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados de fechamento</div>';
+    return;
+  }
+
+  const wrap = document.createElement('div');
   wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)';
-
-  // Legenda manual mostrando meta de cada vendedor
-  const legendHtml = vendors.map((v, i) => {
-    const meta = getMeta(v);
-    const c    = COLORS[i % COLORS.length];
-    return `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:16px;font-size:.71rem;color:var(--muted2)">
-      <span style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0"></span>
-      ${v}${meta > 0 ? ' <span style="color:var(--muted);font-size:.67rem">(meta: ' + fKs(meta) + ')</span>' : ''}
-    </span>`;
-  }).join('');
-
-  wrap.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-      <div style="font-family:var(--fh);font-size:.75rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em">
-        Ponderado mensal por vendedor (capado na meta)
-      </div>
-      <div>${legendHtml}</div>
-    </div>
-    <div style="position:relative;height:185px"><canvas id="ch-fc"></canvas></div>`;
-
+  const canvas = document.createElement('canvas');
+  canvas.id    = 'ch-fc';
+  canvas.style.height = '185px';
+  wrap.appendChild(canvas);
   container.innerHTML = '';
   container.appendChild(wrap);
-
-  const canvas = document.getElementById('ch-fc');
-
-  // Y axis max: maior meta (Bruno = 50M) — não deixa escalar além
-  const yMax = maxMeta > 0 ? maxMeta : undefined;
 
   _chart = new Chart(canvas, {
     type: 'bar',
@@ -1239,14 +1210,15 @@ function renderFC() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: false }, // legenda manual acima
+        legend: {
+          position: 'top',
+          labels: { color:'#405070', font:{ family:'DM Sans', size:11 }, boxWidth:12, padding:16 }
+        },
         tooltip: {
           callbacks: {
-            label: c => `${c.dataset.label}: ${fK(c.raw)}`,
-            afterLabel: c => {
-              const meta = getMeta(c.dataset.label);
-              if (!meta) return '';
-              return `Meta total: ${fK(meta)}`;
+            label: (c) => {
+              const cnt = datasets[c.datasetIndex]._cnt[c.dataIndex];
+              return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' negócio'+(cnt>1?'s':'')+')' : ''}`;
             }
           }
         }
@@ -1258,7 +1230,6 @@ function renderFC() {
         },
         y: {
           min: 0,
-          max: yMax,
           ticks: {
             color: '#7080A0',
             maxTicksLimit: 6,
