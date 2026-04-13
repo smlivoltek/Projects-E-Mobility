@@ -155,7 +155,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   color:var(--muted2);text-transform:uppercase;letter-spacing:.03em}
 .fn-bg{flex:1;height:22px;background:rgba(0,0,0,.06);border-radius:5px;overflow:hidden}
 .fn-f{height:100%;border-radius:5px;display:flex;align-items:center;padding:0 7px;
-  font-size:.66rem;font-weight:700;color:rgba(0,0,0,.7);
+  font-size:.66rem;font-weight:700;color:rgba(255,255,255,.95);
   transition:width 1s cubic-bezier(.4,0,.2,1)}
 .fn-v{font-family:var(--fm);font-size:.74rem;color:var(--text);min-width:100px;text-align:right}
 
@@ -351,15 +351,8 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
       <button class="btn" onclick="loadSnap()">↻ Carregar snapshot</button>
     </div>
     <div id="snap-body">
-      <div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);
-          border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--amber)">
-        <strong>⚙ Configure o GID da aba COMPARATIVO_AUTO</strong> — substitua
-        <code style="background:rgba(0,0,0,.07);padding:1px 5px;border-radius:3px">
-        SUBSTITUA_GID_AQUI</code> no início do código pelo número da aba.<br>
-        <span style="color:var(--muted2);display:block;margin-top:4px">
-          No Google Sheets: clique na aba COMPARATIVO_AUTO → copie o número após
-          <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">&amp;gid=</code>
-          na URL do navegador.</span>
+      <div style="color:var(--muted2);font-size:.78rem;text-align:center;padding:16px 0">
+        Clique em <strong>↻ Carregar snapshot</strong> para ver o comparativo semanal.
       </div>
     </div>
   </div>
@@ -628,15 +621,20 @@ function normRow(raw, idx) {
     console.groupEnd();
   }
 
-  const _rawLvk  = _lvkKey ? raw[_lvkKey] : '';
-  const val      = parseBRL(_rawLvk) ||
-                  parseBRL(gcol(raw, 'TOTAL NET LVK (R$)', 'TOTAL NET LVK', 'TOTALNETLVK'));
-  // Capture diagnostic for first 30 rows
+  // Col R = TOTAL NET (R$) = Pipeline LVK
+  const valR = parseBRL(gcol(raw, 'TOTAL NET (R$)', ' TOTAL NET (R$) ', 'TOTALNET'));
+  // Col S = TOTAL NET LVK (R$) = Pipeline Ponderado / Ticket
+  const _rawLvk = _lvkKey ? raw[_lvkKey] : '';
+  const valS = parseBRL(_rawLvk) ||
+               parseBRL(gcol(raw, 'TOTAL NET LVK (R$)', ' TOTAL NET LVK (R$) ', 'TOTALNETLVK'));
+  const val  = valR;  // _val = col R for backward compat
+  // Diagnostic
   if (idx < 30) {
     _rawDiag.push({
       idx, customer: gcol(raw,'CUSTOMER','CLIENTE')||'?',
       vendedor: gcol(raw,'VENDEDOR')||'?',
-      lvkKey: _lvkKey, rawVal: _rawLvk, parsedVal: val
+      lvkKey: _lvkKey, rawVal: _rawLvk,
+      valR, valS
     });
   }
   const prob    = parseProb(gcol(raw, 'PROBABILIDADE', 'PROB', 'PROBABILITY'));
@@ -667,7 +665,7 @@ function normRow(raw, idx) {
     SOLUTION: gcol(raw, 'SOLUTION/BID', 'SOLUTION', 'BID', 'SOLUCAO', 'SOLUÇÃO') || '—',
     ESTAGIO: estagio, STATUS: status, RISCO: risco, PROX_PASSO: prox,
     ALERTA: gcol(raw, 'ALERTA AUTOMATICO', 'ALERTA AUTOMÁTICO', 'ALERTA') || '',
-    _val: val, _prob: prob, _dtF: dtF, _dtA: dtA,
+    _val: valR, _valR: valR, _valS: valS, _prob: prob, _dtF: dtF, _dtA: dtA,
     _semProx: semProx, _isCrit: isCrit, _isStale: isStale,
     _urg4m: urg4m, _dClose: dClose, _isAberto: isAberto,
   };
@@ -926,25 +924,30 @@ function updCount() {
 function compute() {
   const data = RAW;
   const ab   = data.filter(r => r._isAberto);
-  const pipe  = ab.reduce((s, r) => s + r._val, 0);
-  const pond  = ab.reduce((s, r) => s + r._val * r._prob, 0);
+
+  // Pipeline LVK = soma col R (TOTAL NET R$)
+  const pipe  = ab.reduce((s, r) => s + r._valR, 0);
+  // Ponderado = soma col S (TOTAL NET LVK R$)
+  const pond  = ab.reduce((s, r) => s + r._valS, 0);
+  // Ticket médio = ponderado / count (col S)
+  const ticket = ab.length ? pond / ab.length : 0;
+
   const crit  = ab.filter(r => r._isCrit).length;
   const pend  = ab.filter(r => r._semProx).length;
   const stale = ab.filter(r => r._isStale).length;
-  const ticket = ab.length ? pipe / ab.length : 0;
 
   const vends = [...new Set(data.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
   const perV  = vends.map(v => {
     const vAll    = data.filter(r => r.VENDEDOR === v);
     const va      = ab.filter(r => r.VENDEDOR === v);
     const vGanhos = vAll.filter(r => norm(r.STATUS) === 'ganho');
-    const vpipe   = va.reduce((s, r) => s + r._val, 0);
-    const vreal   = vGanhos.reduce((s, r) => s + r._val, 0);
+    const vpipe   = va.reduce((s, r) => s + r._valR, 0);   // col R
+    const vpond   = va.reduce((s, r) => s + r._valS, 0);   // col S
+    const vreal   = vGanhos.reduce((s, r) => s + r._valR, 0);
     const meta    = getMeta(v);
     const clients = [...new Set(va.map(r => r.CUSTOMER).filter(c => c && c !== '—'))].length;
     return {
-      v, count: va.length, pipe: vpipe, clients,
-      pond: va.reduce((s, r) => s + r._val * r._prob, 0),
+      v, count: va.length, pipe: vpipe, pond: vpond, clients,
       realizado: vreal, meta,
       pct:     meta > 0 ? Math.min(vpipe / meta, 1) : 0,
       pctReal: meta > 0 ? Math.min(vreal / meta, 1) : 0,
@@ -954,42 +957,55 @@ function compute() {
       urg4m: va.filter(r => r._urg4m).length,
       pend:  va.filter(r => r._semProx).length,
       stale: va.filter(r => r._isStale).length,
+      // Top 5 critical by closing date (for alerts panel)
+      top5crit: va
+        .filter(r => r._urg4m || r._semProx || r._isCrit)
+        .sort((a, b) => {
+          const da = a._dClose < 0 ? -9999 : (a._dClose === 9999 ? 9999 : a._dClose);
+          const db = b._dClose < 0 ? -9999 : (b._dClose === 9999 ? 9999 : b._dClose);
+          return da - db;
+        })
+        .slice(0, 5),
     };
   }).sort((a, b) => b.pipe - a.pipe);
 
-  // Funil — estágios únicos da planilha
+  // Stages from column T — all unique stages in open opps
   const stageOrder = ['Lead','Proposta','Qualificação','Negociação','Fechamento'];
   const uniqueStages = [...new Set(ab.map(r => r.ESTAGIO).filter(e => e && e !== '—'))];
-  const stages = [...stageOrder.filter(s => uniqueStages.some(u => norm(u) === norm(s))),
-                  ...uniqueStages.filter(u => !stageOrder.some(s => norm(s) === norm(u)))];
+  const stages = [
+    ...stageOrder.filter(s => uniqueStages.some(u => norm(u) === norm(s))),
+    ...uniqueStages.filter(u => !stageOrder.some(s => norm(s) === norm(u)))
+  ];
   const perSt = stages.map(e => {
     const it = ab.filter(r => norm(r.ESTAGIO) === norm(e));
-    return { e, count: it.length, tot: it.reduce((s, r) => s + r._val, 0) };
+    return { e, count: it.length, tot: it.reduce((s, r) => s + r._valR, 0) };
   }).filter(s => s.count > 0);
 
-  // Forecast por mês
+  // Forecast months (include past = dClose < 0)
   const mMap = {};
   ab.forEach(r => {
     if (!r._dtF) return;
-    const d = r._dtF;
-    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2, '0');
-    const lb  = d.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
+    const dd  = r._dtF;
+    const key = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0');
+    const lb  = dd.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
       .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
-    if (!mMap[key]) mMap[key] = { key, lb, tot:0, pond:0, cnt:0 };
-    mMap[key].tot  += r._val;
-    mMap[key].pond += r._val * r._prob;
+    if (!mMap[key]) mMap[key] = { key, lb, tot:0, pond:0, cnt:0, overdue: r._dClose < 0 };
+    mMap[key].tot  += r._valR;
+    mMap[key].pond += r._valS;
     mMap[key].cnt++;
   });
-  const perM = Object.values(mMap).sort((a, b) => a.key.localeCompare(b.key)).slice(0, 12);
+  const perM = Object.values(mMap).sort((a, b) => a.key.localeCompare(b.key));
 
+  // Quality
   const qCP = ab.length ? (ab.length - pend) / ab.length : 0;
   const qAR = ab.length ? crit / ab.length : 0;
   const qAP = ab.length ? ab.filter(r => r._prob >= .7).length / ab.length : 0;
   const qSt = ab.length ? stale / ab.length : 0;
 
-  return { ab, pipe, pond, crit, pend, stale, ticket, total: data.length,
-           perV, perSt, perM, qCP, qAR, qAP, qSt };
+  return { ab, pipe, pond, ticket, crit, pend, stale,
+           total: data.length, perV, perSt, perM, qCP, qAR, qAP, qSt };
 }
+
 
 /* ═══════════════════════════════════════════════════
    RENDER DASHBOARD  (renderDashboard uses RAW via compute())
@@ -1007,11 +1023,11 @@ function renderDashboard() {
 /* ─── KPIs ─── */
 function renderKPIs(d) {
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi t"><div class="kl">Pipeline Total LVK</div>
+    <div class="kpi t"><div class="kl">Pipeline LVK (Total)</div>
       <div class="kv t">${fK(d.pipe)}</div>
       <div class="ks">${d.ab.length} oportunidades abertas</div>
       <div class="kico">💰</div></div>
-    <div class="kpi b"><div class="kl">Pipeline Ponderado</div>
+    <div class="kpi b"><div class="kl">Pipeline Total LVK</div>
       <div class="kv b">${fK(d.pond)}</div>
       <div class="ks">${d.pipe > 0 ? (d.pond/d.pipe*100).toFixed(0) : 0}% do total · valor confiável</div>
       <div class="kico">⚖️</div></div>
@@ -1103,7 +1119,7 @@ function renderVend() {
       </div>
       <div class="vc-grid">
         <div class="vs"><div class="vs-l">Pipeline LVK</div><div class="vs-v" style="color:var(--teal)">${fK(v.pipe)}</div></div>
-        <div class="vs"><div class="vs-l">Ponderado</div><div class="vs-v">${fK(v.pond)}</div></div>
+        <div class="vs"><div class="vs-l">Total LVK</div><div class="vs-v">${fK(v.pond)}</div></div>
         ${hasMeta
           ? `<div class="vs"><div class="vs-l">Meta</div><div class="vs-v">${fK(v.meta)}</div></div>
              <div class="vs"><div class="vs-l">Gap</div><div class="vs-v" style="color:${v.atingido?'var(--green)':'var(--red)'}">${v.atingido ? '✅ Atingido' : '- ' + fK(v.gap)}</div></div>`
@@ -1156,11 +1172,12 @@ function renderFC() {
   if (!container) return;
 
   const d = compute();
+  const vendors = [...new Set(RAW.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
 
-  // Meses únicos
+  // Collect ALL months (including past) from ALL rows (not just open/isAberto)
+  const allRows = RAW.filter(r => r._dtF); // any row with a date
   const monthSet = {};
-  d.ab.forEach(r => {
-    if (!r._dtF) return;
+  allRows.forEach(r => {
     const dd  = r._dtF;
     const key = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0');
     const lb  = dd.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
@@ -1168,60 +1185,44 @@ function renderFC() {
     monthSet[key] = lb;
   });
 
-  // Adiciona coluna ATRASADO para oportunidades com dClose < 0
-  const ATRASO_KEY = '0000-00';
-  const hasAtrasados = d.ab.some(r => r._dClose < 0);
-  if (hasAtrasados) monthSet[ATRASO_KEY] = '⚠ Atrasado';
-
   const allKeys   = Object.keys(monthSet).sort();
   const allLabels = allKeys.map(k => monthSet[k]);
 
-  const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
-
-  if (!vendors.length || allKeys.filter(k => k !== ATRASO_KEY).length === 0) {
+  if (!vendors.length || !allKeys.length) {
     container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem datas de fechamento preenchidas</div>';
     return;
   }
 
-  // Cores por vendedor
   const PIPE_C = [
     'rgba(26,63,212,.82)',
     'rgba(10,143,72,.82)',
     'rgba(168,98,0,.82)',
     'rgba(96,32,200,.82)',
   ];
-  const ATRAS_C = [
-    'rgba(190,30,30,.85)',
-    'rgba(190,30,30,.55)',
-    'rgba(190,30,30,.40)',
-    'rgba(190,30,30,.30)',
+  const PAST_C = [
+    'rgba(26,63,212,.35)',
+    'rgba(10,143,72,.35)',
+    'rgba(168,98,0,.35)',
+    'rgba(96,32,200,.35)',
   ];
 
+  const today_key = TODAY.getFullYear() + '-' + String(TODAY.getMonth()+1).padStart(2,'0');
+
   const datasets = vendors.map((v, i) => {
-    const vItems = d.ab.filter(r => r.VENDEDOR === v);
-    const key4row = r => {
-      if (!r._dtF) return null;
-      if (r._dClose < 0) return ATRASO_KEY;  // vencida = coluna atrasado
-      return r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0');
-    };
+    const vItems = RAW.filter(r => r.VENDEDOR === v && r._dtF);
+    const key4row = r => r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0');
+
     const data = allKeys.map(k =>
-      vItems.filter(r => key4row(r) === k).reduce((s, r) => s + r._val, 0)
+      vItems.filter(r => key4row(r) === k).reduce((s, r) => s + r._valR, 0)
     );
     const cnt = allKeys.map(k =>
       vItems.filter(r => key4row(r) === k).length
     );
-    // Cor vermelha para coluna de atrasados
-    const bgColors = allKeys.map((k, ki) =>
-      k === ATRASO_KEY ? ATRAS_C[i % ATRAS_C.length] : PIPE_C[i % PIPE_C.length]
+    // Past months get lighter color
+    const bgColors = allKeys.map(k =>
+      k < today_key ? PAST_C[i % PAST_C.length] : PIPE_C[i % PIPE_C.length]
     );
-    return {
-      label: v,
-      data,
-      _cnt: cnt,
-      backgroundColor: bgColors,
-      borderRadius: 4,
-      borderSkipped: false,
-    };
+    return { label: v, data, _cnt: cnt, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false };
   }).filter(ds => ds.data.some(v => v > 0));
 
   if (!datasets.length) {
@@ -1229,76 +1230,50 @@ function renderFC() {
     return;
   }
 
-  // Calcula max real dos dados para definir escala
-  const allValues = datasets.flatMap(ds => ds.data);
-  const maxReal   = Math.max(...allValues, 0);
-  // Cap no maior meta — não deixa escalar além de 50M (meta Bruno)
-  const maxMeta   = Math.max(...vendors.map(v => getMeta(v)), 50000000);
-  // Se o maior valor real for muito acima da meta, usa a meta como cap visual
-  // (July 90M → capped at 50M so bars don't dwarf everything else)
-  const yMax = maxReal > maxMeta ? maxMeta * 1.05 : undefined;
-
-  const wrap   = document.createElement('div');
+  const wrap = document.createElement('div');
   wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px 16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.05)';
 
-  // Legenda "Atrasado" se houver
-  const legendExtra = hasAtrasados
-    ? `<span style="display:inline-flex;align-items:center;gap:5px;margin-left:14px;font-size:.71rem;color:var(--red)">
-        <span style="width:10px;height:10px;border-radius:2px;background:rgba(190,30,30,.85)"></span>
-        ⚠ Atrasado (data vencida)
-      </span>` : '';
+  // Legend note for past months
+  const legendNote = `<div style="font-size:.67rem;color:var(--muted);margin-bottom:6px">
+    <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px">
+      <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.82)"></span> Futuro
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:4px">
+      <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.35)"></span> Meses passados (não fechados)
+    </span>
+  </div>`;
 
-  wrap.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;flex-wrap:wrap;gap:4px">
-      ${legendExtra}
-    </div>
-    <div style="position:relative;height:160px"><canvas id="ch-fc"></canvas></div>`;
-
+  wrap.innerHTML = legendNote + '<div style="position:relative;height:165px"><canvas id="ch-fc"></canvas></div>';
   container.innerHTML = '';
   container.appendChild(wrap);
 
   const canvas = document.getElementById('ch-fc');
-
   _chart = new Chart(canvas, {
     type: 'bar',
     data: { labels: allLabels, datasets },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: {
-          position: 'top',
-          align: 'start',
-          labels: { color:'#405070', font:{ family:'DM Sans', size:11 }, boxWidth:11, padding:14 }
-        },
+        legend: { position:'top', align:'start', labels:{ color:'#405070', font:{family:'DM Sans',size:11}, boxWidth:11, padding:14 } },
         tooltip: {
           callbacks: {
             title: items => {
-              const lbl = items[0].label;
-              return lbl.startsWith('⚠') ? '⚠ Oportunidades VENCIDAS' : `Fechamento: ${lbl}`;
+              const k = allKeys[items[0].dataIndex];
+              return (k < today_key ? '⚠ Não fechado — ' : 'Previsão — ') + items[0].label;
             },
             label: c => {
               const cnt = datasets[c.datasetIndex]._cnt[c.dataIndex];
-              return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' negócio'+(cnt>1?'s':'')+')' : ''}`;
+              return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' opp.)' : ''}`;
             }
           }
         }
       },
       scales: {
-        x: {
-          ticks: { color:'#7080A0', font:{ family:'DM Sans', size:11 } },
-          grid:  { color:'rgba(30,70,160,.05)' }
-        },
+        x: { ticks:{ color:'#7080A0', font:{family:'DM Sans',size:11} }, grid:{color:'rgba(30,70,160,.05)'} },
         y: {
           min: 0,
-          max: yMax,
-          ticks: {
-            color: '#7080A0',
-            maxTicksLimit: 5,
-            callback: v => fKs(v),
-            font: { family:'DM Sans', size:10 }
-          },
-          grid: { color:'rgba(30,70,160,.07)' }
+          ticks:{ color:'#7080A0', maxTicksLimit:5, callback:v=>fKs(v), font:{family:'DM Sans',size:10} },
+          grid:{ color:'rgba(30,70,160,.07)' }
         }
       }
     }
@@ -1308,7 +1283,9 @@ function renderFC() {
 
 /* ─── ACTION PANEL ─── */
 function renderAct() {
-  const d    = compute();
+  const d = compute();
+
+  // Critical opps sorted by closing date
   const opps = d.ab
     .filter(r => r._urg4m || norm(r.RISCO) === 'alto')
     .sort((a, b) => {
@@ -1328,43 +1305,63 @@ function renderAct() {
               : dc <= 14  ? `Vence em ${dc} dias`
               :              `Fecha em ${dc} dias`;
     const reasons = [];
-    if (r._semProx) reasons.push('⚠ Sem próximo passo');
-    if (r._isStale) {
-      const da = dAgo(r._dtA);
-      reasons.push(da >= 9990 ? '🔕 Nunca atualizada' : `⏰ ${da}d sem atualização`);
-    }
+    if (r._semProx) reasons.push('⚠ Sem próx. passo');
+    if (r._isStale) reasons.push(dAgo(r._dtA) >= 9990 ? '🔕 Nunca atualizada' : `⏰ ${dAgo(r._dtA)}d sem atualização`);
     if (norm(r.RISCO) === 'alto') reasons.push('🔴 Risco alto');
-
     return `<div class="aitem" style="border-left:4px solid ${C}">
       <div>
-        <div style="font-size:.86rem;font-weight:700;color:var(--text);margin-bottom:3px">${r.CUSTOMER}</div>
-        <div style="font-size:.7rem;color:var(--muted2);margin-bottom:5px">${r.VENDEDOR} · ${r.ESTAGIO} · ${r.SOLUTION !== '—' ? r.SOLUTION : r.PRODUCT}</div>
-        ${reasons.length ? `<div style="font-size:.68rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap">${reasons.map(s => `<span>${s}</span>`).join('')}</div>` : ''}
+        <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:2px">${r.CUSTOMER}</div>
+        <div style="font-size:.69rem;color:var(--muted2);margin-bottom:4px">${r.VENDEDOR} · ${r.ESTAGIO}</div>
+        ${reasons.length ? `<div style="font-size:.67rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap">${reasons.map(s=>`<span>${s}</span>`).join('')}</div>` : ''}
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="background:${Bg};border:1px solid ${C}44;border-radius:7px;padding:5px 10px;margin-bottom:4px">
-          <div style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:${C};line-height:1">${lbl}</div>
-          <div style="font-size:.63rem;color:${C};opacity:.75;margin-top:1px">${fDt(r._dtF)}</div>
+        <div style="background:${Bg};border:1px solid ${C}44;border-radius:7px;padding:4px 9px;margin-bottom:4px">
+          <div style="font-family:var(--fh);font-size:.88rem;font-weight:800;color:${C};line-height:1">${lbl}</div>
+          <div style="font-size:.62rem;color:${C};opacity:.75;margin-top:1px">${fDt(r._dtF)}</div>
         </div>
-        <div style="font-family:var(--fm);font-size:.79rem;font-weight:600;color:var(--text)">${fK(r._val)}</div>
+        <div style="font-family:var(--fm);font-size:.77rem;font-weight:600;color:var(--text)">${fK(r._valR)}</div>
       </div>
     </div>`;
   }).join('')
   : '<div style="color:var(--green);font-size:.8rem;padding:14px 0;text-align:center;font-weight:600">✅ Nenhuma oportunidade crítica</div>';
 
-  const alerts = [];
-  d.perV.forEach(v => {
-    if (v.urg4m > 0) alerts.push({ cls:'crit', ico:'⏳', txt:`<strong>${v.v}</strong>`, sub:`${v.urg4m} opp. fecha ≤4 meses — ação imediata` });
-    if (v.pend  > 0) alerts.push({ cls:'warn', ico:'⚠', txt:`<strong>${v.v}</strong>`, sub:`${v.pend} opp. sem próximo passo` });
-    if (v.stale > 0) alerts.push({ cls:'warn', ico:'⏰', txt:`<strong>${v.v}</strong>`, sub:`${v.stale} opp. sem atualização +${DIAS_STALE}d` });
-  });
-  document.getElementById('act-vend').innerHTML = alerts.length
-    ? alerts.map(a => `<div class="alitem" style="border-left:3px solid ${a.cls==='crit'?'var(--red)':'var(--amber)'}">
-        <span style="font-size:.95rem">${a.ico}</span>
-        <div class="alb">${a.txt}<div class="alb-s">${a.sub}</div></div>
-      </div>`).join('')
-    : '<div style="color:var(--green);font-size:.78rem;padding:13px 0;text-align:center;font-weight:600">✅ Nenhum alerta</div>';
+  // Alerts per vendor — top 5 critical clients by closing date + no next step
+  const vendEl = document.getElementById('act-vend');
+  if (!d.perV.length) { vendEl.innerHTML='<div style="color:var(--muted)">Sem dados</div>'; return; }
+
+  vendEl.innerHTML = d.perV.map(v => {
+    const top5 = v.top5crit;
+    if (!top5 || !top5.length) return '';
+
+    const vendorRows = top5.map(r => {
+      const dc = r._dClose;
+      const dcC = dc < 0 ? 'var(--red)' : dc <= 30 ? 'var(--red)' : dc <= 90 ? 'var(--amber)' : 'var(--muted2)';
+      const dcTxt = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
+      const flags = [
+        r._semProx ? '⚠' : '',
+        r._isStale ? '⏰' : '',
+        norm(r.RISCO) === 'alto' ? '🔴' : '',
+      ].filter(Boolean).join(' ');
+      return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;
+          padding:6px 0;border-bottom:1px solid var(--brd2);font-size:.71rem">
+        <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
+        <span style="color:${dcC};font-family:var(--fm);font-size:.68rem;white-space:nowrap">${dcTxt}</span>
+        <span style="color:var(--muted2);font-size:.7rem">${flags}</span>
+      </div>`;
+    }).join('');
+
+    return `<div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <span style="font-family:var(--fh);font-size:.82rem;font-weight:700;color:var(--text)">${v.v}</span>
+        <span style="font-size:.67rem;color:var(--muted2)">${v.urg4m} urgente(s) · ${v.pend} sem ação</span>
+      </div>
+      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+          font-weight:700;margin-bottom:4px">Top ${top5.length} críticos por prazo</div>
+      ${vendorRows}
+    </div>`;
+  }).filter(Boolean).join('') || '<div style="color:var(--green);font-size:.78rem;padding:13px 0;text-align:center;font-weight:600">✅ Nenhum alerta</div>';
 }
+
 
 /* ═══════════════════════════════════════════════════
    RENDER TABLE  (usa FIL — pode ser filtrado)
