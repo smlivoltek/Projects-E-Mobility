@@ -6,6 +6,7 @@
 <title>CRM Projects E-Mobility 2026 · Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -461,6 +462,8 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
 const CSV_URL  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv';
 const SNAP_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1580774303&single=true&output=csv';
 const METAS     = { 'Bruno Reis': 50000000, 'Felipe Hanker': 12000000 };
+// SNAPSHOTS tab — substitua o GID abaixo (veja: abre a aba SNAPSHOTS no Sheets, copie o número após &gid= na URL)
+const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=SNAPSHOTS_GID&single=true&output=csv';
 const DIAS_STALE = 14;   // dias sem atualização = desatualizado
 const DIAS_CRIT  = 120;  // ≤ 4 meses = prazo China
 const PAGE_SZ    = 15;
@@ -469,7 +472,8 @@ const PAGE_SZ    = 15;
    STATE  (separado: RAW para dashboard, FIL para tabela)
 ═══════════════════════════════════════════════════ */
 let RAW = [], FIL = [];
-let _rawDiag = []; // diagnostic: raw LVK values per row
+let _rawDiag  = []; // diagnostic: raw LVK values per row
+let _snapPrev = null; // previous snapshot data {date, byVendor: {vendor: {pipe, count}}}
 let _sk = '_val', _sa = false, _pg = 1;
 let _chart = null, _dbg = false, _colsVis = false;
 let _allCols = [], _lvkKey = '';
@@ -1111,8 +1115,19 @@ function renderVend() {
     return `<div class="card" style="padding:15px;position:relative">
       ${i === 0 ? '<span style="position:absolute;top:12px;right:13px;font-size:.9rem" title="Maior pipeline">🏆</span>' : ''}
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:8px;padding-right:${i===0?'26px':'0'}">
-        <div>
-          <div class="vc-name">${v.v}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="vc-name">${v.v}</div>
+            ${_snapPrev && _snapPrev.byVendor[v.v] ? (() => {
+              const prev = _snapPrev.byVendor[v.v];
+              const dv   = v.pipe - prev.pipe;
+              const dpct = prev.pipe > 0 ? dv/prev.pipe*100 : 0;
+              if (Math.abs(dpct) < 0.1) return '';
+              const c = dv > 0 ? '#0A8F48' : '#BE1E1E';
+              const a = dv > 0 ? '🔼' : '🔽';
+              return '<span style="font-size:.76rem;font-weight:700;color:'+c+'">'+a+' '+(dpct>=0?'+':'')+dpct.toFixed(1)+'%</span>';
+            })() : ''}
+          </div>
           <div class="vc-cnt">${v.count} opp. abertas · ${v.clients} cliente(s)</div>
         </div>
         ${badge ? `<span class="vbadge ${badge[0]}">${badge[1]}</span>` : ''}
@@ -1171,11 +1186,14 @@ function renderFC() {
   const container = document.getElementById('fc-all');
   if (!container) return;
 
+  // Register datalabels plugin if available
+  if (window.ChartDataLabels) {
+    Chart.register(window.ChartDataLabels);
+  }
+
   const d = compute();
   const vendors = [...new Set(RAW.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
-
-  // Collect ALL months (including past) from ALL rows (not just open/isAberto)
-  const allRows = RAW.filter(r => r._dtF); // any row with a date
+  const allRows  = RAW.filter(r => r._dtF);
   const monthSet = {};
   allRows.forEach(r => {
     const dd  = r._dtF;
@@ -1184,7 +1202,6 @@ function renderFC() {
       .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
     monthSet[key] = lb;
   });
-
   const allKeys   = Object.keys(monthSet).sort();
   const allLabels = allKeys.map(k => monthSet[k]);
 
@@ -1193,57 +1210,41 @@ function renderFC() {
     return;
   }
 
-  const PIPE_C = [
-    'rgba(26,63,212,.82)',
-    'rgba(10,143,72,.82)',
-    'rgba(168,98,0,.82)',
-    'rgba(96,32,200,.82)',
-  ];
-  const PAST_C = [
-    'rgba(26,63,212,.35)',
-    'rgba(10,143,72,.35)',
-    'rgba(168,98,0,.35)',
-    'rgba(96,32,200,.35)',
-  ];
-
   const today_key = TODAY.getFullYear() + '-' + String(TODAY.getMonth()+1).padStart(2,'0');
+  const PIPE_C = ['rgba(26,63,212,.82)','rgba(10,143,72,.82)','rgba(168,98,0,.82)','rgba(96,32,200,.82)'];
+  const PAST_C = ['rgba(26,63,212,.30)','rgba(10,143,72,.30)','rgba(168,98,0,.30)','rgba(96,32,200,.30)'];
 
   const datasets = vendors.map((v, i) => {
     const vItems = RAW.filter(r => r.VENDEDOR === v && r._dtF);
     const key4row = r => r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0');
-
-    const data = allKeys.map(k =>
-      vItems.filter(r => key4row(r) === k).reduce((s, r) => s + r._valR, 0)
-    );
-    const cnt = allKeys.map(k =>
-      vItems.filter(r => key4row(r) === k).length
-    );
-    // Past months get lighter color
-    const bgColors = allKeys.map(k =>
-      k < today_key ? PAST_C[i % PAST_C.length] : PIPE_C[i % PIPE_C.length]
-    );
-    return { label: v, data, _cnt: cnt, backgroundColor: bgColors, borderRadius: 4, borderSkipped: false };
+    const data    = allKeys.map(k => vItems.filter(r => key4row(r) === k).reduce((s,r) => s + r._valR, 0));
+    const cnt     = allKeys.map(k => vItems.filter(r => key4row(r) === k).length);
+    const bgC     = allKeys.map(k => k < today_key ? PAST_C[i%4] : PIPE_C[i%4]);
+    return { label: v, data, _cnt: cnt, backgroundColor: bgC, borderRadius: 4, borderSkipped: false };
   }).filter(ds => ds.data.some(v => v > 0));
 
   if (!datasets.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados de fechamento</div>';
+    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados</div>';
     return;
   }
 
+  // Total per month per bar index (for labels on top)
+  const monthTotals = allKeys.map((k,ki) =>
+    datasets.reduce((s, ds) => s + (ds.data[ki] || 0), 0)
+  );
+
   const wrap = document.createElement('div');
   wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px 16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.05)';
-
-  // Legend note for past months
-  const legendNote = `<div style="font-size:.67rem;color:var(--muted);margin-bottom:6px">
-    <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px">
-      <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.82)"></span> Futuro
-    </span>
-    <span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.35)"></span> Meses passados (não fechados)
-    </span>
-  </div>`;
-
-  wrap.innerHTML = legendNote + '<div style="position:relative;height:165px"><canvas id="ch-fc"></canvas></div>';
+  wrap.innerHTML = `
+    <div style="font-size:.66rem;color:var(--muted);margin-bottom:6px;display:flex;gap:14px">
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.82)"></span>Futuro
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.3)"></span>Meses passados
+      </span>
+    </div>
+    <div style="position:relative;height:165px"><canvas id="ch-fc"></canvas></div>`;
   container.innerHTML = '';
   container.appendChild(wrap);
 
@@ -1253,20 +1254,37 @@ function renderFC() {
     data: { labels: allLabels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
       plugins: {
         legend: { position:'top', align:'start', labels:{ color:'#405070', font:{family:'DM Sans',size:11}, boxWidth:11, padding:14 } },
         tooltip: {
           callbacks: {
-            title: items => {
-              const k = allKeys[items[0].dataIndex];
-              return (k < today_key ? '⚠ Não fechado — ' : 'Previsão — ') + items[0].label;
-            },
+            title: items => (allKeys[items[0].dataIndex] < today_key ? '⚠ Não fechado — ' : 'Previsão — ') + items[0].label,
             label: c => {
               const cnt = datasets[c.datasetIndex]._cnt[c.dataIndex];
               return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' opp.)' : ''}`;
+            },
+            footer: items => {
+              const tot = monthTotals[items[0].dataIndex];
+              return tot > 0 ? 'Total: ' + fK(tot) : '';
             }
           }
-        }
+        },
+        // Datalabels: show value on top of the LAST dataset bar for each month
+        datalabels: window.ChartDataLabels ? {
+          display: (ctx) => {
+            // Only show on last dataset (highest bar or stacked total)
+            if (ctx.datasetIndex !== datasets.length - 1) return false;
+            const tot = monthTotals[ctx.dataIndex];
+            return tot > 0;
+          },
+          formatter: (value, ctx) => fKs(monthTotals[ctx.dataIndex]),
+          anchor: 'end',
+          align: 'end',
+          offset: 2,
+          color: '#405070',
+          font: { family: 'DM Sans', size: 10, weight: '600' },
+        } : false,
       },
       scales: {
         x: { ticks:{ color:'#7080A0', font:{family:'DM Sans',size:11} }, grid:{color:'rgba(30,70,160,.05)'} },
@@ -1472,30 +1490,248 @@ function pgCh(dir) {
 }
 
 /* ═══════════════════════════════════════════════════
-   SNAPSHOT
+   SNAPSHOT — usa aba SNAPSHOTS do Google Sheets
 ═══════════════════════════════════════════════════ */
 async function loadSnap() {
-  const body = document.getElementById('snap-body');
+  const body  = document.getElementById('snap-body');
+  const dates = document.getElementById('snap-dates');
   if (!body) return;
-  if (SNAP_URL.includes('SUBSTITUA_GID')) {
-    body.innerHTML = `<div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--amber)">
-      <strong>⚙ Configure o GID:</strong> abra a aba COMPARATIVO_AUTO no Sheets → copie o número após
-      <code style="background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px">&amp;gid=</code> na URL → substitua
-      <code>SUBSTITUA_GID_AQUI</code> no início do código.</div>`;
+  body.innerHTML = '<div style="color:var(--muted2);font-size:.8rem;padding:14px 0;text-align:center">⟳ Buscando dados de snapshots...</div>';
+
+  // Try SNAPSHOTS tab first, fallback to COMPARATIVO_AUTO
+  const urlsToTry = [SNAP_SHOTS_URL, SNAP_URL].filter(u => !u.includes('GID'));
+  let txt = null, usedUrl = '';
+
+  for (const url of urlsToTry) {
+    try {
+      txt = await tryFetch(url);
+      usedUrl = url;
+      break;
+    } catch {
+      try {
+        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url), { signal: AbortSignal.timeout(12000) });
+        txt = (await r.json()).contents;
+        usedUrl = url;
+        break;
+      } catch {}
+    }
+  }
+
+  if (!txt) {
+    body.innerHTML = `<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--red)">
+      ⚠ Não foi possível carregar os snapshots. Verifique se a aba SNAPSHOTS está publicada no Google Sheets
+      (Arquivo → Compartilhar → Publicar na web → aba SNAPSHOTS → CSV) e cole o GID em SNAP_SHOTS_URL no código.
+    </div>`;
     return;
   }
-  body.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:13px 0;text-align:center">⟳ Carregando snapshot...</div>';
-  try {
-    let txt;
-    try { txt = await tryFetch(SNAP_URL); }
-    catch {
-      const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SNAP_URL), { signal: AbortSignal.timeout(12000) });
-      txt = (await r.json()).contents;
-    }
-    renderSnap(txt);
-  } catch(e) {
-    body.innerHTML = `<div style="color:var(--red);font-size:.77rem">⚠ Erro: ${e.message}</div>`;
+
+  // Try to detect if it's SNAPSHOTS tab (has DATA_SNAPSHOT col) or COMPARATIVO_AUTO
+  const isSnapshots = txt.includes('DATA_SNAPSHOT') || txt.split(',').length > 5;
+  if (isSnapshots && txt.includes('DATA_SNAPSHOT')) {
+    renderSnapFromHistory(txt);
+  } else {
+    renderSnap(txt); // fallback to old COMPARATIVO_AUTO rendering
   }
+}
+
+// Parses SNAPSHOTS tab CSV and builds full analysis card
+function renderSnapFromHistory(txt) {
+  const body  = document.getElementById('snap-body');
+  const dates = document.getElementById('snap-dates');
+
+  const res   = Papa.parse(txt.replace(/^﻿/,'').trim(), { header:true, skipEmptyLines:'greedy', trimHeaders:true });
+  const rows  = res.data;
+
+  function parseBRLSnap(v) {
+    if (!v) return 0;
+    const s = String(v).replace(/R\$\s*/,'').replace(/\./g,'').replace(',','.').trim();
+    return parseFloat(s) || 0;
+  }
+
+  // Get unique dates sorted
+  const dateSet = {};
+  rows.forEach(r => {
+    const d = r['DATA_SNAPSHOT'] || r['data_snapshot'];
+    if (d && d.trim()) dateSet[d.trim()] = true;
+  });
+  const allDates = Object.keys(dateSet).sort();
+  if (allDates.length < 2) {
+    body.innerHTML = '<div style="color:var(--muted);font-size:.79rem;padding:14px 0;text-align:center">Apenas um snapshot disponível. Aguarde a próxima semana.</div>';
+    return;
+  }
+
+  const dateAnt = allDates[allDates.length - 2];
+  const dateAtu = allDates[allDates.length - 1];
+  if (dates) dates.textContent = `${dateAnt}  →  ${dateAtu}`;
+
+  const rowsAnt = rows.filter(r => (r['DATA_SNAPSHOT']||'').trim() === dateAnt);
+  const rowsAtu = rows.filter(r => (r['DATA_SNAPSHOT']||'').trim() === dateAtu);
+
+  const getLVK = r => parseBRLSnap(r['TOTAL NET LVK (R$)'] || r['TOTAL NET (R$)'] || r['total net lvk (r$)'] || '');
+  const getID  = r => (r['ID_OPORTUNIDADE'] || r['ID AUTOMÁTICO'] || r['id_oportunidade'] || '').trim();
+  const getCust= r => (r['CUSTOMER'] || r['customer'] || '').trim();
+  const getVend= r => (r['VENDEDOR'] || r['vendedor'] || '').trim();
+  const getEst = r => (r['ESTAGIO'] || r['estagio'] || '').trim();
+  const getRisk= r => (r['RISCO'] || r['risco'] || '').trim();
+  const getProx= r => (r['PROX PASSO'] || r['prox passo'] || '').trim();
+
+  const pipAnt = rowsAnt.reduce((s,r) => s + getLVK(r), 0);
+  const pipAtu = rowsAtu.reduce((s,r) => s + getLVK(r), 0);
+  const varPipe = pipAtu - pipAnt;
+  const varPct  = pipAnt > 0 ? varPipe/pipAnt*100 : 0;
+
+  // Per vendor
+  const vendorStats = {};
+  [...rowsAnt, ...rowsAtu].forEach(r => {
+    const v = getVend(r); if (!v) return;
+    if (!vendorStats[v]) vendorStats[v] = { pipeAnt:0, pipeAtu:0, cntAnt:0, cntAtu:0 };
+  });
+  rowsAnt.forEach(r => { const v=getVend(r); if(v) { vendorStats[v].pipeAnt+=getLVK(r); vendorStats[v].cntAnt++; }});
+  rowsAtu.forEach(r => { const v=getVend(r); if(v) { vendorStats[v].pipeAtu+=getLVK(r); vendorStats[v].cntAtu++; }});
+
+  // Store for vendor cards variation
+  _snapPrev = {
+    dateAnt, dateAtu,
+    byVendor: Object.fromEntries(
+      Object.entries(vendorStats).map(([v,s]) => [v, { pipe:s.pipeAnt, count:s.cntAnt }])
+    )
+  };
+
+  // What changed — compare by ID
+  const mapAnt = {}; rowsAnt.forEach(r => { const id=getID(r); if(id) mapAnt[id]=r; });
+  const mapAtu = {}; rowsAtu.forEach(r => { const id=getID(r); if(id) mapAtu[id]=r; });
+  const idsAnt = new Set(Object.keys(mapAnt));
+  const idsAtu = new Set(Object.keys(mapAtu));
+
+  const gains  = []; // novas oportunidades
+  const losses = []; // saíram
+  const changed= []; // mudaram de valor/estágio
+  const newRisk= []; // viraram risco alto
+  const noAct  = []; // sem atualização/próx. passo
+
+  idsAtu.forEach(id => {
+    if (!idsAnt.has(id)) {
+      const r = mapAtu[id];
+      gains.push({ customer: getCust(r), vendor: getVend(r), val: getLVK(r), estagio: getEst(r) });
+    }
+  });
+  idsAnt.forEach(id => {
+    if (!idsAtu.has(id)) {
+      const r = mapAnt[id];
+      if (getLVK(r) > 0) losses.push({ customer: getCust(r), vendor: getVend(r), val: getLVK(r) });
+    }
+  });
+  idsAnt.forEach(id => {
+    if (!idsAtu.has(id)) return;
+    const rA = mapAnt[id], rU = mapAtu[id];
+    const dv = getLVK(rU) - getLVK(rA);
+    if (Math.abs(dv) > 0) changed.push({ customer:getCust(rU), vendor:getVend(rU), dv, estA:getEst(rA), estU:getEst(rU) });
+    const riskA = getRisk(rA).toLowerCase(), riskU = getRisk(rU).toLowerCase();
+    if (riskU === 'alto' && riskA !== 'alto') newRisk.push({ customer:getCust(rU), vendor:getVend(rU) });
+    const proxU = getProx(rU);
+    if (!proxU || proxU === '-') noAct.push({ customer:getCust(rU), vendor:getVend(rU), val:getLVK(rU) });
+  });
+
+  const varC   = varPipe > 0 ? 'var(--green)' : varPipe < 0 ? 'var(--red)' : 'var(--muted2)';
+  const varArr = varPipe > 0 ? '▲' : varPipe < 0 ? '▼' : '→';
+
+  const fmtVar = (v, p) => `${v > 0 ? '+' : ''}${fKs(v)} (${p > 0 ? '+' : ''}${p.toFixed(1)}%)`;
+
+  // Vendor variation rows
+  const vendorRows = Object.entries(vendorStats).map(([v, s]) => {
+    const dv   = s.pipeAtu - s.pipeAnt;
+    const dpct = s.pipeAnt > 0 ? dv/s.pipeAnt*100 : 0;
+    const dc   = dv > 0 ? 'var(--green)' : dv < 0 ? 'var(--red)' : 'var(--muted2)';
+    const arr  = dv > 0 ? '🔼' : dv < 0 ? '🔽' : '→';
+    const dcnt = s.cntAtu - s.cntAnt;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd2);gap:10px">
+      <span style="font-weight:600;font-size:.78rem;color:var(--text)">${v}</span>
+      <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue)">${fK(s.pipeAtu)}</span>
+      <span style="font-size:.75rem;font-weight:700;color:${dc}">${arr} ${dpct >= 0 ? '+' : ''}${dpct.toFixed(1)}%</span>
+      <span style="font-size:.69rem;color:var(--muted2)">${dcnt >= 0 ? '+' : ''}${dcnt} opp.</span>
+    </div>`;
+  }).join('');
+
+  // Section builder helper
+  const section = (title, color, items, maxShow=5) => {
+    if (!items.length) return '';
+    const shown = items.slice(0, maxShow);
+    const more  = items.length - maxShow;
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:.65rem;color:${color};text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">${title} (${items.length})</div>
+      ${shown.map(i => `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.73rem;gap:8px">
+        <span style="color:var(--text);font-weight:600">${i.customer||i.vendor||'?'}</span>
+        ${i.val !== undefined ? `<span style="font-family:var(--fm);color:${color};font-weight:600;white-space:nowrap">${i.dv !== undefined ? (i.dv>0?'+':'')+fKs(i.dv) : fKs(i.val)}</span>` : ''}
+        ${i.estagio ? `<span style="color:var(--muted2);font-size:.68rem">${i.estagio}</span>` : ''}
+        ${i.estA && i.estU && i.estA!==i.estU ? `<span style="color:var(--muted2);font-size:.67rem">${i.estA} → ${i.estU}</span>` : ''}
+        ${i.vendor && !i.estagio ? `<span style="color:var(--muted2);font-size:.68rem">${i.vendor}</span>` : ''}
+      </div>`).join('')}
+      ${more > 0 ? `<div style="font-size:.67rem;color:var(--muted);margin-top:4px">+${more} mais...</div>` : ''}
+    </div>`;
+  };
+
+  const totalGains  = gains.reduce((s,i) => s+i.val, 0);
+  const totalLosses = losses.reduce((s,i) => s+i.val, 0);
+
+  body.innerHTML = `
+  <!-- TOPO: KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Pipeline Anterior <span style="font-size:.62rem;color:var(--muted)">${dateAnt}</span></div>
+      <div class="snap-kpi-v" style="color:var(--muted2)">${fK(pipAnt)}</div>
+    </div>
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Pipeline Atual <span style="font-size:.62rem;color:var(--muted)">${dateAtu}</span></div>
+      <div class="snap-kpi-v" style="color:var(--blue)">${fK(pipAtu)}</div>
+    </div>
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Variação</div>
+      <div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div>
+      <div style="font-size:.67rem;color:${varC};margin-top:2px">${varPipe !== 0 ? (varPipe>0?'+':'')+fKs(varPipe) : 'Sem variação'}</div>
+    </div>
+  </div>
+
+  <!-- VENDEDORES -->
+  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:11px 14px;margin-bottom:15px">
+    <div style="font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Por Vendedor</div>
+    ${vendorRows}
+  </div>
+
+  <!-- MEIO: DIAGNÓSTICO -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+    <div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 13px">
+      <div style="font-size:.65rem;color:var(--green);font-weight:700;margin-bottom:6px">↑ CRESCEU POR QUÊ?</div>
+      ${gains.length ? `<div style="font-size:.73rem;color:var(--text);font-weight:600;margin-bottom:3px">Novas oportunidades: +${fKs(totalGains)}</div>` : ''}
+      ${changed.filter(i=>i.dv>0).length ? `<div style="font-size:.72rem;color:var(--text)">Valores ampliados: ${changed.filter(i=>i.dv>0).length} opp.</div>` : ''}
+      ${!gains.length && !changed.filter(i=>i.dv>0).length ? `<div style="font-size:.72rem;color:var(--muted)">Sem novas entradas esta semana</div>` : ''}
+    </div>
+    <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:9px;padding:11px 13px">
+      <div style="font-size:.65rem;color:var(--red);font-weight:700;margin-bottom:6px">↓ CAIU POR QUÊ?</div>
+      ${losses.length ? `<div style="font-size:.73rem;color:var(--text);font-weight:600;margin-bottom:3px">Saídas: -${fKs(totalLosses)}</div>` : ''}
+      ${changed.filter(i=>i.dv<0).length ? `<div style="font-size:.72rem;color:var(--text)">Valores reduzidos: ${changed.filter(i=>i.dv<0).length} opp.</div>` : ''}
+      ${!losses.length && !changed.filter(i=>i.dv<0).length ? `<div style="font-size:.72rem;color:var(--muted)">Sem saídas ou reduções</div>` : ''}
+    </div>
+  </div>
+
+  <!-- BASE: AÇÃO -->
+  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px">
+    <div style="font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">📋 Ações Necessárias</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        ${section('🟢 Top Ganhos', 'var(--green)', gains.sort((a,b)=>b.val-a.val))}
+        ${section('🔄 Evoluíram de Estágio', 'var(--blue)', changed.filter(i=>i.estA!==i.estU && i.estA && i.estU))}
+      </div>
+      <div>
+        ${section('🔴 Top Perdas', 'var(--red)', losses.sort((a,b)=>b.val-a.val))}
+        ${section('⚠ Viraram Risco Alto', 'var(--red)', newRisk)}
+        ${section('🔕 Sem Próximo Passo', 'var(--amber)', noAct.sort((a,b)=>b.val-a.val))}
+      </div>
+    </div>
+  </div>
+  `;
+
+  // Trigger vendor card re-render with variation data
+  try { renderVend(); } catch(e) {}
 }
 
 async function tryFetch(url) {
@@ -1510,193 +1746,26 @@ function renderSnap(txt) {
   const body  = document.getElementById('snap-body');
   const dates = document.getElementById('snap-dates');
   if (!txt || txt.length < 10) { body.innerHTML='<div style="color:var(--muted)">Dados vazios</div>'; return; }
-
-  const res  = Papa.parse(txt.replace(/^﻿/,'').trim(), { header:false, skipEmptyLines:true });
-  const rows = res.data;
+  const res   = Papa.parse(txt.replace(/^﻿/,'').trim(), { header:false, skipEmptyLines:true });
+  const rows  = res.data;
   if (!rows || rows.length < 2) { body.innerHTML='<div style="color:var(--muted)">Formato inesperado</div>'; return; }
-
   const dr       = rows[1] || [];
-  const dateAtu  = dr[0] || '—';
-  const dateAnt  = dr[1] || '—';
-  const pipAtu   = parseBRL(dr[2]);
-  const pipAnt   = parseBRL(dr[3]);
-  const riscoAlt = parseInt(dr[7]) || 0;
-  const pend     = parseInt(dr[8]) || 0;
+  const dateAtu  = dr[0] || '—', dateAnt = dr[1] || '—';
+  const pipAtu   = parseBRL(dr[2]), pipAnt = parseBRL(dr[3]);
   const textoAuto= dr[9] || '';
-
   if (dates) dates.textContent = `${dateAnt}  →  ${dateAtu}`;
-
   const varPipe = pipAtu - pipAnt;
-  const varPct  = pipAnt > 0 ? varPipe / pipAnt * 100 : 0;
+  const varPct  = pipAnt > 0 ? varPipe/pipAnt*100 : 0;
   const varC    = varPipe > 0 ? 'var(--green)' : varPipe < 0 ? 'var(--red)' : 'var(--muted2)';
   const varArr  = varPipe > 0 ? '▲' : varPipe < 0 ? '▼' : '→';
-
-  // Customer rows cols 10=CUSTOMER, 11=Pipeline Anterior
-  const customers = rows.slice(1)
-    .filter(r => r[10] && r[10].toString().trim() !== '')
-    .map(r => ({ customer: r[10] || '', pipe: parseBRL(r[11]) }))
-    .filter(c => c.pipe > 0)
-    .sort((a,b) => b.pipe - a.pipe)
-    .slice(0, 10);
-
   body.innerHTML = `
-  <!-- KPI STRIP -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px">
-    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px">
-      <div style="font-size:.64rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Pipeline Anterior</div>
-      <div style="font-family:var(--fh);font-size:1.35rem;font-weight:800;color:var(--muted2)">${pipAnt > 0 ? fK(pipAnt) : '—'}</div>
-      <div style="font-size:.64rem;color:var(--muted);margin-top:2px">${dateAnt}</div>
-    </div>
-    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px">
-      <div style="font-size:.64rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Pipeline Atual</div>
-      <div style="font-family:var(--fh);font-size:1.35rem;font-weight:800;color:var(--blue)">${pipAtu > 0 ? fK(pipAtu) : '—'}</div>
-      <div style="font-size:.64rem;color:var(--muted);margin-top:2px">${dateAtu}</div>
-    </div>
-    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px">
-      <div style="font-size:.64rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Variação</div>
-      <div style="font-family:var(--fh);font-size:1.35rem;font-weight:800;color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div>
-      <div style="font-size:.64rem;color:${varC};margin-top:2px">${varPipe !== 0 ? (varPipe > 0 ? '+' : '') + fK(varPipe) : 'Sem variação'}</div>
-    </div>
-    <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px">
-      <div style="font-size:.64rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600">Atenção</div>
-      <div style="font-family:var(--fh);font-size:1.35rem;font-weight:800;color:${pend > 20 ? 'var(--red)' : 'var(--amber)'}">${pend} pend.</div>
-      <div style="font-size:.64rem;color:var(--muted);margin-top:2px">${riscoAlt} risco alto</div>
-    </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px">
+    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Anterior</div><div class="snap-kpi-v" style="color:var(--muted2)">${pipAnt>0?fK(pipAnt):'—'}</div><div style="font-size:.63rem;color:var(--muted)">${dateAnt}</div></div>
+    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Atual</div><div class="snap-kpi-v" style="color:var(--blue)">${pipAtu>0?fK(pipAtu):'—'}</div><div style="font-size:.63rem;color:var(--muted)">${dateAtu}</div></div>
+    <div class="snap-kpi"><div class="snap-kpi-l">Variação</div><div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div><div style="font-size:.66rem;color:${varC};margin-top:2px">${varPipe!==0?(varPipe>0?'+':'')+fK(varPipe):'Sem variação'}</div></div>
   </div>
-
-  <!-- ANÁLISE AUTOMÁTICA -->
-  ${textoAuto ? `<div style="background:var(--blue2);border:1px solid rgba(26,63,212,.15);border-radius:9px;padding:12px 15px;margin-bottom:15px;font-size:.77rem;color:var(--text);line-height:1.7">
-    <div style="font-size:.63rem;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">📊 O que mudou esta semana</div>
-    ${textoAuto}
-  </div>` : ''}
-
-  <!-- MOVIMENTAÇÕES POR OPORTUNIDADE -->
-  <div id="snap-movs" style="margin-bottom:15px"></div>
-
-  <!-- TOP CLIENTES ANTERIOR -->
-  ${customers.length ? `
-  <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;font-weight:700">Pipeline semana anterior — top clientes</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:5px">
-    ${customers.map(c => `<div style="background:var(--s2);border:1px solid var(--brd2);border-radius:7px;padding:7px 11px;display:flex;justify-content:space-between;align-items:center;gap:6px">
-      <span style="font-size:.71rem;font-weight:600;color:var(--text)">${c.customer}</span>
-      <span style="font-family:var(--fm);font-size:.69rem;color:var(--muted2);white-space:nowrap">${fK(c.pipe)}</span>
-    </div>`).join('')}
-  </div>` : ''}
-  `;
-
-  // Fetch and render movimentações
-  renderSnapMovs();
-}
-
-// Compara snapshots direto no front via CSV — exibe movimentações oportunidade a oportunidade
-async function renderSnapMovs() {
-  const el = document.getElementById('snap-movs');
-  if (!el) return;
-
-  // Usa os dados já carregados em RAW (13/04 atual) e compara com snapshot anterior via SNAP_URL_ANT
-  // Como temos só um CSV com duas datas, usamos o próprio SNAP_URL que contém o histórico
-  // O card já mostra o texto automático com os movimentos. Aqui fazemos um resumo visual das mudanças.
-
-  // Pega oportunidades atuais (RAW) e as mostra com flag de novidade
-  const d = compute();
-  const oppsComFlag = RAW.filter(r => r._isCrit || r._semProx || r._urg4m).slice(0, 8);
-
-  if (!oppsComFlag.length) {
-    el.innerHTML = '';
-    return;
-  }
-
-  el.innerHTML = `
-    <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;font-weight:700">Oportunidades que requerem atenção (dados atuais)</div>
-    ${oppsComFlag.map(r => {
-      const dc = r._dClose;
-      const flags = [
-        r._urg4m  ? `<span style="background:var(--red2);color:var(--red);padding:1px 5px;border-radius:3px;font-size:.61rem;font-weight:700">⏳ Fecha em ${dc}d</span>` : '',
-        r._semProx? `<span style="background:var(--amber2);color:var(--amber);padding:1px 5px;border-radius:3px;font-size:.61rem;font-weight:700">⚠ Sem próx. passo</span>` : '',
-        r._isStale? `<span style="background:var(--amber2);color:var(--amber);padding:1px 5px;border-radius:3px;font-size:.61rem;font-weight:700">⏰ Desatualizada</span>` : '',
-      ].filter(Boolean).join(' ');
-      return `<div style="background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:9px 12px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div>
-          <span style="font-size:.78rem;font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
-          <span style="font-size:.68rem;color:var(--muted2);margin-left:8px">${r.VENDEDOR} · ${r.ESTAGIO}</span>
-          <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${flags}</div>
-        </div>
-        <span style="font-family:var(--fm);font-size:.78rem;font-weight:600;color:var(--blue);white-space:nowrap">${fK(r._val)}</span>
-      </div>`;
-    }).join('')}`;
+  ${textoAuto ? `<div style="background:var(--blue2);border:1px solid rgba(26,63,212,.15);border-radius:9px;padding:11px 14px;font-size:.77rem;color:var(--text);line-height:1.65">
+    <div style="font-size:.63rem;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">📊 O que mudou</div>${textoAuto}</div>` : ''}`;
 }
 
 
-/* ═══════════════════════════════════════════════════
-   UI UTILITIES
-═══════════════════════════════════════════════════ */
-function showSt(s) {
-  document.getElementById('s-load').style.display = s === 'load' ? 'flex' : 'none';
-  document.getElementById('s-err').style.display  = s === 'err'  ? 'flex' : 'none';
-  document.getElementById('dash').style.display   = s === 'dash' ? 'block' : 'none';
-}
-function showErr(msg) {
-  showSt('err');
-  const em = document.getElementById('err-msg');
-  if (em) em.textContent = msg;
-  setPill('err', '✗ Erro ao carregar');
-}
-function setPill(t, tx) {
-  const p = document.getElementById('status-pill');
-  p.className = 'pill ' + (t === 'ok' ? 'p-ok' : t === 'err' ? 'p-err' : 'p-load');
-  p.innerHTML = (t === 'load' ? '<span class="pulse"></span> ' : '') + tx;
-}
-function setDb(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
-function toggleDbg() {
-  _dbg = !_dbg;
-  document.getElementById('dbar').style.display = _dbg ? 'flex' : 'none';
-}
-function toggleCols() {
-  const p = document.getElementById('cpanel');
-  _colsVis = !_colsVis;
-  p.style.display = _colsVis ? 'block' : 'none';
-  if (_colsVis && _allCols.length) {
-    p.innerHTML = '<strong style="color:var(--blue);font-size:.71rem">Colunas detectadas:</strong><br><br>'
-      + _allCols.map((k, i) =>
-          `<span class="cchip${k === _lvkKey ? ' found' : ''}">${i+1}. ${k}${k === _lvkKey ? ' ← LVK' : ''}</span>`
-        ).join('');
-  }
-}
-function toggleDiag() {
-  const p = document.getElementById('diagpanel');
-  if (!p) return;
-  if (p.style.display === 'block') { p.style.display = 'none'; return; }
-  p.style.display = 'block';
-  if (!_rawDiag.length) { p.innerHTML='<em style="color:var(--muted)">Carregue os dados primeiro</em>'; return; }
-  const felipe = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('felipe'));
-  const bruno  = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('bruno'));
-  const mkRow = (d) => {
-    const ok = d.parsedVal > 0;
-    const c  = ok ? 'var(--green)' : 'var(--red)';
-    return `<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 130px 1fr 1fr;gap:8px;font-size:.68rem">
-      <span style="font-weight:600">${d.customer.slice(0,22)}</span>
-      <span style="color:var(--muted2)">${d.vendedor.split(' ')[0]}</span>
-      <span style="color:var(--muted)">RAW: <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">${String(d.rawVal).slice(0,25)}</code></span>
-      <span style="color:${c};font-weight:600">→ ${d.parsedVal > 0 ? 'R$ '+brNum(d.parsedVal,0) : '⚠ ZERO'}</span>
-    </div>`;
-  };
-  p.innerHTML = `<strong style="color:var(--blue);font-size:.72rem">Diagnóstico valores LVK — primeiras ${_rawDiag.length} linhas</strong><br><br>`
-    + `<div style="color:var(--teal);font-size:.7rem;font-weight:700;margin-bottom:4px">Felipe Hanke (${felipe.length} linhas):</div>`
-    + (felipe.length ? felipe.map(mkRow).join('') : '<em style="color:var(--muted);font-size:.68rem">Nenhuma linha do Felipe nos primeiros 30 registros</em>')
-    + `<div style="color:var(--blue);font-size:.7rem;font-weight:700;margin:10px 0 4px">Bruno Reis (${bruno.length} linhas):</div>`
-    + (bruno.length ? bruno.slice(0,5).map(mkRow).join('') : '');
-}
-function reload() { loadData(); }
-
-/* ═══════════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════════ */
-(function init() {
-  document.getElementById('date-pill').textContent = '📅 ' +
-    new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' })
-              .replace(/^\w/, c => c.toUpperCase());
-  loadData();
-})();
-</script>
-</body>
-</html>
