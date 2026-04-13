@@ -291,8 +291,12 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
   | <button onclick="toggleCols()" style="background:none;border:1px solid var(--brd);
       border-radius:4px;padding:1px 8px;color:var(--muted2);cursor:pointer;font-size:.68rem">
       Ver colunas</button>
+  | <button onclick="toggleDiag()" style="background:none;border:1px solid var(--brd);
+      border-radius:4px;padding:1px 8px;color:var(--muted2);cursor:pointer;font-size:.68rem">
+      Ver valores LVK</button>
 </div>
 <div class="cpanel" id="cpanel"></div>
+<div class="cpanel" id="diagpanel"></div>
 
 <!-- LOADING -->
 <div class="state" id="s-load">
@@ -472,6 +476,7 @@ const PAGE_SZ    = 15;
    STATE  (separado: RAW para dashboard, FIL para tabela)
 ═══════════════════════════════════════════════════ */
 let RAW = [], FIL = [];
+let _rawDiag = []; // diagnostic: raw LVK values per row
 let _sk = '_val', _sa = false, _pg = 1;
 let _chart = null, _dbg = false, _colsVis = false;
 let _allCols = [], _lvkKey = '';
@@ -623,8 +628,17 @@ function normRow(raw, idx) {
     console.groupEnd();
   }
 
-  const val     = parseBRL(_lvkKey ? raw[_lvkKey] : '') ||
+  const _rawLvk  = _lvkKey ? raw[_lvkKey] : '';
+  const val      = parseBRL(_rawLvk) ||
                   parseBRL(gcol(raw, 'TOTAL NET LVK (R$)', 'TOTAL NET LVK', 'TOTALNETLVK'));
+  // Capture diagnostic for first 30 rows
+  if (idx < 30) {
+    _rawDiag.push({
+      idx, customer: gcol(raw,'CUSTOMER','CLIENTE')||'?',
+      vendedor: gcol(raw,'VENDEDOR')||'?',
+      lvkKey: _lvkKey, rawVal: _rawLvk, parsedVal: val
+    });
+  }
   const prob    = parseProb(gcol(raw, 'PROBABILIDADE', 'PROB', 'PROBABILITY'));
   const dtF     = parseDt(gcol(raw, 'DATA DE FECHAMENTO', 'DATA FECHAMENTO', 'FECHAMENTO', 'DT FECHAMENTO'));
   const dtA     = parseDt(gcol(raw, 'DATA DA ULTIMA ATUALIZACAO', 'DATA DA ÚLTIMA ATUALIZAÇÃO',
@@ -796,6 +810,12 @@ async function loadData() {
     const ts = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
     setDb('db-t', ts);
     setPill('ok', '✓ ' + rows.length + ' registros · ' + ts);
+    // Debug: show sample LVK values to diagnose Felipe's pipeline
+    const sampleLVK = rows.slice(0, 10).map(r => r.CUSTOMER.slice(0,12) + ':' + r._val);
+    console.log('=== PRIMEIROS 10 VALORES LVK ===', sampleLVK);
+    const felipeRows = rows.filter(r => r.VENDEDOR && r.VENDEDOR.includes('Felipe'));
+    console.log('=== FELIPE ROWS ===', felipeRows.length, felipeRows.map(r => r.CUSTOMER + ':' + r._val));
+    setDb('db-lvk', _lvkKey + ' | Felipe: R$' + felipeRows.reduce((s,r)=>s+r._val,0).toLocaleString('pt-BR'));
 
   } catch(e) {
     console.error(e);
@@ -1644,6 +1664,30 @@ function toggleCols() {
           `<span class="cchip${k === _lvkKey ? ' found' : ''}">${i+1}. ${k}${k === _lvkKey ? ' ← LVK' : ''}</span>`
         ).join('');
   }
+}
+function toggleDiag() {
+  const p = document.getElementById('diagpanel');
+  if (!p) return;
+  if (p.style.display === 'block') { p.style.display = 'none'; return; }
+  p.style.display = 'block';
+  if (!_rawDiag.length) { p.innerHTML='<em style="color:var(--muted)">Carregue os dados primeiro</em>'; return; }
+  const felipe = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('felipe'));
+  const bruno  = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('bruno'));
+  const mkRow = (d) => {
+    const ok = d.parsedVal > 0;
+    const c  = ok ? 'var(--green)' : 'var(--red)';
+    return `<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 130px 1fr 1fr;gap:8px;font-size:.68rem">
+      <span style="font-weight:600">${d.customer.slice(0,22)}</span>
+      <span style="color:var(--muted2)">${d.vendedor.split(' ')[0]}</span>
+      <span style="color:var(--muted)">RAW: <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">${String(d.rawVal).slice(0,25)}</code></span>
+      <span style="color:${c};font-weight:600">→ ${d.parsedVal > 0 ? 'R$ '+brNum(d.parsedVal,0) : '⚠ ZERO'}</span>
+    </div>`;
+  };
+  p.innerHTML = `<strong style="color:var(--blue);font-size:.72rem">Diagnóstico valores LVK — primeiras ${_rawDiag.length} linhas</strong><br><br>`
+    + `<div style="color:var(--teal);font-size:.7rem;font-weight:700;margin-bottom:4px">Felipe Hanke (${felipe.length} linhas):</div>`
+    + (felipe.length ? felipe.map(mkRow).join('') : '<em style="color:var(--muted);font-size:.68rem">Nenhuma linha do Felipe nos primeiros 30 registros</em>')
+    + `<div style="color:var(--blue);font-size:.7rem;font-weight:700;margin:10px 0 4px">Bruno Reis (${bruno.length} linhas):</div>`
+    + (bruno.length ? bruno.slice(0,5).map(mkRow).join('') : '');
 }
 function reload() { loadData(); }
 
