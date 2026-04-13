@@ -1085,9 +1085,17 @@ function renderVend() {
     ].filter(Boolean).join('');
 
     // Mini funil
-    const vFun = d.perSt.map(s => {
-      const its = d.ab.filter(r => r.VENDEDOR === v.v && norm(r.ESTAGIO) === norm(s.e));
-      return { e: s.e, count: its.length, tot: its.reduce((a, r) => a + r._val, 0) };
+    // Build stage list from THIS vendor's own open opportunities
+    const vAb       = d.ab.filter(r => r.VENDEDOR === v.v);
+    const stgOrder  = ['Lead','Proposta','Qualificação','Negociação','Fechamento'];
+    const vStagesRaw= [...new Set(vAb.map(r => r.ESTAGIO).filter(e => e && e !== '—'))];
+    const vStages   = [
+      ...stgOrder.filter(s => vStagesRaw.some(u => norm(u) === norm(s))),
+      ...vStagesRaw.filter(u => !stgOrder.some(s => norm(s) === norm(u)))
+    ];
+    const vFun = vStages.map(e => {
+      const its = vAb.filter(r => norm(r.ESTAGIO) === norm(e));
+      return { e, count: its.length, tot: its.reduce((a, r) => a + r._valR, 0) };
     }).filter(s => s.count > 0);
     const funMax = Math.max(...vFun.map(s => s.tot), 1);
     const miniFunil = vFun.map(s => {
@@ -1096,7 +1104,7 @@ function renderVend() {
       return `<div class="fn-row">
         <div class="fn-st">${s.e}</div>
         <div class="fn-bg"><div class="fn-f" style="width:${pct}%;background:${c}">
-          <span>${s.count} neg.</span></div></div>
+          <span>${s.count} opp.</span></div></div>
         <div class="fn-v">${fK(s.tot)}</div>
       </div>`;
     }).join('');
