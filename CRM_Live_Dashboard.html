@@ -1136,14 +1136,8 @@ function renderFC() {
   if (!container) return;
 
   const d = compute();
-  const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
 
-  if (!vendors.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados de forecast</div>';
-    return;
-  }
-
-  // Meses únicos (union)
+  // Meses únicos
   const monthSet = {};
   d.ab.forEach(r => {
     if (!r._dtF) return;
@@ -1153,38 +1147,59 @@ function renderFC() {
       .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
     monthSet[key] = lb;
   });
+
+  // Adiciona coluna ATRASADO para oportunidades com dClose < 0
+  const ATRASO_KEY = '0000-00';
+  const hasAtrasados = d.ab.some(r => r._dClose < 0);
+  if (hasAtrasados) monthSet[ATRASO_KEY] = '⚠ Atrasado';
+
   const allKeys   = Object.keys(monthSet).sort();
   const allLabels = allKeys.map(k => monthSet[k]);
 
-  if (!allKeys.length) {
+  const vendors = [...new Set(d.ab.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
+
+  if (!vendors.length || allKeys.filter(k => k !== ATRASO_KEY).length === 0) {
     container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem datas de fechamento preenchidas</div>';
     return;
   }
 
-  const COLORS = [
+  // Cores por vendedor
+  const PIPE_C = [
     'rgba(26,63,212,.82)',
     'rgba(10,143,72,.82)',
     'rgba(168,98,0,.82)',
     'rgba(96,32,200,.82)',
   ];
+  const ATRAS_C = [
+    'rgba(190,30,30,.85)',
+    'rgba(190,30,30,.55)',
+    'rgba(190,30,30,.40)',
+    'rgba(190,30,30,.30)',
+  ];
 
   const datasets = vendors.map((v, i) => {
     const vItems = d.ab.filter(r => r.VENDEDOR === v);
-    const key4row = r => r._dtF
-      ? r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0')
-      : null;
+    const key4row = r => {
+      if (!r._dtF) return null;
+      if (r._dClose < 0) return ATRASO_KEY;  // vencida = coluna atrasado
+      return r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0');
+    };
     const data = allKeys.map(k =>
       vItems.filter(r => key4row(r) === k).reduce((s, r) => s + r._val, 0)
     );
     const cnt = allKeys.map(k =>
       vItems.filter(r => key4row(r) === k).length
     );
+    // Cor vermelha para coluna de atrasados
+    const bgColors = allKeys.map((k, ki) =>
+      k === ATRASO_KEY ? ATRAS_C[i % ATRAS_C.length] : PIPE_C[i % PIPE_C.length]
+    );
     return {
       label: v,
       data,
       _cnt: cnt,
-      backgroundColor: COLORS[i % COLORS.length],
-      borderRadius: 5,
+      backgroundColor: bgColors,
+      borderRadius: 4,
       borderSkipped: false,
     };
   }).filter(ds => ds.data.some(v => v > 0));
@@ -1194,14 +1209,35 @@ function renderFC() {
     return;
   }
 
-  const wrap = document.createElement('div');
+  // Calcula max real dos dados para definir escala
+  const allValues = datasets.flatMap(ds => ds.data);
+  const maxReal   = Math.max(...allValues, 0);
+  // Cap no maior meta — não deixa escalar além de 50M (meta Bruno)
+  const maxMeta   = Math.max(...vendors.map(v => getMeta(v)), 50000000);
+  // Se o maior valor real for muito acima da meta, usa a meta como cap visual
+  // (July 90M → capped at 50M so bars don't dwarf everything else)
+  const yMax = maxReal > maxMeta ? maxMeta * 1.05 : undefined;
+
+  const wrap   = document.createElement('div');
   wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px 16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.05)';
-  const canvas = document.createElement('canvas');
-  canvas.id    = 'ch-fc';
-  canvas.style.height = '160px';
-  wrap.appendChild(canvas);
+
+  // Legenda "Atrasado" se houver
+  const legendExtra = hasAtrasados
+    ? `<span style="display:inline-flex;align-items:center;gap:5px;margin-left:14px;font-size:.71rem;color:var(--red)">
+        <span style="width:10px;height:10px;border-radius:2px;background:rgba(190,30,30,.85)"></span>
+        ⚠ Atrasado (data vencida)
+      </span>` : '';
+
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;flex-wrap:wrap;gap:4px">
+      ${legendExtra}
+    </div>
+    <div style="position:relative;height:160px"><canvas id="ch-fc"></canvas></div>`;
+
   container.innerHTML = '';
   container.appendChild(wrap);
+
+  const canvas = document.getElementById('ch-fc');
 
   _chart = new Chart(canvas, {
     type: 'bar',
@@ -1212,11 +1248,16 @@ function renderFC() {
       plugins: {
         legend: {
           position: 'top',
-          labels: { color:'#405070', font:{ family:'DM Sans', size:11 }, boxWidth:12, padding:16 }
+          align: 'start',
+          labels: { color:'#405070', font:{ family:'DM Sans', size:11 }, boxWidth:11, padding:14 }
         },
         tooltip: {
           callbacks: {
-            label: (c) => {
+            title: items => {
+              const lbl = items[0].label;
+              return lbl.startsWith('⚠') ? '⚠ Oportunidades VENCIDAS' : `Fechamento: ${lbl}`;
+            },
+            label: c => {
               const cnt = datasets[c.datasetIndex]._cnt[c.dataIndex];
               return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' negócio'+(cnt>1?'s':'')+')' : ''}`;
             }
@@ -1230,12 +1271,12 @@ function renderFC() {
         },
         y: {
           min: 0,
-          suggestedMax: 50000000,
+          max: yMax,
           ticks: {
             color: '#7080A0',
             maxTicksLimit: 5,
             callback: v => fKs(v),
-            font: { family:'DM Sans', size:11 }
+            font: { family:'DM Sans', size:10 }
           },
           grid: { color:'rgba(30,70,160,.07)' }
         }
