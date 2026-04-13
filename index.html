@@ -1777,3 +1777,77 @@ function renderSnap(txt) {
 }
 
 
+
+/* ═══════════════════════════════════════════════════
+   UI UTILITIES
+═══════════════════════════════════════════════════ */
+function showSt(s) {
+  document.getElementById('s-load').style.display = s === 'load' ? 'flex' : 'none';
+  document.getElementById('s-err').style.display  = s === 'err'  ? 'flex' : 'none';
+  document.getElementById('dash').style.display   = s === 'dash' ? 'block' : 'none';
+}
+function showErr(msg) {
+  showSt('err');
+  const em = document.getElementById('err-msg');
+  if (em) em.textContent = msg;
+  setPill('err', '✗ Erro ao carregar');
+}
+function setPill(t, tx) {
+  const p = document.getElementById('status-pill');
+  p.className = 'pill ' + (t === 'ok' ? 'p-ok' : t === 'err' ? 'p-err' : 'p-load');
+  p.innerHTML = (t === 'load' ? '<span class="pulse"></span> ' : '') + tx;
+}
+function setDb(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
+function toggleDbg() {
+  _dbg = !_dbg;
+  document.getElementById('dbar').style.display = _dbg ? 'flex' : 'none';
+}
+function toggleCols() {
+  const p = document.getElementById('cpanel');
+  _colsVis = !_colsVis;
+  p.style.display = _colsVis ? 'block' : 'none';
+  if (_colsVis && _allCols.length) {
+    p.innerHTML = '<strong style="color:var(--blue);font-size:.71rem">Colunas detectadas:</strong><br><br>'
+      + _allCols.map((k, i) =>
+          `<span class="cchip${k === _lvkKey ? ' found' : ''}">${i+1}. ${k}${k === _lvkKey ? ' ← LVK' : ''}</span>`
+        ).join('');
+  }
+}
+function toggleDiag() {
+  const p = document.getElementById('diagpanel');
+  if (!p) return;
+  if (p.style.display === 'block') { p.style.display='none'; return; }
+  p.style.display = 'block';
+  if (!_rawDiag.length) { p.innerHTML='<em style="color:var(--muted)">Carregue os dados primeiro</em>'; return; }
+  const felipe = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('felipe'));
+  const bruno  = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('bruno'));
+  const mkRow  = (d) => {
+    const ok = d.valR > 0 || d.valS > 0;
+    const c  = ok ? 'var(--green)' : 'var(--red)';
+    return `<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 120px 1fr 1fr;gap:8px;font-size:.67rem">
+      <span style="font-weight:600">${(d.customer||'').slice(0,22)}</span>
+      <span style="color:var(--muted2)">${(d.vendedor||'').split(' ')[0]}</span>
+      <span style="color:var(--muted)">RAW: <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">${String(d.rawVal||'').slice(0,20)}</code></span>
+      <span style="color:${c};font-weight:600">→ R:${d.valR>0?brNum(d.valR,0):'0'} / S:${d.valS>0?brNum(d.valS,0):'0'}</span>
+    </div>`;
+  };
+  p.innerHTML = '<strong style="color:var(--blue);font-size:.72rem">Diagnóstico LVK — primeiras ' + _rawDiag.length + ' linhas</strong><br><br>'
+    + '<div style="color:var(--teal);font-size:.7rem;font-weight:700;margin-bottom:4px">Felipe (' + felipe.length + '):</div>'
+    + (felipe.length ? felipe.map(mkRow).join('') : '<em style="color:var(--muted)">Não encontrado nos primeiros 30</em>')
+    + '<div style="color:var(--blue);font-size:.7rem;font-weight:700;margin:10px 0 4px">Bruno (' + bruno.length + '):</div>'
+    + (bruno.length ? bruno.slice(0,5).map(mkRow).join('') : '');
+}
+function reload() { loadData(); }
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+(function init() {
+  document.getElementById('date-pill').textContent = '📅 ' +
+    new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' })
+              .replace(/^\w/, c => c.toUpperCase());
+  loadData();
+})();
+</script>
+</body>
+</html>
