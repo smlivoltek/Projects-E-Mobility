@@ -360,22 +360,16 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
 
   <!-- 5. PAINEL DE AÇÃO -->
   <div class="sec"><span class="sn">5</span>Painel de Ação — O que tratar hoje?</div>
-  <div style="display:grid;grid-template-columns:3fr 2fr;gap:13px;margin-bottom:16px">
+  <div class="mb">
     <div class="card">
       <div class="ct" style="color:var(--red)">
         <span class="cdot" style="background:var(--red)"></span>
-        O que tratar · Quem · Qual impacto
+        O que tratar · Quem é responsável · Qual impacto
       </div>
       <div id="act-opps"></div>
     </div>
-    <div class="card">
-      <div class="ct" style="color:var(--amber)">
-        <span class="cdot" style="background:var(--amber)"></span>
-        Alertas — Prob. 100% sem atualização
-      </div>
-      <div id="act-vend"></div>
-    </div>
   </div>
+  <div id="act-vend" style="display:none"></div>
 
   <!-- 6. TABELA DETALHADA -->
   <div class="sec"><span class="sn">6</span>Tabela Detalhada</div>
@@ -1287,7 +1281,7 @@ function renderFC() {
         <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.3)"></span>Meses passados
       </span>
     </div>
-    <div style="position:relative;height:165px"><canvas id="ch-fc"></canvas></div>`;
+    <div style="position:relative;height:190px"><canvas id="ch-fc"></canvas></div>`;
   container.innerHTML = '';
   container.appendChild(wrap);
 
@@ -1313,20 +1307,18 @@ function renderFC() {
             }
           }
         },
-        // Datalabels: show value on top of the LAST dataset bar for each month
+        // Datalabels: show value on each individual bar
         datalabels: window.ChartDataLabels ? {
-          display: (ctx) => {
-            // Only show on last dataset (highest bar or stacked total)
-            if (ctx.datasetIndex !== datasets.length - 1) return false;
-            const tot = monthTotals[ctx.dataIndex];
-            return tot > 0;
-          },
-          formatter: (value, ctx) => fKs(monthTotals[ctx.dataIndex]),
+          display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
+          formatter: (value) => fKs(value),
           anchor: 'end',
           align: 'end',
           offset: 2,
-          color: '#405070',
-          font: { family: 'DM Sans', size: 10, weight: '600' },
+          color: (ctx) => {
+            const colors = ['#1A3FD4','#0A8F48','#A86200','#6020C8'];
+            return colors[ctx.datasetIndex % 4];
+          },
+          font: { family: 'DM Sans', size: 9, weight: '600' },
         } : false,
       },
       scales: {
@@ -1413,15 +1405,23 @@ function renderAct() {
     if (!top5.length && !vSemAcao.length) return '';
 
     const top5rows = top5.map(r => {
-      const dc  = r._dClose;
-      const dcC = dc < 0 ? 'var(--red)' : dc <= 30 ? 'var(--red)' : dc <= 90 ? 'var(--amber)' : 'var(--muted2)';
-      const dcT = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
-      return `<div style="display:grid;grid-template-columns:1fr 80px 90px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd2);font-size:.72rem">
-        <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
-        <span style="font-family:var(--fm);color:${dcC};font-size:.68rem;white-space:nowrap;text-align:center">${dcT}</span>
-        <span style="font-family:var(--fm);color:var(--blue);font-size:.69rem;text-align:right">${fK(r._valR)}</span>
+      const dc    = r._dClose;
+      const dcC   = dc < 0 ? 'var(--red)' : dc <= 30 ? 'var(--red)' : dc <= 90 ? 'var(--amber)' : 'var(--muted2)';
+      const dcT   = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
+      const prox  = r.PROX_PASSO && r.PROX_PASSO.trim() && r.PROX_PASSO.trim() !== '-'
+                    ? r.PROX_PASSO.trim() : null;
+      return `<div style="padding:7px 0;border-bottom:1px solid var(--brd2)">
+        <div style="display:grid;grid-template-columns:1fr 80px 100px;gap:6px;align-items:center;font-size:.73rem">
+          <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
+          <span style="font-family:var(--fm);color:${dcC};font-size:.69rem;white-space:nowrap;text-align:center">${dcT}</span>
+          <span style="font-family:var(--fm);color:var(--blue);font-size:.70rem;text-align:right;font-weight:600">${fK(r._valR)}</span>
+        </div>
+        ${prox
+          ? '<div style="font-size:.66rem;color:var(--teal);margin-top:2px">▶ ' + prox + '</div>'
+          : '<div style="font-size:.66rem;color:var(--amber);margin-top:2px">⚠ Sem próximo passo definido</div>'
+        }
       </div>`;
-    }).join('');
+    }).join('');;
 
     const semAcaoText = vSemAcao.length
       ? `<div style="font-size:.68rem;color:var(--amber);margin-top:5px">⚠ Sem ação: ${vSemAcao.map(r=>r.CUSTOMER).join(', ')}</div>`
@@ -1438,8 +1438,8 @@ function renderAct() {
       </div>
       ${top5.length ? `
       <div style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:4px">Top ${top5.length} por prazo &nbsp;<span style="color:var(--muted2);font-weight:400">→ O QUE tratar &nbsp;·&nbsp; QUANDO &nbsp;·&nbsp; QUAL impacto</span></div>
-      <div style="font-size:.62rem;color:var(--muted2);display:grid;grid-template-columns:1fr 80px 90px;gap:6px;padding:3px 0;font-weight:700">
-        <span>Cliente</span><span style="text-align:center">Prazo</span><span style="text-align:right">Valor</span>
+      <div style="font-size:.62rem;color:var(--muted2);display:grid;grid-template-columns:1fr 80px 100px;gap:6px;padding:3px 0;font-weight:700;border-bottom:2px solid var(--brd)">
+        <span>Cliente · Próximo Passo</span><span style="text-align:center">Prazo</span><span style="text-align:right">Valor</span>
       </div>
       ${top5rows}` : ''}
       ${semAcaoText}
