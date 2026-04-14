@@ -346,7 +346,7 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
           Comparativo Semana Anterior vs Atual
         </div>
         <div style="font-size:.71rem;color:var(--muted2)">
-          Aba <strong>SNAPSHOTS</strong> · <span id="snap-dates"></span>
+          Aba <strong>COMPARACAO</strong> · <span id="snap-dates"></span>
         </div>
       </div>
       <button class="btn" onclick="loadSnap()">↻ Carregar snapshot</button>
@@ -1612,7 +1612,7 @@ async function loadSnap() {
       txt = (await r.json()).contents;
     } catch(e2) {
       body.innerHTML = `<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--red)">
-        ⚠ Erro ao carregar: ${e2.message}. Verifique se a aba SNAPSHOTS está publicada no Sheets.</div>`;
+        ⚠ Erro ao carregar: ${e2.message}. Publique a aba COMPARACAO: Arquivo → Compartilhar → Publicar na web → COMPARACAO → CSV → Publicar.</div>`;
       return;
     }
   }
@@ -1634,28 +1634,35 @@ function renderSnapFromHistory(txt) {
   const res  = Papa.parse(txt.replace(/^﻿/,'').trim(), {
     header: true, skipEmptyLines:'greedy', trimHeaders: true, dynamicTyping: false
   });
-  const rows = res.data;
+  const rows = res.data.filter(r => Object.values(r).some(v => v && String(v).trim()));
   if (!rows || rows.length < 1) {
-    body.innerHTML = '<div style="color:var(--muted)">Dados vazios ou formato inválido</div>';
+    body.innerHTML = '<div style="color:var(--muted)">Dados vazios — verifique se a aba COMPARACAO tem conteúdo</div>';
     return;
   }
 
-  const cols = Object.keys(rows[0]).map(c => c.trim().toUpperCase());
-  console.log('COMPARACAO cols:', cols);
+  const cols = Object.keys(rows[0]);
+  console.log('=== COMPARACAO colunas detectadas ===', cols);
+  console.log('=== Primeira linha ===', rows[0]);
 
-  // Detect format: COMPARACAO (before/after columns) or SNAPSHOTS (DATA_SNAPSHOT column)
-  const isSnapshots = cols.some(c => c.includes('DATA_SNAPSHOT'));
-  const isComparacao = cols.some(c => c.includes('ANTES') || c.includes('ANTERIOR') || c.includes('03/04') || c.includes('13/04'));
+  // Show column names in UI for diagnosis
+  const colDisplay = `<div style="background:var(--blue2);border:1px solid rgba(26,63,212,.15);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:.72rem;color:var(--blue)">
+    <strong>✓ Aba COMPARACAO carregada</strong> — ${rows.length} linhas · ${cols.length} colunas<br>
+    <span style="color:var(--muted2);font-size:.68rem">Colunas: ${cols.slice(0,10).join(' · ')}${cols.length>10?' · ...':''}</span>
+  </div>`;
+
+  // Detect format: SNAPSHOTS (has DATA_SNAPSHOT col) or COMPARACAO (before/after cols)
+  const colsUp = cols.map(c => c.toUpperCase());
+  const isSnapshots = colsUp.some(c => c.includes('DATA_SNAPSHOT'));
 
   if (isSnapshots) {
-    renderFromSnapshots(rows, body, dates);
+    renderFromSnapshots(rows, body, dates, colDisplay);
   } else {
-    renderFromComparacao(rows, body, dates);
+    renderFromComparacao(rows, cols, body, dates, colDisplay);
   }
 }
 
 // ── Render from SNAPSHOTS tab (date-based rows)
-function renderFromSnapshots(rows, body, dates) {
+function renderFromSnapshots(rows, body, dates, colDisplay='') {
   function parseBRLSnap(v) {
     if (!v) return 0;
     const s = String(v).replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
@@ -1668,7 +1675,7 @@ function renderFromSnapshots(rows, body, dates) {
   });
   const allDates = Object.keys(dateSet).sort();
   if (allDates.length < 2) {
-    body.innerHTML = '<div style="color:var(--muted);font-size:.79rem;padding:14px 0;text-align:center">Apenas um snapshot disponível — aguarde a próxima semana</div>';
+    body.innerHTML = colDisplay + '<div style="color:var(--muted);font-size:.79rem;padding:14px 0;text-align:center">Apenas um snapshot disponível — aguarde a próxima semana</div>';
     return;
   }
   const dateAnt = allDates[allDates.length - 2];
@@ -1684,133 +1691,121 @@ function renderFromSnapshots(rows, body, dates) {
   buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID,
     r => (r['CUSTOMER']||'').trim(),
     r => (r['ESTAGIO']||'').trim(),
-    dateAnt, dateAtu, body);
+    dateAnt, dateAtu, body, colDisplay);
 }
 
 // ── Render from COMPARACAO tab (before/after in same row)
-function renderFromComparacao(rows, body, dates) {
-  // Auto-detect column names
-  const sample = rows[0];
-  const allKeys = Object.keys(sample);
-
-  function findCol(...candidates) {
-    for (const c of candidates) {
-      const found = allKeys.find(k => k.trim().toUpperCase().includes(c.toUpperCase()));
-      if (found) return found;
-    }
-    return null;
-  }
-
-  const colID    = findCol('ID', 'OPORTUNIDADE', 'AUTOMÁTICO') || allKeys[0];
-  const colCust  = findCol('CUSTOMER', 'CLIENTE');
-  const colVend  = findCol('VENDEDOR', 'SALESPERSON');
-  const colValAnt= findCol('VALOR ANTERIOR', 'VALUE ANTES', 'LVK ANTERIOR', '03/04', 'ANTES') || allKeys.find(k => k.includes('ANTERIOR'));
-  const colValAtu= findCol('VALOR ATUAL', 'VALUE DEPOIS', 'LVK ATUAL', '13/04', 'DEPOIS', 'ATUAL') || allKeys.find(k => k.includes('ATUAL'));
-  const colStAnt = findCol('STATUS ANTERIOR', 'ESTAGIO ANTERIOR', 'STATUS_ANT');
-  const colStAtu = findCol('STATUS ATUAL', 'ESTAGIO ATUAL', 'STATUS_ATU');
-
-  console.log('COMPARACAO detected:', {colID,colCust,colVend,colValAnt,colValAtu,colStAnt,colStAtu});
-  console.log('All cols:', allKeys);
-
+function renderFromComparacao(rows, cols, body, dates, colDisplay='') {
   function parseBRLSnap(v) {
     if (!v) return 0;
-    const s = String(v).replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
-    return parseFloat(s) || 0;
+    const s = String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
   }
 
-  // Build synthetic rowsAnt/rowsAtu from COMPARACAO rows
+  // ── Colunas fixas da aba COMPARACAO ──
+  // A=ID OPP  B=STATUS_01  C=STATUS_02  D=VALOR_01  E=VALOR_02  F=MUDANÇA  G=VENDEDOR  H=OBSERVAÇÕES
+  const colID    = 'ID OPP';
+  const colStAnt = 'STATUS_01';   // status 03/04
+  const colStAtu = 'STATUS_02';   // status 13/04
+  const colValAnt= 'VALOR_01';    // valor 03/04
+  const colValAtu= 'VALOR_02';    // valor 13/04
+  const colMud   = 'MUDANÇA';
+  const colVend  = 'VENDEDOR';
+  const colObs   = 'OBSERVAÇÕES';
+
   const dateAnt = '03/04/2026', dateAtu = '13/04/2026';
   if (dates) dates.textContent = `${dateAnt}  →  ${dateAtu}`;
 
-  // Filter valid rows
-  const validRows = rows.filter(r => r[colCust] && r[colCust].trim());
-  
+  const validRows = rows.filter(r => r[colID] && String(r[colID]).trim() && String(r[colID]).trim() !== colID);
+
+  if (!validRows.length) {
+    body.innerHTML = colDisplay + '<div style="color:var(--muted);padding:14px 0;text-align:center">Nenhum dado encontrado — verifique se a aba tem linhas preenchidas</div>';
+    return;
+  }
+
+  // Look up CUSTOMER name from RAW data (already loaded from BASE_GERAL)
+  const idToCustomer = {};
+  RAW.forEach(r => { if (r.ID_OPP) idToCustomer[r.ID_OPP.trim()] = r.CUSTOMER; });
+
   const rowsAnt = validRows.map(r => ({
-    CUSTOMER: r[colCust]||'', VENDEDOR: r[colVend]||'',
+    CUSTOMER: idToCustomer[String(r[colID]).trim()] || String(r[colID]).trim(),
+    VENDEDOR: String(r[colVend]||'').trim(),
     'TOTAL NET LVK (R$)': r[colValAnt]||0,
-    ESTAGIO: r[colStAnt]||'', _id: (r[colID]||'').trim()
+    ESTAGIO:  String(r[colStAnt]||'').trim(),
+    _id:      String(r[colID]).trim(),
+    _mud:     String(r[colMud]||'').trim(),
+    _obs:     String(r[colObs]||'').trim(),
   }));
   const rowsAtu = validRows.map(r => ({
-    CUSTOMER: r[colCust]||'', VENDEDOR: r[colVend]||'',
-    'TOTAL NET LVK (R$)': r[colValAtu]||0,
-    ESTAGIO: r[colStAtu]||'', _id: (r[colID]||'').trim()
+    CUSTOMER: idToCustomer[String(r[colID]).trim()] || String(r[colID]).trim(),
+    VENDEDOR: String(r[colVend]||'').trim(),
+    'TOTAL NET LVK (R$)': r[colValAtu]||r[colValAnt]||0,
+    ESTAGIO:  String(r[colStAtu]||r[colStAnt]||'').trim(),
+    _id:      String(r[colID]).trim(),
+    _mud:     String(r[colMud]||'').trim(),
+    _obs:     String(r[colObs]||'').trim(),
   }));
 
+  console.log(`COMPARACAO: ${validRows.length} linhas | Ex: ID="${validRows[0][colID]}" VALOR_01="${validRows[0][colValAnt]}" VALOR_02="${validRows[0][colValAtu]}" STATUS_01="${validRows[0][colStAnt]}" VENDEDOR="${validRows[0][colVend]}"`);
+
   const getLVK  = r => parseBRLSnap(r['TOTAL NET LVK (R$)']);
-  const getVend = r => (r['VENDEDOR']||'').trim();
-  const getID   = r => (r['_id']||r['CUSTOMER']||'').trim();
-  const getCust = r => (r['CUSTOMER']||'').trim();
-  const getEst  = r => (r['ESTAGIO']||'').trim();
+  const getVend = r => r['VENDEDOR'] || '';
+  const getID   = r => r['_id'];
+  const getCust = r => r['CUSTOMER'];
+  const getEst  = r => r['ESTAGIO'];
 
   buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst,
-    dateAnt, dateAtu, body);
+    dateAnt, dateAtu, body, colDisplay);
 }
 
+
 // ── Common card builder
-function buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst, dateAnt, dateAtu, body) {
-  const pipAnt = rowsAnt.reduce((s,r) => s+getLVK(r), 0);
-  const pipAtu = rowsAtu.reduce((s,r) => s+getLVK(r), 0);
+function buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst, dateAnt, dateAtu, body, colDisplay='') {
+  const pipAnt  = rowsAnt.reduce((s,r) => s+getLVK(r), 0);
+  const pipAtu  = rowsAtu.reduce((s,r) => s+getLVK(r), 0);
   const varPipe = pipAtu - pipAnt;
   const varPct  = pipAnt > 0 ? varPipe/pipAnt*100 : 0;
   const varC    = varPipe > 0 ? 'var(--green)' : varPipe < 0 ? 'var(--red)' : 'var(--muted2)';
   const varArr  = varPipe > 0 ? '▲' : varPipe < 0 ? '▼' : '→';
 
-  // Per vendor
   const vends = [...new Set([...rowsAnt,...rowsAtu].map(r=>getVend(r)).filter(Boolean))];
   const vendorStats = {};
   vends.forEach(v => { vendorStats[v] = { pipeAnt:0, pipeAtu:0, cntAnt:0, cntAtu:0 }; });
-  rowsAnt.forEach(r => { const v=getVend(r); if(v&&vendorStats[v]) { vendorStats[v].pipeAnt+=getLVK(r); vendorStats[v].cntAnt++; }});
-  rowsAtu.forEach(r => { const v=getVend(r); if(v&&vendorStats[v]) { vendorStats[v].pipeAtu+=getLVK(r); vendorStats[v].cntAtu++; }});
+  rowsAnt.forEach(r => { const v=getVend(r); if(v&&vendorStats[v]){ vendorStats[v].pipeAnt+=getLVK(r); vendorStats[v].cntAnt++; }});
+  rowsAtu.forEach(r => { const v=getVend(r); if(v&&vendorStats[v]){ vendorStats[v].pipeAtu+=getLVK(r); vendorStats[v].cntAtu++; }});
 
-  _snapPrev = { dateAnt, dateAtu, byVendor: {} };
-  Object.entries(vendorStats).forEach(([v,s]) => {
-    _snapPrev.byVendor[v] = { pipe: s.pipeAnt, count: s.cntAnt };
-  });
+  _snapPrev = { dateAnt, dateAtu, byVendor:{} };
+  Object.entries(vendorStats).forEach(([v,s]) => { _snapPrev.byVendor[v] = { pipe:s.pipeAnt, count:s.cntAnt }; });
 
-  // What changed
-  const mapAnt = {}; rowsAnt.forEach(r => { const id=getID(r); if(id) mapAnt[id]=r; });
-  const mapAtu = {}; rowsAtu.forEach(r => { const id=getID(r); if(id) mapAtu[id]=r; });
+  const mapAnt = {}; rowsAnt.forEach(r=>{ const id=getID(r); if(id) mapAnt[id]=r; });
+  const mapAtu = {}; rowsAtu.forEach(r=>{ const id=getID(r); if(id) mapAtu[id]=r; });
   const idsAnt = new Set(Object.keys(mapAnt));
   const idsAtu = new Set(Object.keys(mapAtu));
 
-  const gains  = [];
-  const losses = [];
-  const changed= [];
-
+  const gains=[],losses=[],changed=[];
   idsAtu.forEach(id => {
-    if (!idsAnt.has(id)) {
-      const r = mapAtu[id];
-      const v = getLVK(r);
-      if (v > 0) gains.push({ customer:getCust(r), vendor:getVend(r), val:v, estagio:getEst(r) });
-    }
+    if (!idsAnt.has(id)) { const r=mapAtu[id]; const v=getLVK(r); if(v>0) gains.push({customer:getCust(r),vendor:getVend(r),val:v,estagio:getEst(r)}); }
   });
   idsAnt.forEach(id => {
-    if (!idsAtu.has(id)) {
-      const r = mapAnt[id];
-      const v = getLVK(r);
-      if (v > 0) losses.push({ customer:getCust(r), vendor:getVend(r), val:v });
-    }
+    if (!idsAtu.has(id)) { const r=mapAnt[id]; const v=getLVK(r); if(v>0) losses.push({customer:getCust(r),vendor:getVend(r),val:v}); }
   });
-  // Same ID but different values/stages
   idsAnt.forEach(id => {
     if (!idsAtu.has(id)) return;
-    const rA = mapAnt[id], rU = mapAtu[id];
-    const dv = getLVK(rU) - getLVK(rA);
-    const estA = getEst(rA), estU = getEst(rU);
-    if (Math.abs(dv) > 0 || (estA && estU && estA !== estU)) {
-      changed.push({ customer:getCust(rU), vendor:getVend(rU), dv, estA, estU });
-    }
+    const rA=mapAnt[id],rU=mapAtu[id];
+    const dv=getLVK(rU)-getLVK(rA);
+    const estA=getEst(rA),estU=getEst(rU);
+    if (Math.abs(dv)>0 || (estA&&estU&&estA!==estU)) changed.push({customer:getCust(rU),vendor:getVend(rU),dv,estA,estU});
   });
 
-  const totalGains  = gains.reduce((s,i) => s+i.val, 0);
-  const totalLosses = losses.reduce((s,i) => s+i.val, 0);
+  const totalGains  = gains.reduce((s,i)=>s+i.val,0);
+  const totalLosses = losses.reduce((s,i)=>s+i.val,0);
 
   const vendorRows = Object.entries(vendorStats).map(([v,s]) => {
-    const dv   = s.pipeAtu - s.pipeAnt;
-    const dpct = s.pipeAnt > 0 ? dv/s.pipeAnt*100 : 0;
-    const dc   = dv > 0 ? 'var(--green)' : dv < 0 ? 'var(--red)' : 'var(--muted2)';
-    const arr  = dv > 0 ? '🔼' : dv < 0 ? '🔽' : '→';
-    const dcnt = s.cntAtu - s.cntAnt;
+    const dv=s.pipeAtu-s.pipeAnt, dpct=s.pipeAnt>0?dv/s.pipeAnt*100:0;
+    const dc=dv>0?'var(--green)':dv<0?'var(--red)':'var(--muted2)';
+    const arr=dv>0?'🔼':dv<0?'🔽':'→';
+    const dcnt=s.cntAtu-s.cntAnt;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd2);gap:10px;flex-wrap:wrap">
       <span style="font-weight:600;font-size:.78rem;color:var(--text)">${v}</span>
       <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue)">${fK(s.pipeAtu)}</span>
@@ -1819,29 +1814,28 @@ function buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst
     </div>`;
   }).join('');
 
-  const section = (title, color, items, maxShow=5) => {
+  const section = (title,color,items,maxShow=5) => {
     if (!items.length) return '';
-    const shown = items.slice(0,maxShow);
-    const more  = items.length - maxShow;
+    const shown=items.slice(0,maxShow), more=items.length-maxShow;
     return `<div style="margin-bottom:12px">
       <div style="font-size:.65rem;color:${color};text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:5px">${title} (${items.length})</div>
-      ${shown.map(i => `<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.72rem;gap:8px">
-        <span style="font-weight:600;color:var(--text)">${i.customer}</span>
-        ${i.val!==undefined ? `<span style="font-family:var(--fm);color:${color};white-space:nowrap">${i.dv!==undefined?(i.dv>0?'+':'')+fKs(i.dv):fKs(i.val)}</span>` : ''}
-        ${i.estagio ? `<span style="color:var(--muted2);font-size:.67rem">${i.estagio}</span>` : ''}
-        ${i.estA&&i.estU&&i.estA!==i.estU ? `<span style="color:var(--muted2);font-size:.67rem">${i.estA}→${i.estU}</span>` : ''}
-        ${i.vendor&&!i.estagio ? `<span style="color:var(--muted2);font-size:.68rem">${i.vendor.split(' ')[0]}</span>` : ''}
+      ${shown.map(i=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.72rem;gap:8px">
+        <span style="font-weight:600;color:var(--text)">${i.customer||i.vendor||'?'}</span>
+        ${i.val!==undefined?`<span style="font-family:var(--fm);color:${color};white-space:nowrap">${i.dv!==undefined?(i.dv>0?'+':'')+fKs(i.dv):fKs(i.val)}</span>`:''}
+        ${i.estagio?`<span style="color:var(--muted2);font-size:.67rem">${i.estagio}</span>`:''}
+        ${i.estA&&i.estU&&i.estA!==i.estU?`<span style="color:var(--muted2);font-size:.67rem">${i.estA}→${i.estU}</span>`:''}
+        ${i.vendor&&!i.estagio?`<span style="color:var(--muted2);font-size:.68rem">${i.vendor.split(' ')[0]}</span>`:''}
       </div>`).join('')}
       ${more>0?`<div style="font-size:.67rem;color:var(--muted);margin-top:3px">+${more} mais</div>`:''}
     </div>`;
   };
 
-  body.innerHTML = `
+  body.innerHTML = colDisplay + `
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:15px">
     <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Anterior <span style="color:var(--muted);font-size:.62rem">${dateAnt}</span></div>
-      <div class="snap-kpi-v" style="color:var(--muted2)">${fK(pipAnt)||'—'}</div></div>
+      <div class="snap-kpi-v" style="color:var(--muted2)">${pipAnt>0?fK(pipAnt):'—'}</div></div>
     <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Atual <span style="color:var(--muted);font-size:.62rem">${dateAtu}</span></div>
-      <div class="snap-kpi-v" style="color:var(--blue)">${fK(pipAtu)||'—'}</div></div>
+      <div class="snap-kpi-v" style="color:var(--blue)">${pipAtu>0?fK(pipAtu):'—'}</div></div>
     <div class="snap-kpi"><div class="snap-kpi-l">Variação</div>
       <div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div>
       <div style="font-size:.67rem;color:${varC};margin-top:2px">${varPipe!==0?(varPipe>0?'+':'')+fK(varPipe):'Sem variação'}</div></div>
@@ -1854,7 +1848,7 @@ function buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst
     <div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 13px">
       <div style="font-size:.65rem;color:var(--green);font-weight:700;margin-bottom:5px">↑ CRESCEU POR QUÊ?</div>
       ${gains.length?`<div style="font-size:.73rem;font-weight:600;color:var(--text);margin-bottom:2px">Novas: +${fKs(totalGains)}</div>`:''}
-      ${changed.filter(i=>i.dv>0).length?`<div style="font-size:.71rem;color:var(--text)">Valores ampliados: ${changed.filter(i=>i.dv>0).length}</div>`:''}
+      ${changed.filter(i=>i.dv>0).length?`<div style="font-size:.71rem;color:var(--text)">Ampliados: ${changed.filter(i=>i.dv>0).length}</div>`:''}
       ${!gains.length&&!changed.filter(i=>i.dv>0).length?`<div style="font-size:.72rem;color:var(--muted)">Sem novas entradas</div>`:''}
     </div>
     <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:9px;padding:11px 13px">
@@ -1879,115 +1873,62 @@ function buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID, getCust, getEst
     </div>
   </div>`;
 
-  // Trigger vendor cards update with WoW variation
   try { renderVend(); } catch(e) {}
 }
-
-
-async function tryFetch(url) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const t = await r.text();
-  if (!t || t.length < 10) throw new Error('Vazio');
-  return t;
-}
-
-function renderSnap(txt) {
-  const body  = document.getElementById('snap-body');
-  const dates = document.getElementById('snap-dates');
-  if (!txt || txt.length < 10) { body.innerHTML='<div style="color:var(--muted)">Dados vazios</div>'; return; }
-  const res   = Papa.parse(txt.replace(/^﻿/,'').trim(), { header:false, skipEmptyLines:true });
-  const rows  = res.data;
-  if (!rows || rows.length < 2) { body.innerHTML='<div style="color:var(--muted)">Formato inesperado</div>'; return; }
-  const dr       = rows[1] || [];
-  const dateAtu  = dr[0] || '—', dateAnt = dr[1] || '—';
-  const pipAtu   = parseBRL(dr[2]), pipAnt = parseBRL(dr[3]);
-  const textoAuto= dr[9] || '';
-  if (dates) dates.textContent = `${dateAnt}  →  ${dateAtu}`;
-  const varPipe = pipAtu - pipAnt;
-  const varPct  = pipAnt > 0 ? varPipe/pipAnt*100 : 0;
-  const varC    = varPipe > 0 ? 'var(--green)' : varPipe < 0 ? 'var(--red)' : 'var(--muted2)';
-  const varArr  = varPipe > 0 ? '▲' : varPipe < 0 ? '▼' : '→';
-  body.innerHTML = `
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px">
-    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Anterior</div><div class="snap-kpi-v" style="color:var(--muted2)">${pipAnt>0?fK(pipAnt):'—'}</div><div style="font-size:.63rem;color:var(--muted)">${dateAnt}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Atual</div><div class="snap-kpi-v" style="color:var(--blue)">${pipAtu>0?fK(pipAtu):'—'}</div><div style="font-size:.63rem;color:var(--muted)">${dateAtu}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Variação</div><div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div><div style="font-size:.66rem;color:${varC};margin-top:2px">${varPipe!==0?(varPipe>0?'+':'')+fK(varPipe):'Sem variação'}</div></div>
-  </div>
-  ${textoAuto ? `<div style="background:var(--blue2);border:1px solid rgba(26,63,212,.15);border-radius:9px;padding:11px 14px;font-size:.77rem;color:var(--text);line-height:1.65">
-    <div style="font-size:.63rem;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">📊 O que mudou</div>${textoAuto}</div>` : ''}`;
-}
-
-
 
 /* ═══════════════════════════════════════════════════
    UI UTILITIES
 ═══════════════════════════════════════════════════ */
 function showSt(s) {
-  document.getElementById('s-load').style.display = s === 'load' ? 'flex' : 'none';
-  document.getElementById('s-err').style.display  = s === 'err'  ? 'flex' : 'none';
-  document.getElementById('dash').style.display   = s === 'dash' ? 'block' : 'none';
+  document.getElementById('s-load').style.display = s==='load'?'flex':'none';
+  document.getElementById('s-err').style.display  = s==='err' ?'flex':'none';
+  document.getElementById('dash').style.display   = s==='dash'?'block':'none';
 }
 function showErr(msg) {
   showSt('err');
-  const em = document.getElementById('err-msg');
-  if (em) em.textContent = msg;
-  setPill('err', '✗ Erro ao carregar');
+  const em = document.getElementById('err-msg'); if(em) em.textContent=msg;
+  setPill('err','✗ Erro ao carregar');
 }
-function setPill(t, tx) {
-  const p = document.getElementById('status-pill');
-  p.className = 'pill ' + (t === 'ok' ? 'p-ok' : t === 'err' ? 'p-err' : 'p-load');
-  p.innerHTML = (t === 'load' ? '<span class="pulse"></span> ' : '') + tx;
+function setPill(t,tx) {
+  const p=document.getElementById('status-pill');
+  p.className='pill '+(t==='ok'?'p-ok':t==='err'?'p-err':'p-load');
+  p.innerHTML=(t==='load'?'<span class="pulse"></span> ':'')+tx;
 }
-function setDb(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
-function toggleDbg() {
-  _dbg = !_dbg;
-  document.getElementById('dbar').style.display = _dbg ? 'flex' : 'none';
+function setDb(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function toggleDbg(){_dbg=!_dbg;document.getElementById('dbar').style.display=_dbg?'flex':'none';}
+function toggleCols(){
+  const p=document.getElementById('cpanel');_colsVis=!_colsVis;p.style.display=_colsVis?'block':'none';
+  if(_colsVis&&_allCols.length)p.innerHTML='<strong style="color:var(--blue);font-size:.71rem">Colunas:</strong><br><br>'+_allCols.map((k,i)=>`<span class="cchip${k===_lvkKey?' found':''}">${i+1}. ${k}${k===_lvkKey?' ← LVK':''}</span>`).join('');
 }
-function toggleCols() {
-  const p = document.getElementById('cpanel');
-  _colsVis = !_colsVis;
-  p.style.display = _colsVis ? 'block' : 'none';
-  if (_colsVis && _allCols.length) {
-    p.innerHTML = '<strong style="color:var(--blue);font-size:.71rem">Colunas detectadas:</strong><br><br>'
-      + _allCols.map((k, i) =>
-          `<span class="cchip${k === _lvkKey ? ' found' : ''}">${i+1}. ${k}${k === _lvkKey ? ' ← LVK' : ''}</span>`
-        ).join('');
-  }
-}
-function toggleDiag() {
-  const p = document.getElementById('diagpanel');
-  if (!p) return;
-  if (p.style.display === 'block') { p.style.display='none'; return; }
-  p.style.display = 'block';
-  if (!_rawDiag.length) { p.innerHTML='<em style="color:var(--muted)">Carregue os dados primeiro</em>'; return; }
-  const felipe = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('felipe'));
-  const bruno  = _rawDiag.filter(r => r.vendedor && r.vendedor.toLowerCase().includes('bruno'));
-  const mkRow  = (d) => {
-    const ok = d.valR > 0 || d.valS > 0;
-    const c  = ok ? 'var(--green)' : 'var(--red)';
-    return `<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 120px 1fr 1fr;gap:8px;font-size:.67rem">
+function toggleDiag(){
+  const p=document.getElementById('diagpanel');if(!p)return;
+  if(p.style.display==='block'){p.style.display='none';return;}
+  p.style.display='block';
+  if(!_rawDiag.length){p.innerHTML='<em style="color:var(--muted)">Carregue os dados primeiro</em>';return;}
+  const felipe=_rawDiag.filter(r=>r.vendedor&&r.vendedor.toLowerCase().includes('felipe'));
+  const bruno=_rawDiag.filter(r=>r.vendedor&&r.vendedor.toLowerCase().includes('bruno'));
+  const mkRow=d=>{const ok=d.valR>0||d.valS>0;const c=ok?'var(--green)':'var(--red)';
+    return`<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 120px 1fr 1fr;gap:8px;font-size:.67rem">
       <span style="font-weight:600">${(d.customer||'').slice(0,22)}</span>
       <span style="color:var(--muted2)">${(d.vendedor||'').split(' ')[0]}</span>
-      <span style="color:var(--muted)">RAW: <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">${String(d.rawVal||'').slice(0,20)}</code></span>
-      <span style="color:${c};font-weight:600">→ R:${d.valR>0?brNum(d.valR,0):'0'} / S:${d.valS>0?brNum(d.valS,0):'0'}</span>
-    </div>`;
-  };
-  p.innerHTML = '<strong style="color:var(--blue);font-size:.72rem">Diagnóstico LVK — primeiras ' + _rawDiag.length + ' linhas</strong><br><br>'
-    + '<div style="color:var(--teal);font-size:.7rem;font-weight:700;margin-bottom:4px">Felipe (' + felipe.length + '):</div>'
-    + (felipe.length ? felipe.map(mkRow).join('') : '<em style="color:var(--muted)">Não encontrado nos primeiros 30</em>')
-    + '<div style="color:var(--blue);font-size:.7rem;font-weight:700;margin:10px 0 4px">Bruno (' + bruno.length + '):</div>'
-    + (bruno.length ? bruno.slice(0,5).map(mkRow).join('') : '');
+      <span style="color:var(--muted)">RAW:<code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">${String(d.rawVal||'').slice(0,20)}</code></span>
+      <span style="color:${c};font-weight:600">R:${d.valR>0?brNum(d.valR,0):'0'} / S:${d.valS>0?brNum(d.valS,0):'0'}</span>
+    </div>`;};
+  p.innerHTML='<strong style="color:var(--blue);font-size:.72rem">Diagnóstico LVK — primeiras '+_rawDiag.length+' linhas</strong><br><br>'
+    +'<div style="color:var(--teal);font-size:.7rem;font-weight:700;margin-bottom:4px">Felipe ('+felipe.length+'):</div>'
+    +(felipe.length?felipe.map(mkRow).join(''):'<em style="color:var(--muted)">Não encontrado</em>')
+    +'<div style="color:var(--blue);font-size:.7rem;font-weight:700;margin:10px 0 4px">Bruno ('+bruno.length+'):</div>'
+    +(bruno.length?bruno.slice(0,5).map(mkRow).join(''):'');
 }
-function reload() { loadData(); }
+function reload(){loadData();}
 
 /* ═══════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════ */
-(function init() {
-  document.getElementById('date-pill').textContent = '📅 ' +
-    new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' })
-              .replace(/^\w/, c => c.toUpperCase());
+(function init(){
+  document.getElementById('date-pill').textContent='📅 '+
+    new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})
+              .replace(/^\w/,c=>c.toUpperCase());
   loadData();
 })();
 </script>
