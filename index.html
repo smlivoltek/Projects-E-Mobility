@@ -460,7 +460,7 @@ const METAS     = { 'Bruno Reis': 50000000, 'Felipe Hanker': 12000000 };
 // SNAPSHOTS tab GID = 202441246 (from user's link)
 const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=202441246&single=true&output=csv';
 const DIAS_STALE = 7;   // alertas: sem atualização há > 7 dias   // dias sem atualização = desatualizado
-const DIAS_CRIT  = 120;  // ≤ 4 meses = prazo China
+const DIAS_CRIT  = 180;  // ≤ 6 meses = prazo mínimo China
 const PAGE_SZ    = 15;
 
 /* ═══════════════════════════════════════════════════
@@ -652,7 +652,7 @@ function normRow(raw, idx) {
 
   const dClose   = dUntil(dtF);
   const semProx  = !prox || prox.trim() === '' || prox.trim() === '-' || prox.trim() === 'N/A';
-  const isStale  = dAgo(dtA) > DIAS_STALE;
+  const isStale  = !dtA || dAgo(dtA) > DIAS_STALE;  // sem data = desatualizado
   const urg4m    = dClose >= 0 && dClose <= DIAS_CRIT;
   const isCrit   = norm(risco) === 'alto' || (urg4m && (semProx || isStale));
   // "Aberto" e "Parado" entram no pipeline
@@ -1362,7 +1362,7 @@ function renderAct() {
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
       <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:10px 12px">
         <div style="font-size:.65rem;color:var(--red);font-weight:700;text-transform:uppercase;margin-bottom:4px">🔴 Valor em Risco</div>
-        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--red)">${fK(totalUrgVal)}</div>
+        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--red)">${fKs(totalUrgVal)}</div>
         <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">vencem em ≤ 4 meses</div>
       </div>
       <div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:10px 12px">
@@ -1414,7 +1414,7 @@ function renderAct() {
         <div style="display:grid;grid-template-columns:1fr 80px 100px;gap:6px;align-items:center;font-size:.73rem">
           <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
           <span style="font-family:var(--fm);color:${dcC};font-size:.69rem;white-space:nowrap;text-align:center">${dcT}</span>
-          <span style="font-family:var(--fm);color:var(--blue);font-size:.70rem;text-align:right;font-weight:600">${fK(r._valR)}</span>
+          <span style="font-family:var(--fm);color:var(--blue);font-size:.70rem;text-align:right;font-weight:600">${fKs(r._valR)}</span>
         </div>
         ${prox
           ? '<div style="font-size:.66rem;color:var(--teal);margin-top:2px">▶ ' + prox + '</div>'
@@ -1432,7 +1432,7 @@ function renderAct() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
         <span style="font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--text)">${v.v}</span>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${vRiskVal > 0 ? `<span style="background:var(--red2);color:var(--red);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">🔴 ${fK(vRiskVal)} em risco</span>` : ''}
+          ${vRiskVal > 0 ? `<span style="background:var(--red2);color:var(--red);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">🔴 ${fKs(vRiskVal)} em risco</span>` : ''}
           ${vSemAcao.length > 0 ? `<span style="background:var(--amber2);color:var(--amber);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">⚠ ${vSemAcao.length} sem ação</span>` : ''}
         </div>
       </div>
@@ -1474,7 +1474,7 @@ function renderAct() {
         return `<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.71rem">
           <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
           <span style="color:${daC};font-size:.68rem;text-align:center">${daT}</span>
-          <span style="font-family:var(--fm);color:var(--blue);font-size:.68rem;text-align:right">${fK(r._valR)}</span>
+          <span style="font-family:var(--fm);color:var(--blue);font-size:.68rem;text-align:right">${fKs(r._valR)}</span>
         </div>`;
       }).join('')}
     </div>`;
