@@ -346,7 +346,7 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
           Comparativo Semana Anterior vs Atual
         </div>
         <div style="font-size:.71rem;color:var(--muted2)">
-          Aba <strong>COMPARATIVO_AUTO</strong> · <span id="snap-dates"></span>
+          Aba <strong>SNAPSHOTS</strong> · <span id="snap-dates"></span>
         </div>
       </div>
       <button class="btn" onclick="loadSnap()">↻ Carregar snapshot</button>
@@ -360,18 +360,18 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
 
   <!-- 5. PAINEL DE AÇÃO -->
   <div class="sec"><span class="sn">5</span>Painel de Ação — O que tratar hoje?</div>
-  <div class="g2 mb">
+  <div style="display:grid;grid-template-columns:3fr 2fr;gap:13px;margin-bottom:16px">
     <div class="card">
       <div class="ct" style="color:var(--red)">
         <span class="cdot" style="background:var(--red)"></span>
-        Oportunidades Críticas — por prazo de fechamento
+        O que tratar · Quem · Qual impacto
       </div>
       <div id="act-opps"></div>
     </div>
     <div class="card">
       <div class="ct" style="color:var(--amber)">
         <span class="cdot" style="background:var(--amber)"></span>
-        Alertas por Vendedor
+        Alertas — Prob. 100% sem atualização
       </div>
       <div id="act-vend"></div>
     </div>
@@ -463,8 +463,9 @@ const CSV_URL  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2
 const SNAP_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1580774303&single=true&output=csv';
 const METAS     = { 'Bruno Reis': 50000000, 'Felipe Hanker': 12000000 };
 // SNAPSHOTS tab — substitua o GID abaixo (veja: abre a aba SNAPSHOTS no Sheets, copie o número após &gid= na URL)
-const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=SNAPSHOTS_GID&single=true&output=csv';
-const DIAS_STALE = 14;   // dias sem atualização = desatualizado
+// SNAPSHOTS tab GID = 202441246 (from user's link)
+const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=202441246&single=true&output=csv';
+const DIAS_STALE = 7;   // alertas: sem atualização há > 7 dias   // dias sem atualização = desatualizado
 const DIAS_CRIT  = 120;  // ≤ 4 meses = prazo China
 const PAGE_SZ    = 15;
 
@@ -569,7 +570,12 @@ function parseDt(s) {
     if (yr > 2100 || yr < 1990) return null;
     return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
   }
-  // ISO / outros
+  // YYYY-MM-DD HH:MM:SS (datetime with space — normalize to ISO T)
+  if (/^\d{4}-\d{2}-\d{2}\s/.test(st)) {
+    const d = new Date(st.replace(' ', 'T'));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // YYYY-MM-DD or other ISO
   const d = new Date(st);
   return isNaN(d.getTime()) ? null : d;
 }
@@ -656,8 +662,8 @@ function normRow(raw, idx) {
   const urg4m    = dClose >= 0 && dClose <= DIAS_CRIT;
   const isCrit   = norm(risco) === 'alto' || (urg4m && (semProx || isStale));
   // "Aberto" e "Parado" entram no pipeline
-  const isAberto = norm(status) === 'aberto' || norm(status) === 'parado' ||
-                   !status || status === '—';
+  // Aberto = anything that is NOT explicitly Ganho or Perdido
+  const isAberto = norm(status) !== 'ganho' && norm(status) !== 'perdido';
 
   return {
     _idx: idx,
@@ -1026,34 +1032,63 @@ function renderDashboard() {
 
 /* ─── KPIs ─── */
 function renderKPIs(d) {
+  // Week-over-week variation from snapshot
+  function wowBadge(curr, prevVal, label) {
+    if (!_snapPrev || prevVal === undefined || prevVal === 0) return '';
+    const dv   = curr - prevVal;
+    const dpct = dv / prevVal * 100;
+    const c    = dv > 0 ? '#0A8F48' : '#BE1E1E';
+    const arr  = dv > 0 ? '🔼' : '🔽';
+    return `<div style="font-size:.69rem;font-weight:700;color:${c};margin-top:3px">${arr} ${dpct>=0?'+':''}${dpct.toFixed(1)}% vs semana passada</div>`;
+  }
+
+  const prevPipe  = _snapPrev ? Object.values(_snapPrev.byVendor).reduce((s,v)=>s+v.pipe,0) : 0;
+  const prevCount = _snapPrev ? Object.values(_snapPrev.byVendor).reduce((s,v)=>s+v.count,0) : 0;
+
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi t"><div class="kl">Pipeline LVK (Total)</div>
+    <div class="kpi t">
+      <div class="kl">Pipeline Total</div>
       <div class="kv t">${fK(d.pipe)}</div>
       <div class="ks">${d.ab.length} oportunidades abertas</div>
-      <div class="kico">💰</div></div>
-    <div class="kpi b"><div class="kl">Pipeline Total LVK</div>
+      ${wowBadge(d.pipe, prevPipe, 'pipeline')}
+      <div class="kico">💰</div>
+    </div>
+    <div class="kpi b">
+      <div class="kl">Pipeline Ponderado</div>
       <div class="kv b">${fK(d.pond)}</div>
       <div class="ks">${d.pipe > 0 ? (d.pond/d.pipe*100).toFixed(0) : 0}% do total · valor confiável</div>
-      <div class="kico">⚖️</div></div>
-    <div class="kpi p"><div class="kl">Ticket Médio</div>
+      ${wowBadge(d.pond, prevPipe > 0 ? prevPipe*0.35 : 0, 'ponderado')}
+      <div class="kico">⚖️</div>
+    </div>
+    <div class="kpi p">
+      <div class="kl">Ticket Médio</div>
       <div class="kv p">${fK(d.ticket)}</div>
       <div class="ks">média por oportunidade aberta</div>
-      <div class="kico">🏷️</div></div>
-    <div class="kpi a"><div class="kl">Total de Registros</div>
-      <div class="kv a">${d.total}</div>
-      <div class="ks">todos os status incluídos</div>
-      <div class="kico">📋</div></div>
-    <div class="kpi r"><div class="kl">Oportunidades Críticas</div>
+      <div class="kico">🏷️</div>
+    </div>
+    <div class="kpi a">
+      <div class="kl">Oportunidades</div>
+      <div class="kv a">${d.ab.length}</div>
+      <div class="ks">abertas (total: ${d.total})</div>
+      ${wowBadge(d.ab.length, prevCount, 'opps')}
+      <div class="kico">📋</div>
+    </div>
+    <div class="kpi r">
+      <div class="kl">Risco Imediato</div>
       <div class="kv r">${d.crit}</div>
       <div class="ks">risco alto ou fecha ≤4 meses sem ação</div>
       <div class="kico">🚨</div>
-      <div class="ktag ${d.crit > 0 ? 'r' : 'g'}">${d.crit > 0 ? '⚠ Requer atenção' : '✓ Nenhuma'}</div></div>
-    <div class="kpi ${d.pend > 0 ? 'a' : 'g'}"><div class="kl">Pendências</div>
+      <div class="ktag ${d.crit > 0 ? 'r' : 'g'}">${d.crit > 0 ? '⚠ Requer atenção' : '✓ Nenhuma'}</div>
+    </div>
+    <div class="kpi ${d.pend > 0 ? 'a' : 'g'}">
+      <div class="kl">Pendências</div>
       <div class="kv ${d.pend > 0 ? 'a' : 'g'}">${d.pend}</div>
-      <div class="ks">sem próximo passo${d.stale > 0 ? ' · ' + d.stale + ' desatualiz.' : ''}</div>
+      <div class="ks">sem próximo passo${d.stale > 0 ? ' · '+d.stale+' desatualiz.' : ''}</div>
       <div class="kico">⚠️</div>
-      <div class="ktag ${d.pend > 0 ? 'a' : 'g'}">${d.pend > 0 ? 'Definir ação' : '✓ Todas com plano'}</div></div>`;
+      <div class="ktag ${d.pend > 0 ? 'a' : 'g'}">${d.pend > 0 ? 'Definir ação' : '✓ Todas com plano'}</div>
+    </div>`;
 }
+
 
 /* ─── VENDEDOR ─── */
 function renderVend() {
@@ -1311,81 +1346,142 @@ function renderFC() {
 function renderAct() {
   const d = compute();
 
-  // Critical opps sorted by closing date
-  const opps = d.ab
-    .filter(r => r._urg4m || norm(r.RISCO) === 'alto')
-    .sort((a, b) => {
-      const da = a._dClose < 0 ? -9999 : a._dClose;
-      const db = b._dClose < 0 ? -9999 : b._dClose;
-      return da - db;
-    })
-    .slice(0, 6);
+  // ── BLOCO 1: Resumo macro ─────────────────────────────────────
+  const totalUrgVal  = d.ab.filter(r => r._urg4m).reduce((s,r) => s+r._valR, 0);
+  const semAcaoOpps  = d.ab.filter(r => r._semProx);
+  const staleOpps    = d.ab.filter(r => r._isStale);
 
-  const oppEl = document.getElementById('act-opps');
-  oppEl.innerHTML = opps.length ? opps.map(r => {
-    const dc = r._dClose;
-    const C  = dc < 0 ? '#8B0000' : dc <= 14 ? '#B91C1C' : dc <= 30 ? '#C2410C' : '#92400E';
-    const Bg = dc < 0 ? 'rgba(139,0,0,.08)' : dc <= 14 ? 'rgba(185,28,28,.07)' : dc <= 30 ? 'rgba(194,65,12,.07)' : 'rgba(146,64,14,.06)';
-    const lbl = dc < 0 ? `VENCIDA há ${Math.abs(dc)}d`
-              : dc === 0 ? 'VENCE HOJE'
-              : dc <= 14  ? `Vence em ${dc} dias`
-              :              `Fecha em ${dc} dias`;
-    const reasons = [];
-    if (r._semProx) reasons.push('⚠ Sem próx. passo');
-    if (r._isStale) reasons.push(dAgo(r._dtA) >= 9990 ? '🔕 Nunca atualizada' : `⏰ ${dAgo(r._dtA)}d sem atualização`);
-    if (norm(r.RISCO) === 'alto') reasons.push('🔴 Risco alto');
-    return `<div class="aitem" style="border-left:4px solid ${C}">
-      <div>
-        <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:2px">${r.CUSTOMER}</div>
-        <div style="font-size:.69rem;color:var(--muted2);margin-bottom:4px">${r.VENDEDOR} · ${r.ESTAGIO}</div>
-        ${reasons.length ? `<div style="font-size:.67rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap">${reasons.map(s=>`<span>${s}</span>`).join('')}</div>` : ''}
+  // Top 3 sem ação por vendedor
+  const semAcaoByVend = {};
+  semAcaoOpps.forEach(r => {
+    if (!semAcaoByVend[r.VENDEDOR]) semAcaoByVend[r.VENDEDOR] = [];
+    if (semAcaoByVend[r.VENDEDOR].length < 3) semAcaoByVend[r.VENDEDOR].push(r.CUSTOMER);
+  });
+  // Top 3 desatualizados por vendedor
+  const staleByVend = {};
+  staleOpps.forEach(r => {
+    if (!staleByVend[r.VENDEDOR]) staleByVend[r.VENDEDOR] = [];
+    if (staleByVend[r.VENDEDOR].length < 3) staleByVend[r.VENDEDOR].push(r.CUSTOMER);
+  });
+
+  const block1 = `
+  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:13px 15px;margin-bottom:14px">
+    <div style="font-family:var(--fh);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px">🔷 Prioridade Macro</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:10px 12px">
+        <div style="font-size:.65rem;color:var(--red);font-weight:700;text-transform:uppercase;margin-bottom:4px">🔴 Valor em Risco</div>
+        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--red)">${fK(totalUrgVal)}</div>
+        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">vencem em ≤ 4 meses</div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="background:${Bg};border:1px solid ${C}44;border-radius:7px;padding:4px 9px;margin-bottom:4px">
-          <div style="font-family:var(--fh);font-size:.88rem;font-weight:800;color:${C};line-height:1">${lbl}</div>
-          <div style="font-size:.62rem;color:${C};opacity:.75;margin-top:1px">${fDt(r._dtF)}</div>
+      <div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:10px 12px">
+        <div style="font-size:.65rem;color:var(--amber);font-weight:700;text-transform:uppercase;margin-bottom:4px">⚠ Sem Ação</div>
+        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--amber)">${semAcaoOpps.length}</div>
+        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">
+          ${Object.entries(semAcaoByVend).map(([v,cs]) =>
+            `<div>${v.split(' ')[0]}: ${cs.slice(0,3).join(', ')}${cs.length < semAcaoOpps.filter(r=>r.VENDEDOR===v).length ? '...' : ''}</div>`
+          ).join('')}
         </div>
-        <div style="font-family:var(--fm);font-size:.77rem;font-weight:600;color:var(--text)">${fK(r._valR)}</div>
       </div>
-    </div>`;
-  }).join('')
-  : '<div style="color:var(--green);font-size:.8rem;padding:14px 0;text-align:center;font-weight:600">✅ Nenhuma oportunidade crítica</div>';
+      <div style="background:rgba(112,128,160,.08);border:1px solid var(--brd);border-radius:8px;padding:10px 12px">
+        <div style="font-size:.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px">⏰ Desatualizadas</div>
+        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--muted2)">${staleOpps.length}</div>
+        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">
+          ${Object.entries(staleByVend).map(([v,cs]) =>
+            `<div>${v.split(' ')[0]}: ${cs.slice(0,3).join(', ')}</div>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
 
-  // Alerts per vendor — top 5 critical clients by closing date + no next step
-  const vendEl = document.getElementById('act-vend');
-  if (!d.perV.length) { vendEl.innerHTML='<div style="color:var(--muted)">Sem dados</div>'; return; }
+  // ── BLOCO 2: Por vendedor ─────────────────────────────────────
+  const block2 = d.perV.map(v => {
+    const vRisk    = d.ab.filter(r => r.VENDEDOR === v.v && r._urg4m);
+    const vSemAcao = d.ab.filter(r => r.VENDEDOR === v.v && r._semProx).slice(0,3);
+    const vRiskVal = vRisk.reduce((s,r) => s+r._valR, 0);
 
-  vendEl.innerHTML = d.perV.map(v => {
-    const top5 = v.top5crit;
-    if (!top5 || !top5.length) return '';
+    // Top 5 critical by closing date
+    const top5 = d.ab
+      .filter(r => r.VENDEDOR === v.v && (r._urg4m || norm(r.RISCO)==='alto'))
+      .sort((a,b) => {
+        const da = a._dClose < 0 ? -9999 : a._dClose === 9999 ? 99999 : a._dClose;
+        const db = b._dClose < 0 ? -9999 : b._dClose === 9999 ? 99999 : b._dClose;
+        return da - db;
+      })
+      .slice(0, 5);
 
-    const vendorRows = top5.map(r => {
-      const dc = r._dClose;
+    if (!top5.length && !vSemAcao.length) return '';
+
+    const top5rows = top5.map(r => {
+      const dc  = r._dClose;
       const dcC = dc < 0 ? 'var(--red)' : dc <= 30 ? 'var(--red)' : dc <= 90 ? 'var(--amber)' : 'var(--muted2)';
-      const dcTxt = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
-      const flags = [
-        r._semProx ? '⚠' : '',
-        r._isStale ? '⏰' : '',
-        norm(r.RISCO) === 'alto' ? '🔴' : '',
-      ].filter(Boolean).join(' ');
-      return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;
-          padding:6px 0;border-bottom:1px solid var(--brd2);font-size:.71rem">
+      const dcT = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
+      return `<div style="display:grid;grid-template-columns:1fr 80px 90px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd2);font-size:.72rem">
         <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
-        <span style="color:${dcC};font-family:var(--fm);font-size:.68rem;white-space:nowrap">${dcTxt}</span>
-        <span style="color:var(--muted2);font-size:.7rem">${flags}</span>
+        <span style="font-family:var(--fm);color:${dcC};font-size:.68rem;white-space:nowrap;text-align:center">${dcT}</span>
+        <span style="font-family:var(--fm);color:var(--blue);font-size:.69rem;text-align:right">${fK(r._valR)}</span>
       </div>`;
     }).join('');
 
-    return `<div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
-        <span style="font-family:var(--fh);font-size:.82rem;font-weight:700;color:var(--text)">${v.v}</span>
-        <span style="font-size:.67rem;color:var(--muted2)">${v.urg4m} urgente(s) · ${v.pend} sem ação</span>
+    const semAcaoText = vSemAcao.length
+      ? `<div style="font-size:.68rem;color:var(--amber);margin-top:5px">⚠ Sem ação: ${vSemAcao.map(r=>r.CUSTOMER).join(', ')}</div>`
+      : '';
+
+    return `
+    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <span style="font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--text)">${v.v}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${vRiskVal > 0 ? `<span style="background:var(--red2);color:var(--red);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">🔴 ${fK(vRiskVal)} em risco</span>` : ''}
+          ${vSemAcao.length > 0 ? `<span style="background:var(--amber2);color:var(--amber);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">⚠ ${vSemAcao.length} sem ação</span>` : ''}
+        </div>
       </div>
-      <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
-          font-weight:700;margin-bottom:4px">Top ${top5.length} críticos por prazo</div>
-      ${vendorRows}
+      ${top5.length ? `
+      <div style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:4px">Top ${top5.length} por prazo &nbsp;<span style="color:var(--muted2);font-weight:400">→ O QUE tratar &nbsp;·&nbsp; QUANDO &nbsp;·&nbsp; QUAL impacto</span></div>
+      <div style="font-size:.62rem;color:var(--muted2);display:grid;grid-template-columns:1fr 80px 90px;gap:6px;padding:3px 0;font-weight:700">
+        <span>Cliente</span><span style="text-align:center">Prazo</span><span style="text-align:right">Valor</span>
+      </div>
+      ${top5rows}` : ''}
+      ${semAcaoText}
     </div>`;
-  }).filter(Boolean).join('') || '<div style="color:var(--green);font-size:.78rem;padding:13px 0;text-align:center;font-weight:600">✅ Nenhum alerta</div>';
+  }).filter(Boolean).join('');
+
+  document.getElementById('act-opps').innerHTML = block1 + block2 ||
+    '<div style="color:var(--green);font-size:.8rem;padding:14px 0;text-align:center;font-weight:600">✅ Nenhuma oportunidade crítica</div>';
+
+  // ── ALERTAS: Top 5 por vendedor — prob 100%, alto valor, desatualizados
+  const alertsHtml = d.perV.map(v => {
+    const va = d.ab.filter(r => r.VENDEDOR === v.v);
+    // Prob 100% + alto valor + desatualizado (>7d) ou sem atualização
+    const atRisk = va
+      .filter(r => r._prob >= 1.0 && (r._isStale || !r._dtA))
+      .sort((a,b) => b._valR - a._valR)
+      .slice(0, 5);
+
+    if (!atRisk.length) return '';
+
+    return `<div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:8px">
+      <div style="font-family:var(--fh);font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:7px">
+        ${v.v} <span style="font-size:.68rem;color:var(--muted2);font-weight:400">${atRisk.length} crítico(s)</span>
+      </div>
+      <div style="font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px;display:grid;grid-template-columns:1fr 70px 70px;gap:6px">
+        <span>Cliente · 100% prob.</span><span style="text-align:center">Últ. atualiz.</span><span style="text-align:right">Valor</span>
+      </div>
+      ${atRisk.map(r => {
+        const da  = dAgo(r._dtA);
+        const daC = da >= 9990 ? 'var(--red)' : da > 7 ? 'var(--amber)' : 'var(--green)';
+        const daT = da >= 9990 ? 'Nunca' : `${da}d atrás`;
+        return `<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.71rem">
+          <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
+          <span style="color:${daC};font-size:.68rem;text-align:center">${daT}</span>
+          <span style="font-family:var(--fm);color:var(--blue);font-size:.68rem;text-align:right">${fK(r._valR)}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('act-vend').innerHTML = alertsHtml ||
+    '<div style="color:var(--green);font-size:.78rem;padding:13px 0;text-align:center;font-weight:600">✅ Todos atualizados</div>';
 }
 
 
@@ -1504,43 +1600,31 @@ async function loadSnap() {
   const body  = document.getElementById('snap-body');
   const dates = document.getElementById('snap-dates');
   if (!body) return;
-  body.innerHTML = '<div style="color:var(--muted2);font-size:.8rem;padding:14px 0;text-align:center">⟳ Buscando dados de snapshots...</div>';
+  body.innerHTML = '<div style="color:var(--muted2);font-size:.8rem;padding:14px 0;text-align:center">⟳ Buscando snapshots...</div>';
 
-  // Try SNAPSHOTS tab first, fallback to COMPARATIVO_AUTO
-  const urlsToTry = [SNAP_SHOTS_URL, SNAP_URL].filter(u => !u.includes('GID'));
-  let txt = null, usedUrl = '';
-
-  for (const url of urlsToTry) {
+  let txt = null;
+  // Try direct fetch first (GitHub Pages), then proxy
+  try {
+    txt = await tryFetch(SNAP_SHOTS_URL);
+  } catch {
     try {
-      txt = await tryFetch(url);
-      usedUrl = url;
-      break;
-    } catch {
-      try {
-        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url), { signal: AbortSignal.timeout(12000) });
-        txt = (await r.json()).contents;
-        usedUrl = url;
-        break;
-      } catch {}
+      const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SNAP_SHOTS_URL), { signal: AbortSignal.timeout(12000) });
+      txt = (await r.json()).contents;
+    } catch(e2) {
+      body.innerHTML = `<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--red)">
+        ⚠ Erro ao carregar: ${e2.message}. Verifique se a aba SNAPSHOTS está publicada no Sheets.</div>`;
+      return;
     }
   }
 
-  if (!txt) {
-    body.innerHTML = `<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--red)">
-      ⚠ Não foi possível carregar os snapshots. Verifique se a aba SNAPSHOTS está publicada no Google Sheets
-      (Arquivo → Compartilhar → Publicar na web → aba SNAPSHOTS → CSV) e cole o GID em SNAP_SHOTS_URL no código.
-    </div>`;
+  if (!txt || txt.length < 20) {
+    body.innerHTML = '<div style="color:var(--muted);font-size:.79rem;padding:14px 0;text-align:center">Dados vazios — verifique se há registros na aba SNAPSHOTS</div>';
     return;
   }
 
-  // Try to detect if it's SNAPSHOTS tab (has DATA_SNAPSHOT col) or COMPARATIVO_AUTO
-  const isSnapshots = txt.includes('DATA_SNAPSHOT') || txt.split(',').length > 5;
-  if (isSnapshots && txt.includes('DATA_SNAPSHOT')) {
-    renderSnapFromHistory(txt);
-  } else {
-    renderSnap(txt); // fallback to old COMPARATIVO_AUTO rendering
-  }
+  renderSnapFromHistory(txt);
 }
+
 
 // Parses SNAPSHOTS tab CSV and builds full analysis card
 function renderSnapFromHistory(txt) {
