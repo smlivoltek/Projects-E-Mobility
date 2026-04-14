@@ -1910,6 +1910,19 @@ function reload(){loadData();}
   document.getElementById('date-pill').textContent='📅 '+
     new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})
               .replace(/^\w/,c=>c.toUpperCase());
+
+  // Se aberto como arquivo local, mostra instrução clara em vez de travar
+  if (location.protocol === 'file:') {
+    showSt('err');
+    document.getElementById('err-msg').innerHTML =
+      '<strong>Arquivo aberto localmente (file://)</strong><br><br>' +
+      'O dashboard precisa estar no GitHub Pages para buscar dados.<br><br>' +
+      'Suba como <code>index.html</code> em <strong>smlivoltek/Projects-E-Mobility</strong> ' +
+      'e acesse pelo link do GitHub Pages.';
+    setPill('err', '✗ Arquivo local');
+    return;
+  }
+
   loadData();
 })();
 </script>
