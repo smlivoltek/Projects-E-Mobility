@@ -346,7 +346,7 @@ tr.tr-hot  td{background:rgba(10,143,72,.03)}
           Comparativo Semana Anterior vs Atual
         </div>
         <div style="font-size:.71rem;color:var(--muted2)">
-          Aba <strong>COMPARACAO</strong> · <span id="snap-dates"></span>
+          Aba <strong>SNAPSHOTS</strong> · <span id="snap-dates"></span>
         </div>
       </div>
       <button class="btn" onclick="loadSnap()">↻ Carregar snapshot</button>
@@ -458,7 +458,7 @@ const SNAP_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2
 const METAS     = { 'Bruno Reis': 50000000, 'Felipe Hanker': 12000000 };
 // SNAPSHOTS tab — substitua o GID abaixo (veja: abre a aba SNAPSHOTS no Sheets, copie o número após &gid= na URL)
 // SNAPSHOTS tab GID = 202441246 (from user's link)
-const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=6437464&single=true&output=csv';
+const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=202441246&single=true&output=csv';
 const DIAS_STALE = 7;   // alertas: sem atualização há > 7 dias   // dias sem atualização = desatualizado
 const DIAS_CRIT  = 180;  // ≤ 6 meses = prazo mínimo China
 const PAGE_SZ    = 15;
@@ -1662,12 +1662,34 @@ function renderSnapFromHistory(txt) {
 }
 
 // ── Render from SNAPSHOTS tab (date-based rows)
+// Columns: DATA_SNAPSHOT, ID_OPORTUNIDADE, CUSTOMER, VENDEDOR,
+//          TOTAL NET LVK (R$), ESTAGIO, STATUS, RISCO, PROBABILIDADE,
+//          PROX PASSO, DATA DA ULTIMA ATUALIZAÇÃO
 function renderFromSnapshots(rows, body, dates, colDisplay='') {
   function parseBRLSnap(v) {
     if (!v) return 0;
-    const s = String(v).replace(/R\$\s*/,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
-    return parseFloat(s) || 0;
+    const s = String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();
+    const n = parseFloat(s); return isNaN(n) ? 0 : n;
   }
+  function parseDtSnap(v) {
+    if (!v) return null;
+    const s = String(v).trim();
+    if (!s || s === '—' || s === '-') return null;
+    // DD/MM/YYYY
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+      const [d,m,y] = s.split('/');
+      return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    }
+    // Excel serial
+    if (/^\d{4,6}$/.test(s)) {
+      return new Date(Date.UTC(1899,11,31)+parseInt(s)*86400000);
+    }
+    const d = new Date(s.replace(' ','T'));
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const fmtDt = d => d ? d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+
+  // Get unique snapshot dates
   const dateSet = {};
   rows.forEach(r => {
     const d = (r['DATA_SNAPSHOT']||r['data_snapshot']||'').trim();
@@ -1675,24 +1697,225 @@ function renderFromSnapshots(rows, body, dates, colDisplay='') {
   });
   const allDates = Object.keys(dateSet).sort();
   if (allDates.length < 2) {
-    body.innerHTML = colDisplay + '<div style="color:var(--muted);font-size:.79rem;padding:14px 0;text-align:center">Apenas um snapshot disponível — aguarde a próxima semana</div>';
+    body.innerHTML = colDisplay + `<div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--amber)">
+      Apenas 1 data encontrada (${allDates[0]||'nenhuma'}) — adicione registros de outra semana na aba SNAPSHOTS e clique ↻ Carregar snapshot.
+    </div>`;
     return;
   }
+
   const dateAnt = allDates[allDates.length - 2];
   const dateAtu = allDates[allDates.length - 1];
-  if (dates) dates.textContent = `${dateAnt}  →  ${dateAtu}`;
+  if (dates) dates.textContent = `${dateAnt.slice(0,10)}  →  ${dateAtu.slice(0,10)}`;
 
   const rowsAnt = rows.filter(r => (r['DATA_SNAPSHOT']||'').trim() === dateAnt);
   const rowsAtu = rows.filter(r => (r['DATA_SNAPSHOT']||'').trim() === dateAtu);
-  const getLVK  = r => parseBRLSnap(r['TOTAL NET LVK (R$)']||r['TOTAL NET (R$)']||'');
-  const getVend = r => (r['VENDEDOR']||r['vendedor']||'').trim();
-  const getID   = r => (r['ID_OPORTUNIDADE']||r['ID AUTOMÁTICO']||'').trim();
 
-  buildSnapCard(rowsAnt, rowsAtu, getLVK, getVend, getID,
-    r => (r['CUSTOMER']||'').trim(),
-    r => (r['ESTAGIO']||'').trim(),
-    dateAnt, dateAtu, body, colDisplay);
+  // Index by ID
+  const mapAnt = {}, mapAtu = {};
+  rowsAnt.forEach(r => { const id=(r['ID_OPORTUNIDADE']||r['ID AUTOMÁTICO']||'').trim(); if(id) mapAnt[id]=r; });
+  rowsAtu.forEach(r => { const id=(r['ID_OPORTUNIDADE']||r['ID AUTOMÁTICO']||'').trim(); if(id) mapAtu[id]=r; });
+
+  const getLVK  = r => parseBRLSnap(r['TOTAL NET LVK (R$)']||r['TOTAL NET (R$)']||'');
+  const getVend = r => (r['VENDEDOR']||'').trim();
+
+  // Totals
+  const pipAnt = rowsAnt.reduce((s,r)=>s+getLVK(r),0);
+  const pipAtu = rowsAtu.reduce((s,r)=>s+getLVK(r),0);
+  const varPipe = pipAtu - pipAnt;
+  const varPct  = pipAnt>0 ? varPipe/pipAnt*100 : 0;
+  const varC    = varPipe>0?'var(--green)':varPipe<0?'var(--red)':'var(--muted2)';
+  const varArr  = varPipe>0?'▲':varPipe<0?'▼':'→';
+
+  // Per-vendor totals
+  const vends = [...new Set([...rowsAnt,...rowsAtu].map(r=>getVend(r)).filter(Boolean))];
+  const vendSt = {};
+  vends.forEach(v => { vendSt[v]={pipAnt:0,pipAtu:0,cntAnt:0,cntAtu:0}; });
+  rowsAnt.forEach(r => { const v=getVend(r); if(v&&vendSt[v]){vendSt[v].pipAnt+=getLVK(r);vendSt[v].cntAnt++;} });
+  rowsAtu.forEach(r => { const v=getVend(r); if(v&&vendSt[v]){vendSt[v].pipAtu+=getLVK(r);vendSt[v].cntAtu++;} });
+
+  // Store for KPI WoW badges
+  _snapPrev = { dateAnt, dateAtu, byVendor:{} };
+  Object.entries(vendSt).forEach(([v,s]) => { _snapPrev.byVendor[v]={pipe:s.pipAnt,count:s.cntAnt}; });
+
+  // ── Field-by-field diff ──────────────────────────────
+  const allIDs = new Set([...Object.keys(mapAnt), ...Object.keys(mapAtu)]);
+  const newOpps=[], removedOpps=[], changedOpps=[];
+
+  allIDs.forEach(id => {
+    const rA = mapAnt[id], rU = mapAtu[id];
+    if (!rA && rU) {
+      // New in current snapshot
+      newOpps.push({ id, customer:(rU['CUSTOMER']||id), vendor:getVend(rU), val:getLVK(rU), estagio:(rU['ESTAGIO']||'') });
+      return;
+    }
+    if (rA && !rU) {
+      // Removed from current snapshot
+      removedOpps.push({ id, customer:(rA['CUSTOMER']||id), vendor:getVend(rA), val:getLVK(rA) });
+      return;
+    }
+    // Both exist — compare fields
+    const diffs = [];
+
+    const vA=getLVK(rA), vU=getLVK(rU);
+    if (Math.abs(vU-vA)>0) diffs.push({ field:'Valor', from:fK(vA), to:fK(vU), delta:vU-vA });
+
+    const stA=String(rA['ESTAGIO']||'').trim(), stU=String(rU['ESTAGIO']||'').trim();
+    if (stA!==stU && (stA||stU)) diffs.push({ field:'Estágio', from:stA||'—', to:stU||'—' });
+
+    const ssA=String(rA['STATUS']||'').trim(), ssU=String(rU['STATUS']||'').trim();
+    if (ssA!==ssU && (ssA||ssU)) diffs.push({ field:'Status', from:ssA||'—', to:ssU||'—' });
+
+    const ppA=String(rA['PROX PASSO']||'').trim(), ppU=String(rU['PROX PASSO']||'').trim();
+    if (ppA!==ppU && (ppA||ppU)) diffs.push({ field:'Próx. Passo', from:ppA||'—', to:ppU||'—' });
+
+    const fA=rA['DATA DE FECHAMENTO']||rA['DATA FECHAMENTO']||'';
+    const fU=rU['DATA DE FECHAMENTO']||rU['DATA FECHAMENTO']||'';
+    const dtA=parseDtSnap(fA), dtU=parseDtSnap(fU);
+    const dtAs=fmtDt(dtA), dtUs=fmtDt(dtU);
+    if (dtAs!==dtUs && (fA||fU)) diffs.push({ field:'Fechamento', from:dtAs, to:dtUs });
+
+    const riA=String(rA['RISCO']||'').trim(), riU=String(rU['RISCO']||'').trim();
+    if (riA!==riU && (riA||riU)) diffs.push({ field:'Risco', from:riA||'—', to:riU||'—' });
+
+    const prA=String(rA['PROBABILIDADE']||'').trim(), prU=String(rU['PROBABILIDADE']||'').trim();
+    if (prA!==prU && (prA||prU)) diffs.push({ field:'Probabilidade', from:prA||'—', to:prU||'—' });
+
+    if (diffs.length > 0) {
+      changedOpps.push({
+        id, customer:(rU['CUSTOMER']||id), vendor:getVend(rU),
+        valAnt:vA, valAtu:vU, diffs
+      });
+    }
+  });
+
+  // Sort changed by value descending
+  changedOpps.sort((a,b) => b.valAtu - a.valAtu);
+
+  // Vendor rows
+  const vendorRows = Object.entries(vendSt).map(([v,s]) => {
+    const dv=s.pipAtu-s.pipAnt, dpct=s.pipAnt>0?dv/s.pipAnt*100:0;
+    const dc=dv>0?'var(--green)':dv<0?'var(--red)':'var(--muted2)';
+    const arr=dv>0?'🔼':dv<0?'🔽':'→';
+    const dcnt=s.cntAtu-s.cntAnt;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd2);gap:10px;flex-wrap:wrap">
+      <span style="font-weight:600;font-size:.78rem;color:var(--text)">${v}</span>
+      <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue)">${fK(s.pipAtu)}</span>
+      <span style="font-size:.75rem;font-weight:700;color:${dc}">${arr} ${dpct>=0?'+':''}${dpct.toFixed(1)}%</span>
+      <span style="font-size:.69rem;color:var(--muted2)">${dcnt>=0?'+':''}${dcnt} opp.</span>
+    </div>`;
+  }).join('');
+
+  // Diff color helpers
+  const diffBadge = (f,from,to,delta) => {
+    let color='var(--blue)', bg='var(--blue2)';
+    if (f==='Valor')    { color=delta>0?'var(--green)':'var(--red)'; bg=delta>0?'var(--green2)':'var(--red2)'; }
+    if (f==='Risco')    { color='var(--red)'; bg='var(--red2)'; }
+    if (f==='Status'||f==='Estágio') { color='var(--teal)'; bg='var(--teal2)'; }
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:${bg};border-radius:4px;padding:2px 7px;font-size:.67rem;font-weight:600;color:${color};white-space:nowrap">
+      <span style="color:var(--muted2);font-weight:400">${f}:</span>
+      <span style="text-decoration:line-through;opacity:.6">${from}</span>
+      → ${to}
+    </span>`;
+  };
+
+  // Changed opps rows
+  const changedRows = changedOpps.map(o => `
+    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:7px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+        <div>
+          <span style="font-weight:700;font-size:.8rem;color:var(--text)">${o.customer}</span>
+          <span style="font-size:.69rem;color:var(--muted2);margin-left:8px">${o.vendor} · ${o.id}</span>
+        </div>
+        <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue);font-weight:600;white-space:nowrap">${fK(o.valAtu)}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${o.diffs.map(d => diffBadge(d.field, d.from, d.to, d.delta)).join('')}
+      </div>
+    </div>`).join('');
+
+  // New opps
+  const newRows = newOpps.slice(0,5).map(o => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--brd2);font-size:.72rem;gap:8px">
+      <div><span style="font-weight:600;color:var(--text)">${o.customer}</span>
+        <span style="color:var(--muted2);margin-left:6px">${o.vendor}</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tb tb-fe" style="font-size:.62rem">${o.estagio||'Nova'}</span>
+        <span style="font-family:var(--fm);color:var(--green);font-weight:600">${fKs(o.val)}</span>
+      </div>
+    </div>`).join('');
+
+  // Removed opps
+  const removedRows = removedOpps.slice(0,5).map(o => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--brd2);font-size:.72rem;gap:8px">
+      <div><span style="font-weight:600;color:var(--text)">${o.customer}</span>
+        <span style="color:var(--muted2);margin-left:6px">${o.vendor}</span></div>
+      <span style="font-family:var(--fm);color:var(--red);font-weight:600">${fKs(o.val)}</span>
+    </div>`).join('');
+
+  body.innerHTML = colDisplay + `
+
+  <!-- KPI STRIP -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px">
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Pipeline Anterior <span style="color:var(--muted);font-size:.61rem">${dateAnt.slice(0,10)}</span></div>
+      <div class="snap-kpi-v" style="color:var(--muted2)">${fK(pipAnt)||'—'}</div>
+    </div>
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Pipeline Atual <span style="color:var(--muted);font-size:.61rem">${dateAtu.slice(0,10)}</span></div>
+      <div class="snap-kpi-v" style="color:var(--blue)">${fK(pipAtu)||'—'}</div>
+    </div>
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Variação</div>
+      <div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div>
+      <div style="font-size:.66rem;color:${varC};margin-top:2px">${varPipe!==0?(varPipe>0?'+':'')+fK(varPipe):'Sem variação'}</div>
+    </div>
+    <div class="snap-kpi">
+      <div class="snap-kpi-l">Mudanças</div>
+      <div class="snap-kpi-v" style="color:var(--purple)">${changedOpps.length}</div>
+      <div style="font-size:.66rem;color:var(--muted2);margin-top:2px">opp. com alterações</div>
+    </div>
+  </div>
+
+  <!-- POR VENDEDOR -->
+  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:11px 14px;margin-bottom:14px">
+    <div style="font-size:.64rem;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Por Vendedor</div>
+    ${vendorRows}
+  </div>
+
+  <!-- MUDANÇAS CAMPO A CAMPO -->
+  ${changedOpps.length ? `
+  <div style="margin-bottom:14px">
+    <div style="font-size:.64rem;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">
+      🔄 O QUE MUDOU — ${changedOpps.length} oportunidade(s)
+    </div>
+    ${changedRows}
+    ${changedOpps.length>0?`<div style="font-size:.67rem;color:var(--muted);margin-top:4px">Ordenado por valor atual (maior → menor)</div>`:''}
+  </div>` : `
+  <div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 14px;margin-bottom:14px;font-size:.77rem;color:var(--green);text-align:center">
+    ✅ Nenhuma alteração detectada entre os dois snapshots
+  </div>`}
+
+  <!-- NOVAS / REMOVIDAS -->
+  ${(newOpps.length||removedOpps.length) ? `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    ${newOpps.length?`
+    <div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 13px">
+      <div style="font-size:.64rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">🟢 Entraram (${newOpps.length})</div>
+      ${newRows}
+      ${newOpps.length>5?`<div style="font-size:.67rem;color:var(--muted);margin-top:5px">+${newOpps.length-5} mais</div>`:''}
+    </div>`:``}
+    ${removedOpps.length?`
+    <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:9px;padding:11px 13px">
+      <div style="font-size:.64rem;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">🔴 Saíram (${removedOpps.length})</div>
+      ${removedRows}
+      ${removedOpps.length>5?`<div style="font-size:.67rem;color:var(--muted);margin-top:5px">+${removedOpps.length-5} mais</div>`:''}
+    </div>`:``}
+  </div>` : ''}
+  `;
+
+  try { renderVend(); } catch(e) {}
 }
+
 
 // ── Render from COMPARACAO tab (before/after in same row)
 function renderFromComparacao(rows, cols, body, dates, colDisplay='') {
