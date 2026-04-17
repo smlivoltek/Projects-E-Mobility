@@ -88,14 +88,6 @@
     0%, 100% { opacity:1; transform:scale(1); }
     50% { opacity:.5; transform:scale(.9); }
   }
-  .btn {
-    padding:8px 16px; border-radius:8px;
-    background:var(--surface); border:1px solid var(--border);
-    color:var(--text); font-family:var(--font-body);
-    font-size:.8rem; font-weight:500; cursor:pointer;
-    transition:all .2s;
-  }
-  .btn:hover { background:var(--surface2); border-color:var(--teal); }
 
   .kpi-grid {
     display:grid;
@@ -279,7 +271,7 @@
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">Meta Anual</div>
-      <div class="kpi-value accent">R$ 12M</div>
+      <div class="kpi-value accent">$ 12M</div>
     </div>
     
     <div class="kpi-card">
@@ -290,7 +282,7 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Pipeline Total</div>
-      <div class="kpi-value accent" id="pipelineTotal">R$ 0</div>
+      <div class="kpi-value accent" id="pipelineTotal">$ 0</div>
       <div class="kpi-meta" id="percentualMeta">0% da meta</div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressMeta" style="width:0%"></div>
@@ -299,19 +291,19 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Valor Ponderado</div>
-      <div class="kpi-value" id="valorPonderado">R$ 0</div>
+      <div class="kpi-value" id="valorPonderado">$ 0</div>
       <div class="kpi-meta">Com probabilidade aplicada</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Fechado Ganho</div>
-      <div class="kpi-value" id="fechadoGanho">R$ 0</div>
+      <div class="kpi-value" id="fechadoGanho">$ 0</div>
       <div class="kpi-meta" id="percentualRealizado">0% realizado</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-value" id="ticketMedio">R$ 0</div>
+      <div class="kpi-value" id="ticketMedio">$ 0</div>
       <div class="kpi-meta">Por oportunidade</div>
     </div>
   </div>
@@ -338,7 +330,7 @@
           <th>ID</th>
           <th>Cliente</th>
           <th>Produto</th>
-          <th>Valor (R$)</th>
+          <th>Valor (USD)</th>
           <th>Estágio</th>
           <th>Prob.</th>
           <th>Prev. Fechamento</th>
@@ -399,23 +391,23 @@ function parseCSV(text) {
 }
 
 function processData(data) {
-  const ativas = data.filter(d => d.Estágio && d.Estágio !== 'Fechado-Perdido');
+  const ativas = data.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Perdido');
   
   const totalOportunidades = ativas.length;
   const pipelineTotal = ativas.reduce((sum, d) => {
-    const valor = parseFloat(d['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
+    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     return sum + valor;
   }, 0);
   
   const valorPonderado = ativas.reduce((sum, d) => {
-    const valor = parseFloat(d['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
-    const prob = parseFloat(d['Probabilidade (%)'] || 0) / 100;
+    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    const prob = parseFloat(d['PROBABILIDADE'] || 0) / 100;
     return sum + (valor * prob);
   }, 0);
   
-  const ganhos = data.filter(d => d.Estágio === 'Fechado-Ganho');
+  const ganhos = data.filter(d => d.ESTAGIO === 'Fechado-Ganho');
   const fechadoGanho = ganhos.reduce((sum, d) => {
-    const valor = parseFloat(d['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
+    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     return sum + valor;
   }, 0);
   
@@ -436,9 +428,9 @@ function processData(data) {
   
   const estagios = ['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechado-Ganho'];
   const dadosPorEstagio = estagios.map(estagio => {
-    const opps = data.filter(d => d.Estágio === estagio);
+    const opps = data.filter(d => d.ESTAGIO === estagio);
     const valor = opps.reduce((sum, d) => {
-      return sum + parseFloat(d['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
+      return sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     }, 0);
     return { estagio, count: opps.length, valor };
   });
@@ -537,24 +529,24 @@ function populateTable(data) {
   tbody.innerHTML = '';
   
   data.sort((a, b) => {
-    const valorA = parseFloat(a['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
-    const valorB = parseFloat(b['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
+    const valorA = parseFloat(a['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    const valorB = parseFloat(b['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     return valorB - valorA;
   });
   
   data.forEach(opp => {
     const tr = document.createElement('tr');
-    const valor = parseFloat(opp['Valor Estimado (R$)']?.replace(/[^\d.-]/g, '') || 0);
-    const statusClass = getStatusClass(opp.Estágio);
+    const valor = parseFloat(opp['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    const statusClass = getStatusClass(opp.ESTAGIO);
     
     tr.innerHTML = `
-      <td>${opp.ID || '-'}</td>
-      <td>${opp.Cliente || '-'}</td>
-      <td>${opp['Produto/Tipo'] || '-'}</td>
+      <td>${opp['ID AUTOMATICO'] || '-'}</td>
+      <td>${opp['CUSTOMER'] || '-'}</td>
+      <td>${opp['PRODUCT'] || '-'}</td>
       <td>${formatCurrency(valor)}</td>
-      <td><span class="status-badge ${statusClass}">${opp.Estágio || '-'}</span></td>
-      <td>${opp['Probabilidade (%)'] || '-'}%</td>
-      <td>${formatDate(opp['Data Fechamento Prevista']) || '-'}</td>
+      <td><span class="status-badge ${statusClass}">${opp.ESTAGIO || '-'}</span></td>
+      <td>${opp['PROBABILIDADE'] || '-'}%</td>
+      <td>${formatDate(opp['DATA DE FECHAMENTO']) || '-'}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -573,9 +565,9 @@ function getStatusClass(status) {
 }
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'BRL',
+    currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(value);
