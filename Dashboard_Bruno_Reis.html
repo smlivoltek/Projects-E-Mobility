@@ -544,7 +544,8 @@ async function loadData() {
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+  // Normalizar headers: remover quebras de linha e espaços extras
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').replace(/\s+/g, ' ').trim());
   
   return lines.slice(1).map(line => {
     const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.trim().replace(/^"|"$/g, ''));
