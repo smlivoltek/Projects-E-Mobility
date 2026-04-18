@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM Felipe Hanke 2026 · Livoltek</title>
+<title>CRM Bruno Reis 2026 · Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
     pointer-events:none;
   }
 
-  .wrapper { position:relative; z-index:1; max-width:1400px; margin:0 auto; padding:24px 28px; }
+  .wrapper { position:relative; z-index:1; max-width:1600px; margin:0 auto; padding:24px 28px; }
 
   .page-header {
     display:flex; align-items:center; justify-content:space-between;
@@ -91,7 +91,7 @@
 
   .kpi-grid {
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
     gap:18px;
     margin-bottom:32px;
   }
@@ -148,6 +148,82 @@
     transition:width .6s ease;
   }
 
+  .section-title {
+    font-family:var(--font-head);
+    font-size:1.3rem;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .action-panel {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    margin-bottom:32px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+
+  .action-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+
+  .action-card {
+    padding:16px;
+    border-radius:8px;
+    border-left:4px solid;
+  }
+  .action-card.risk { background:rgba(232,93,93,.08); border-color:var(--red); }
+  .action-card.warning { background:rgba(244,183,64,.08); border-color:var(--yellow); }
+  .action-card.info { background:rgba(0,163,181,.08); border-color:var(--teal); }
+
+  .action-card-value {
+    font-family:var(--font-head);
+    font-size:1.8rem;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .action-card.risk .action-card-value { color:var(--red); }
+  .action-card.warning .action-card-value { color:#D69F2E; }
+  .action-card.info .action-card-value { color:var(--teal); }
+
+  .action-card-label {
+    font-size:.75rem;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .top5-list {
+    list-style:none;
+  }
+  .top5-item {
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .top5-item:last-child { border-bottom:none; }
+  .top5-client {
+    font-weight:600;
+    color:var(--text);
+  }
+  .top5-days {
+    font-size:.85rem;
+    color:var(--muted);
+  }
+  .top5-value {
+    font-weight:700;
+    color:var(--teal);
+  }
+
   .charts-grid {
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(450px, 1fr));
@@ -189,7 +265,25 @@
     font-size:1.15rem;
     font-weight:600;
     color:var(--text);
+    margin-bottom:16px;
   }
+
+  .filters {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .filter-select {
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:var(--surface);
+    color:var(--text);
+    font-family:var(--font-body);
+    font-size:.85rem;
+    cursor:pointer;
+  }
+
   table {
     width:100%;
     border-collapse:collapse;
@@ -223,7 +317,17 @@
   .st-proposta { background:rgba(255,179,71,.15); color:#E89D3A; }
   .st-negociacao { background:rgba(232,93,93,.15); color:#E85D5D; }
   .st-ganho { background:rgba(45,159,108,.15); color:#2D9F6C; }
-  .st-perdido { background:rgba(232,93,93,.15); color:#E85D5D; opacity:.6; }
+  .st-perdido { background:rgba(232,93,93,.2); color:#E85D5D; opacity:.6; }
+
+  .alert-badge {
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    margin-left:6px;
+  }
+  .alert-risk { background:var(--red); }
+  .alert-warning { background:var(--yellow); }
 
   .error-box {
     background:rgba(232,93,93,.08);
@@ -238,7 +342,9 @@
   @media (max-width: 768px) {
     .charts-grid { grid-template-columns: 1fr; }
     .kpi-grid { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .filters { flex-direction: column; }
   }
 </style>
 </head>
@@ -271,7 +377,7 @@
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">Meta Anual</div>
-      <div class="kpi-value accent">$ 12M</div>
+      <div class="kpi-value accent">$12M</div>
     </div>
     
     <div class="kpi-card">
@@ -282,7 +388,7 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Pipeline Total</div>
-      <div class="kpi-value accent" id="pipelineTotal">$ 0</div>
+      <div class="kpi-value accent" id="pipelineTotal">$0</div>
       <div class="kpi-meta" id="percentualMeta">0% da meta</div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressMeta" style="width:0%"></div>
@@ -291,21 +397,54 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Valor Ponderado</div>
-      <div class="kpi-value" id="valorPonderado">$ 0</div>
+      <div class="kpi-value" id="valorPonderado">$0</div>
       <div class="kpi-meta">Com probabilidade aplicada</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Fechado Ganho</div>
-      <div class="kpi-value" id="fechadoGanho">$ 0</div>
+      <div class="kpi-value" id="fechadoGanho">$0</div>
       <div class="kpi-meta" id="percentualRealizado">0% realizado</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-value" id="ticketMedio">$ 0</div>
+      <div class="kpi-value" id="ticketMedio">$0</div>
       <div class="kpi-meta">Por oportunidade</div>
     </div>
+  </div>
+
+  <div class="section-title">⚠️ Painel de Ação</div>
+  <div class="action-panel">
+    <div class="action-grid">
+      <div class="action-card risk">
+        <div class="action-card-value" id="valorRisco">$0</div>
+        <div class="action-card-label">VALOR EM RISCO</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Vencem em ≤ 6 meses</div>
+      </div>
+
+      <div class="action-card warning">
+        <div class="action-card-value" id="semAcao">0</div>
+        <div class="action-card-label">SEM AÇÃO</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem próximo passo definido</div>
+      </div>
+
+      <div class="action-card info">
+        <div class="action-card-value" id="desatualizadas">0</div>
+        <div class="action-card-label">DESATUALIZADAS</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem atualização recente</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div style="font-weight:600;margin-bottom:12px;color:var(--text)">TOP 5 POR PRAZO — O que tratar hoje</div>
+      <ul class="top5-list" id="top5List"></ul>
+    </div>
+  </div>
+
+  <div class="section-title">📊 Forecast por Vendedor — Fechamentos por Mês</div>
+  <div class="chart-card" style="margin-bottom:32px">
+    <canvas id="forecastChart"></canvas>
   </div>
 
   <div class="charts-grid">
@@ -322,22 +461,48 @@
 
   <div class="table-card">
     <div class="table-header">
-      <h3>📋 Oportunidades Ativas</h3>
+      <h3>📋 Tabela Detalhada</h3>
+      <div class="filters">
+        <select class="filter-select" id="filterCliente">
+          <option value="">Todos os clientes</option>
+        </select>
+        <select class="filter-select" id="filterProduto">
+          <option value="">Todas as soluções</option>
+        </select>
+        <select class="filter-select" id="filterEstagio">
+          <option value="">Todos os estágios</option>
+        </select>
+        <select class="filter-select" id="filterStatus">
+          <option value="">Todos os status</option>
+          <option value="ativo">Ativo</option>
+          <option value="ganho">Fechado-Ganho</option>
+          <option value="perdido">Fechado-Perdido</option>
+        </select>
+        <select class="filter-select" id="filterAlertas">
+          <option value="">Todos os alertas</option>
+          <option value="risco">Em risco</option>
+          <option value="sem-acao">Sem ação</option>
+          <option value="desatualizado">Desatualizado</option>
+        </select>
+      </div>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Cliente</th>
-          <th>Produto</th>
-          <th>Valor (USD)</th>
-          <th>Estágio</th>
-          <th>Prob.</th>
-          <th>Prev. Fechamento</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Valor (USD)</th>
+            <th>Estágio</th>
+            <th>Prob.</th>
+            <th>Prev. Fechamento</th>
+            <th>Alertas</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -347,7 +512,8 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQyKDfCapbbTN4euNJKtlLu4MzeCynRz_F6nPiNlF0Kwd7lJY8l0uQ5HBm9QJMI2C4egzPGGm3BEoAF/pub?gid=0&single=true&output=csv';
 const META_ANUAL = 12000000;
 
-let funnelChart, stageChart;
+let allData = [];
+let funnelChart, stageChart, forecastChart;
 
 async function loadData() {
   try {
@@ -355,9 +521,9 @@ async function loadData() {
     if (!response.ok) throw new Error('Erro ao carregar dados');
     
     const csvText = await response.text();
-    const data = parseCSV(csvText);
+    allData = parseCSV(csvText);
     
-    processData(data);
+    processData(allData);
     
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -391,14 +557,11 @@ function parseCSV(text) {
 }
 
 function processData(data) {
-  const ativas = data.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Perdido');
+  const ativas = data.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Perdido' && d.ESTAGIO !== 'Fechado-Ganho');
   
+  // KPIs
   const totalOportunidades = ativas.length;
-  const pipelineTotal = ativas.reduce((sum, d) => {
-    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    return sum + valor;
-  }, 0);
-  
+  const pipelineTotal = ativas.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
   const valorPonderado = ativas.reduce((sum, d) => {
     const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     const prob = parseFloat(d['PROBABILIDADE'] || 0) / 100;
@@ -406,11 +569,7 @@ function processData(data) {
   }, 0);
   
   const ganhos = data.filter(d => d.ESTAGIO === 'Fechado-Ganho');
-  const fechadoGanho = ganhos.reduce((sum, d) => {
-    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    return sum + valor;
-  }, 0);
-  
+  const fechadoGanho = ganhos.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
   const ticketMedio = totalOportunidades > 0 ? pipelineTotal / totalOportunidades : 0;
   
   document.getElementById('totalOportunidades').textContent = totalOportunidades;
@@ -426,18 +585,139 @@ function processData(data) {
   document.getElementById('percentualRealizado').textContent = `${percentualRealizado.toFixed(1)}% realizado`;
   document.getElementById('progressMeta').style.width = `${Math.min(percentualMeta, 100)}%`;
   
+  // Painel de Ação
+  const hoje = new Date();
+  const seisMesesDepois = new Date(hoje);
+  seisMesesDepois.setMonth(hoje.getMonth() + 6);
+  
+  const emRisco = ativas.filter(d => {
+    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    const prob = parseFloat(d['PROBABILIDADE'] || 0);
+    const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
+    return valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois;
+  });
+  
+  const valorRisco = emRisco.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
+  const semAcao = ativas.filter(d => !d['PROX PASSO'] || d['PROX PASSO'].trim() === '');
+  
+  const trintaDiasAtras = new Date(hoje);
+  trintaDiasAtras.setDate(hoje.getDate() - 30);
+  const desatualizadas = ativas.filter(d => {
+    const dataAtualizacao = new Date(d['DATA DA ULTIMA ATUALIZAÇÃO']);
+    return dataAtualizacao < trintaDiasAtras;
+  });
+  
+  document.getElementById('valorRisco').textContent = formatCurrency(valorRisco);
+  document.getElementById('semAcao').textContent = semAcao.length;
+  document.getElementById('desatualizadas').textContent = desatualizadas.length;
+  
+  // TOP 5 por prazo
+  const top5 = [...ativas].sort((a, b) => {
+    const dateA = new Date(a['DATA DE FECHAMENTO']);
+    const dateB = new Date(b['DATA DE FECHAMENTO']);
+    return dateA - dateB;
+  }).slice(0, 5);
+  
+  const top5List = document.getElementById('top5List');
+  top5List.innerHTML = '';
+  top5.forEach(opp => {
+    const dataFechamento = new Date(opp['DATA DE FECHAMENTO']);
+    const diasRestantes = Math.ceil((dataFechamento - hoje) / (1000 * 60 * 60 * 24));
+    const valor = parseFloat(opp['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    
+    const li = document.createElement('li');
+    li.className = 'top5-item';
+    li.innerHTML = `
+      <span class="top5-client">${opp['CUSTOMER'] || '-'}</span>
+      <span class="top5-days">${diasRestantes}d</span>
+      <span class="top5-value">${formatCurrency(valor)}</span>
+    `;
+    top5List.appendChild(li);
+  });
+  
+  // Forecast
+  createForecastChart(data);
+  
+  // Charts
   const estagios = ['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechado-Ganho'];
   const dadosPorEstagio = estagios.map(estagio => {
     const opps = data.filter(d => d.ESTAGIO === estagio);
-    const valor = opps.reduce((sum, d) => {
-      return sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    }, 0);
+    const valor = opps.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
     return { estagio, count: opps.length, valor };
   });
   
   createFunnelChart(dadosPorEstagio);
   createStageChart(dadosPorEstagio);
+  
+  // Filtros
+  populateFilters(data);
   populateTable(ativas);
+}
+
+function createForecastChart(data) {
+  const hoje = new Date();
+  const mesesFuturo = {};
+  const mesesPassado = {};
+  
+  data.forEach(d => {
+    if (!d['DATA DE FECHAMENTO']) return;
+    const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
+    const mesAno = `${dataFechamento.getMonth() + 1}/${dataFechamento.getFullYear()}`;
+    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    
+    if (dataFechamento > hoje) {
+      mesesFuturo[mesAno] = (mesesFuturo[mesAno] || 0) + valor;
+    } else {
+      mesesPassado[mesAno] = (mesesPassado[mesAno] || 0) + valor;
+    }
+  });
+  
+  const todosMeses = [...new Set([...Object.keys(mesesFuturo), ...Object.keys(mesesPassado)])].sort();
+  
+  const ctx = document.getElementById('forecastChart');
+  if (forecastChart) forecastChart.destroy();
+  
+  forecastChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: todosMeses,
+      datasets: [
+        {
+          label: 'Futuro',
+          data: todosMeses.map(m => mesesFuturo[m] || 0),
+          backgroundColor: '#00A3B5',
+        },
+        {
+          label: 'Meses passados',
+          data: todosMeses.map(m => mesesPassado[m] || 0),
+          backgroundColor: '#8EA5B8',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          backgroundColor: '#FFFFFF',
+          titleColor: '#00A3B5',
+          bodyColor: '#1A2738',
+          borderColor: '#E1E8ED',
+          borderWidth: 1,
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#5E7A91' }, grid: { display: false } },
+        y: { ticks: { color: '#5E7A91' }, grid: { color: 'rgba(94,122,145,0.1)' } }
+      }
+    }
+  });
 }
 
 function createFunnelChart(data) {
@@ -471,14 +751,8 @@ function createFunnelChart(data) {
         }
       },
       scales: {
-        x: {
-          ticks: { color: '#5E7A91' },
-          grid: { color: 'rgba(94,122,145,0.1)' }
-        },
-        y: {
-          ticks: { color: '#1A2738' },
-          grid: { display: false }
-        }
+        x: { ticks: { color: '#5E7A91' }, grid: { color: 'rgba(94,122,145,0.1)' } },
+        y: { ticks: { color: '#1A2738' }, grid: { display: false } }
       }
     }
   });
@@ -503,10 +777,7 @@ function createStageChart(data) {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#1A2738', padding: 15 }
-        },
+        legend: { position: 'bottom', labels: { color: '#1A2738', padding: 15 } },
         tooltip: {
           backgroundColor: '#FFFFFF',
           titleColor: '#00A3B5',
@@ -524,6 +795,82 @@ function createStageChart(data) {
   });
 }
 
+function populateFilters(data) {
+  const clientes = [...new Set(data.map(d => d.CUSTOMER).filter(Boolean))].sort();
+  const produtos = [...new Set(data.map(d => d.PRODUCT).filter(Boolean))].sort();
+  const estagios = [...new Set(data.map(d => d.ESTAGIO).filter(Boolean))].sort();
+  
+  const filterCliente = document.getElementById('filterCliente');
+  const filterProduto = document.getElementById('filterProduto');
+  const filterEstagio = document.getElementById('filterEstagio');
+  
+  clientes.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    filterCliente.appendChild(opt);
+  });
+  
+  produtos.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    filterProduto.appendChild(opt);
+  });
+  
+  estagios.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e;
+    opt.textContent = e;
+    filterEstagio.appendChild(opt);
+  });
+  
+  [filterCliente, filterProduto, filterEstagio, document.getElementById('filterStatus'), document.getElementById('filterAlertas')].forEach(filter => {
+    filter.addEventListener('change', applyFilters);
+  });
+}
+
+function applyFilters() {
+  const filterCliente = document.getElementById('filterCliente').value;
+  const filterProduto = document.getElementById('filterProduto').value;
+  const filterEstagio = document.getElementById('filterEstagio').value;
+  const filterStatus = document.getElementById('filterStatus').value;
+  const filterAlertas = document.getElementById('filterAlertas').value;
+  
+  let filtered = [...allData];
+  
+  if (filterCliente) filtered = filtered.filter(d => d.CUSTOMER === filterCliente);
+  if (filterProduto) filtered = filtered.filter(d => d.PRODUCT === filterProduto);
+  if (filterEstagio) filtered = filtered.filter(d => d.ESTAGIO === filterEstagio);
+  if (filterStatus === 'ativo') filtered = filtered.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Ganho' && d.ESTAGIO !== 'Fechado-Perdido');
+  if (filterStatus === 'ganho') filtered = filtered.filter(d => d.ESTAGIO === 'Fechado-Ganho');
+  if (filterStatus === 'perdido') filtered = filtered.filter(d => d.ESTAGIO === 'Fechado-Perdido');
+  
+  if (filterAlertas === 'risco') {
+    const hoje = new Date();
+    const seisMesesDepois = new Date(hoje);
+    seisMesesDepois.setMonth(hoje.getMonth() + 6);
+    filtered = filtered.filter(d => {
+      const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+      const prob = parseFloat(d['PROBABILIDADE'] || 0);
+      const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
+      return valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois;
+    });
+  }
+  if (filterAlertas === 'sem-acao') filtered = filtered.filter(d => !d['PROX PASSO'] || d['PROX PASSO'].trim() === '');
+  if (filterAlertas === 'desatualizado') {
+    const hoje = new Date();
+    const trintaDiasAtras = new Date(hoje);
+    trintaDiasAtras.setDate(hoje.getDate() - 30);
+    filtered = filtered.filter(d => {
+      const dataAtualizacao = new Date(d['DATA DA ULTIMA ATUALIZAÇÃO']);
+      return dataAtualizacao < trintaDiasAtras;
+    });
+  }
+  
+  populateTable(filtered);
+}
+
 function populateTable(data) {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
@@ -539,6 +886,21 @@ function populateTable(data) {
     const valor = parseFloat(opp['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
     const statusClass = getStatusClass(opp.ESTAGIO);
     
+    // Alertas
+    const alertas = [];
+    const hoje = new Date();
+    const seisMesesDepois = new Date(hoje);
+    seisMesesDepois.setMonth(hoje.getMonth() + 6);
+    const dataFechamento = new Date(opp['DATA DE FECHAMENTO']);
+    const prob = parseFloat(opp['PROBABILIDADE'] || 0);
+    
+    if (valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois) {
+      alertas.push('<span class="alert-badge alert-risk" title="Em risco"></span>');
+    }
+    if (!opp['PROX PASSO'] || opp['PROX PASSO'].trim() === '') {
+      alertas.push('<span class="alert-badge alert-warning" title="Sem ação"></span>');
+    }
+    
     tr.innerHTML = `
       <td>${opp['ID AUTOMATICO'] || '-'}</td>
       <td>${opp['CUSTOMER'] || '-'}</td>
@@ -547,6 +909,7 @@ function populateTable(data) {
       <td><span class="status-badge ${statusClass}">${opp.ESTAGIO || '-'}</span></td>
       <td>${opp['PROBABILIDADE'] || '-'}%</td>
       <td>${formatDate(opp['DATA DE FECHAMENTO']) || '-'}</td>
+      <td>${alertas.join('')}</td>
     `;
     tbody.appendChild(tr);
   });
