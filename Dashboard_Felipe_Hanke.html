@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM Bruno Reis 2026 · Livoltek</title>
+<title>CRM Felipe Hanke 2026 · Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -214,10 +214,12 @@
   .top5-client {
     font-weight:600;
     color:var(--text);
+    flex:1;
   }
   .top5-days {
     font-size:.85rem;
     color:var(--muted);
+    margin:0 12px;
   }
   .top5-value {
     font-weight:700;
@@ -319,16 +321,6 @@
   .st-ganho { background:rgba(45,159,108,.15); color:#2D9F6C; }
   .st-perdido { background:rgba(232,93,93,.2); color:#E85D5D; opacity:.6; }
 
-  .alert-badge {
-    display:inline-block;
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    margin-left:6px;
-  }
-  .alert-risk { background:var(--red); }
-  .alert-warning { background:var(--yellow); }
-
   .error-box {
     background:rgba(232,93,93,.08);
     border:1px solid rgba(232,93,93,.2);
@@ -377,7 +369,7 @@
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-label">Meta Anual</div>
-      <div class="kpi-value accent">$12M</div>
+      <div class="kpi-value accent" id="metaAnual">R$ 0</div>
     </div>
     
     <div class="kpi-card">
@@ -388,7 +380,7 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Pipeline Total</div>
-      <div class="kpi-value accent" id="pipelineTotal">$0</div>
+      <div class="kpi-value accent" id="pipelineTotal">R$ 0</div>
       <div class="kpi-meta" id="percentualMeta">0% da meta</div>
       <div class="progress-bar">
         <div class="progress-fill" id="progressMeta" style="width:0%"></div>
@@ -397,19 +389,19 @@
 
     <div class="kpi-card">
       <div class="kpi-label">Valor Ponderado</div>
-      <div class="kpi-value" id="valorPonderado">$0</div>
+      <div class="kpi-value" id="valorPonderado">R$ 0</div>
       <div class="kpi-meta">Com probabilidade aplicada</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Fechado Ganho</div>
-      <div class="kpi-value" id="fechadoGanho">$0</div>
+      <div class="kpi-value" id="fechadoGanho">R$ 0</div>
       <div class="kpi-meta" id="percentualRealizado">0% realizado</div>
     </div>
 
     <div class="kpi-card">
       <div class="kpi-label">Ticket Médio</div>
-      <div class="kpi-value" id="ticketMedio">$0</div>
+      <div class="kpi-value" id="ticketMedio">R$ 0</div>
       <div class="kpi-meta">Por oportunidade</div>
     </div>
   </div>
@@ -418,21 +410,21 @@
   <div class="action-panel">
     <div class="action-grid">
       <div class="action-card risk">
-        <div class="action-card-value" id="valorRisco">$0</div>
+        <div class="action-card-value" id="valorRisco">R$ 0</div>
         <div class="action-card-label">VALOR EM RISCO</div>
         <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Vencem em ≤ 6 meses</div>
       </div>
 
       <div class="action-card warning">
         <div class="action-card-value" id="semAcao">0</div>
-        <div class="action-card-label">SEM AÇÃO</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem próximo passo definido</div>
+        <div class="action-card-label">SEM PRÓXIMO PASSO</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem ação definida</div>
       </div>
 
       <div class="action-card info">
         <div class="action-card-value" id="desatualizadas">0</div>
         <div class="action-card-label">DESATUALIZADAS</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem atualização recente</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Sem atualização há 30+ dias</div>
       </div>
     </div>
 
@@ -442,7 +434,7 @@
     </div>
   </div>
 
-  <div class="section-title">📊 Forecast por Vendedor — Fechamentos por Mês</div>
+  <div class="section-title">📊 Forecast por Mês — Fechamentos Previstos</div>
   <div class="chart-card" style="margin-bottom:32px">
     <canvas id="forecastChart"></canvas>
   </div>
@@ -454,7 +446,7 @@
     </div>
 
     <div class="chart-card">
-      <div class="chart-title">💰 Pipeline por Estágio</div>
+      <div class="chart-title">💰 Pipeline por Estágio (R$)</div>
       <canvas id="stageChart"></canvas>
     </div>
   </div>
@@ -467,7 +459,7 @@
           <option value="">Todos os clientes</option>
         </select>
         <select class="filter-select" id="filterProduto">
-          <option value="">Todas as soluções</option>
+          <option value="">Todos os produtos</option>
         </select>
         <select class="filter-select" id="filterEstagio">
           <option value="">Todos os estágios</option>
@@ -478,11 +470,10 @@
           <option value="ganho">Fechado-Ganho</option>
           <option value="perdido">Fechado-Perdido</option>
         </select>
-        <select class="filter-select" id="filterAlertas">
-          <option value="">Todos os alertas</option>
-          <option value="risco">Em risco</option>
-          <option value="sem-acao">Sem ação</option>
-          <option value="desatualizado">Desatualizado</option>
+        <select class="filter-select" id="filterPrioridade">
+          <option value="">Todas as prioridades</option>
+          <option value="Alta">Alta</option>
+          <option value="Média">Média</option>
         </select>
       </div>
     </div>
@@ -493,11 +484,11 @@
             <th>ID</th>
             <th>Cliente</th>
             <th>Produto</th>
-            <th>Valor (USD)</th>
+            <th>Valor (R$)</th>
             <th>Estágio</th>
             <th>Prob.</th>
-            <th>Prev. Fechamento</th>
-            <th>Alertas</th>
+            <th>Fechamento</th>
+            <th>Prioridade</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -509,19 +500,34 @@
 </div>
 
 <script>
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQyKDfCapbbTN4euNJKtlLu4MzeCynRz_F6nPiNlF0Kwd7lJY8l0uQ5HBm9QJMI2C4egzPGGm3BEoAF/pub?gid=0&single=true&output=csv';
-const META_ANUAL = 12000000;
+const URL_CALCULOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQczy6301Qjb8oR6KBJ1964t72t7nsVfsKdg5oYeBCZ1wRGiUfbWfHpvLdVYJ17wg/pub?gid=1347367384&single=true&output=csv';
+const URL_META = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQczy6301Qjb8oR6KBJ1964t72t7nsVfsKdg5oYeBCZ1wRGiUfbWfHpvLdVYJ17wg/pub?gid=1195986005&single=true&output=csv';
 
 let allData = [];
+let metaAnual = 12000000; // Fallback
 let funnelChart, stageChart, forecastChart;
 
 async function loadData() {
   try {
-    const response = await fetch(CSV_URL);
+    // Carregar META
+    const metaResponse = await fetch(URL_META);
+    if (metaResponse.ok) {
+      const metaText = await metaResponse.text();
+      const metaData = parseCSV(metaText);
+      if (metaData.length > 0 && metaData[0].meta_anual) {
+        metaAnual = parseFloat(metaData[0].meta_anual) || 12000000;
+      }
+    }
+    
+    // Carregar DADOS (CALCULOS)
+    const response = await fetch(URL_CALCULOS);
     if (!response.ok) throw new Error('Erro ao carregar dados');
     
     const csvText = await response.text();
     allData = parseCSV(csvText);
+    
+    console.log('Dados carregados:', allData.length, 'registros');
+    console.log('Meta anual:', metaAnual);
     
     processData(allData);
     
@@ -536,7 +542,7 @@ async function loadData() {
     document.getElementById('error').innerHTML = `
       <div class="error-box">
         <h3>❌ Erro ao carregar dados</h3>
-        <p style="color:var(--muted)">Verifique se a planilha está publicada corretamente</p>
+        <p style="color:var(--muted)">${error.message}</p>
       </div>
     `;
   }
@@ -544,115 +550,119 @@ async function loadData() {
 
 function parseCSV(text) {
   const lines = text.trim().split('\n');
-  // Normalizar headers: remover quebras de linha e espaços extras
   const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').replace(/\s+/g, ' ').trim());
   
-  return lines.slice(1).map(line => {
-    const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).filter(line => line.trim()).map(line => {
+    const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
+    const mapped = values.map(v => v.trim().replace(/^"|"$/g, ''));
+    
     const obj = {};
     headers.forEach((header, i) => {
-      obj[header] = values[i] || '';
+      obj[header] = mapped[i] || '';
     });
     return obj;
-  });
+  }).filter(row => row[headers[0]]);
 }
 
 function processData(data) {
-  const ativas = data.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Perdido' && d.ESTAGIO !== 'Fechado-Ganho');
+  // Exibir meta
+  document.getElementById('metaAnual').textContent = formatBRL(metaAnual);
   
-  // KPIs
+  const ativas = data.filter(d => d.status && d.status.toLowerCase() === 'ativo');
+  
+  // KPIs usando total_net_brl da aba CALCULOS
   const totalOportunidades = ativas.length;
-  const pipelineTotal = ativas.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
-  const valorPonderado = ativas.reduce((sum, d) => {
-    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    const prob = parseFloat(d['PROBABILIDADE'] || 0) / 100;
-    return sum + (valor * prob);
+  
+  const pipelineTotal = ativas.reduce((sum, d) => {
+    const valor = parseFloat(d.total_net_brl || 0);
+    return sum + valor;
   }, 0);
   
-  const ganhos = data.filter(d => d.ESTAGIO === 'Fechado-Ganho');
-  const fechadoGanho = ganhos.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
+  const valorPonderado = ativas.reduce((sum, d) => {
+    const valor = parseFloat(d.weighted_pipeline_brl || 0);
+    return sum + valor;
+  }, 0);
+  
+  const ganhos = data.filter(d => d.status && d.status.toLowerCase() === 'ganho');
+  const fechadoGanho = ganhos.reduce((sum, d) => {
+    const valor = parseFloat(d.total_net_brl || 0);
+    return sum + valor;
+  }, 0);
+  
   const ticketMedio = totalOportunidades > 0 ? pipelineTotal / totalOportunidades : 0;
   
   document.getElementById('totalOportunidades').textContent = totalOportunidades;
-  document.getElementById('pipelineTotal').textContent = formatCurrency(pipelineTotal);
-  document.getElementById('valorPonderado').textContent = formatCurrency(valorPonderado);
-  document.getElementById('fechadoGanho').textContent = formatCurrency(fechadoGanho);
-  document.getElementById('ticketMedio').textContent = formatCurrency(ticketMedio);
+  document.getElementById('pipelineTotal').textContent = formatBRL(pipelineTotal);
+  document.getElementById('valorPonderado').textContent = formatBRL(valorPonderado);
+  document.getElementById('fechadoGanho').textContent = formatBRL(fechadoGanho);
+  document.getElementById('ticketMedio').textContent = formatBRL(ticketMedio);
   
-  const percentualMeta = (pipelineTotal / META_ANUAL) * 100;
-  const percentualRealizado = (fechadoGanho / META_ANUAL) * 100;
+  const percentualMeta = (pipelineTotal / metaAnual) * 100;
+  const percentualRealizado = (fechadoGanho / metaAnual) * 100;
   
   document.getElementById('percentualMeta').textContent = `${percentualMeta.toFixed(1)}% da meta`;
   document.getElementById('percentualRealizado').textContent = `${percentualRealizado.toFixed(1)}% realizado`;
   document.getElementById('progressMeta').style.width = `${Math.min(percentualMeta, 100)}%`;
   
-  // Painel de Ação
+  calcularPainelAcao(ativas, data);
+  createForecastChart(data);
+  createCharts(data);
+  populateFilters(data);
+  populateTable(ativas);
+}
+
+function calcularPainelAcao(ativas, allData) {
   const hoje = new Date();
   const seisMesesDepois = new Date(hoje);
   seisMesesDepois.setMonth(hoje.getMonth() + 6);
   
   const emRisco = ativas.filter(d => {
-    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    const prob = parseFloat(d['PROBABILIDADE'] || 0);
-    const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
-    return valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois;
+    const dataFech = parseDate(d.data_fechamento_prevista);
+    const prob = parseFloat((d.probabilidade || '0').replace('%', ''));
+    const valor = parseFloat(d.total_net_brl || 0);
+    
+    return dataFech && dataFech <= seisMesesDepois && prob >= 70 && valor >= 500000;
   });
   
-  const valorRisco = emRisco.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
-  const semAcao = ativas.filter(d => !d['PROX PASSO'] || d['PROX PASSO'].trim() === '');
+  const valorRisco = emRisco.reduce((sum, d) => sum + parseFloat(d.total_net_brl || 0), 0);
+  const semAcao = ativas.filter(d => !d.proxima_acao || d.proxima_acao.trim() === '');
   
   const trintaDiasAtras = new Date(hoje);
   trintaDiasAtras.setDate(hoje.getDate() - 30);
   const desatualizadas = ativas.filter(d => {
-    const dataAtualizacao = new Date(d['DATA DA ULTIMA ATUALIZAÇÃO']);
-    return dataAtualizacao < trintaDiasAtras;
+    const dataAtual = parseDate(d.ultima_atualizacao);
+    return dataAtual && dataAtual < trintaDiasAtras;
   });
   
-  document.getElementById('valorRisco').textContent = formatCurrency(valorRisco);
+  document.getElementById('valorRisco').textContent = formatBRL(valorRisco);
   document.getElementById('semAcao').textContent = semAcao.length;
   document.getElementById('desatualizadas').textContent = desatualizadas.length;
   
-  // TOP 5 por prazo
+  // TOP 5
   const top5 = [...ativas].sort((a, b) => {
-    const dateA = new Date(a['DATA DE FECHAMENTO']);
-    const dateB = new Date(b['DATA DE FECHAMENTO']);
+    const dateA = parseDate(a.data_fechamento_prevista);
+    const dateB = parseDate(b.data_fechamento_prevista);
+    if (!dateA) return 1;
+    if (!dateB) return -1;
     return dateA - dateB;
   }).slice(0, 5);
   
   const top5List = document.getElementById('top5List');
   top5List.innerHTML = '';
   top5.forEach(opp => {
-    const dataFechamento = new Date(opp['DATA DE FECHAMENTO']);
-    const diasRestantes = Math.ceil((dataFechamento - hoje) / (1000 * 60 * 60 * 24));
-    const valor = parseFloat(opp['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    const dataFech = parseDate(opp.data_fechamento_prevista);
+    const diasRestantes = dataFech ? Math.ceil((dataFech - hoje) / (1000 * 60 * 60 * 24)) : '?';
+    const valor = parseFloat(opp.total_net_brl || 0);
     
     const li = document.createElement('li');
     li.className = 'top5-item';
     li.innerHTML = `
-      <span class="top5-client">${opp['CUSTOMER'] || '-'}</span>
+      <span class="top5-client">${opp.cliente || '-'}</span>
       <span class="top5-days">${diasRestantes}d</span>
-      <span class="top5-value">${formatCurrency(valor)}</span>
+      <span class="top5-value">${formatBRL(valor)}</span>
     `;
     top5List.appendChild(li);
   });
-  
-  // Forecast
-  createForecastChart(data);
-  
-  // Charts
-  const estagios = ['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechado-Ganho'];
-  const dadosPorEstagio = estagios.map(estagio => {
-    const opps = data.filter(d => d.ESTAGIO === estagio);
-    const valor = opps.reduce((sum, d) => sum + parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0), 0);
-    return { estagio, count: opps.length, valor };
-  });
-  
-  createFunnelChart(dadosPorEstagio);
-  createStageChart(dadosPorEstagio);
-  
-  // Filtros
-  populateFilters(data);
-  populateTable(ativas);
 }
 
 function createForecastChart(data) {
@@ -661,12 +671,15 @@ function createForecastChart(data) {
   const mesesPassado = {};
   
   data.forEach(d => {
-    if (!d['DATA DE FECHAMENTO']) return;
-    const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
-    const mesAno = `${dataFechamento.getMonth() + 1}/${dataFechamento.getFullYear()}`;
-    const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
+    if (d.status && d.status.toLowerCase() !== 'ativo') return;
     
-    if (dataFechamento > hoje) {
+    const dataFech = parseDate(d.data_fechamento_prevista);
+    if (!dataFech) return;
+    
+    const mesAno = `${String(dataFech.getMonth() + 1).padStart(2, '0')}/${dataFech.getFullYear()}`;
+    const valor = parseFloat(d.total_net_brl || 0);
+    
+    if (dataFech > hoje) {
       mesesFuturo[mesAno] = (mesesFuturo[mesAno] || 0) + valor;
     } else {
       mesesPassado[mesAno] = (mesesPassado[mesAno] || 0) + valor;
@@ -689,7 +702,7 @@ function createForecastChart(data) {
           backgroundColor: '#00A3B5',
         },
         {
-          label: 'Meses passados',
+          label: 'Passado',
           data: todosMeses.map(m => mesesPassado[m] || 0),
           backgroundColor: '#8EA5B8',
         }
@@ -697,98 +710,72 @@ function createForecastChart(data) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
       plugins: {
         legend: { position: 'top' },
         tooltip: {
-          backgroundColor: '#FFFFFF',
-          titleColor: '#00A3B5',
-          bodyColor: '#1A2738',
-          borderColor: '#E1E8ED',
-          borderWidth: 1,
           callbacks: {
-            label: function(context) {
-              return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-            }
+            label: ctx => ctx.dataset.label + ': ' + formatBRL(ctx.parsed.y)
           }
         }
       },
       scales: {
-        x: { ticks: { color: '#5E7A91' }, grid: { display: false } },
-        y: { ticks: { color: '#5E7A91' }, grid: { color: 'rgba(94,122,145,0.1)' } }
+        y: { 
+          ticks: { 
+            callback: value => 'R$ ' + (value / 1000).toFixed(0) + 'k'
+          }
+        }
       }
     }
   });
 }
 
-function createFunnelChart(data) {
-  const ctx = document.getElementById('funnelChart');
+function createCharts(data) {
+  const estagios = ['Prospecção', 'Qualificação', 'Proposta', 'Negociação', 'Fechado-Ganho'];
+  const dadosPorEstagio = estagios.map(estagio => {
+    const opps = data.filter(d => d.estagio === estagio);
+    const valor = opps.reduce((sum, d) => sum + parseFloat(d.total_net_brl || 0), 0);
+    return { estagio, count: opps.length, valor };
+  });
+  
+  const ctxFunnel = document.getElementById('funnelChart');
   if (funnelChart) funnelChart.destroy();
   
-  funnelChart = new Chart(ctx, {
+  funnelChart = new Chart(ctxFunnel, {
     type: 'bar',
     data: {
-      labels: data.map(d => d.estagio),
+      labels: dadosPorEstagio.map(d => d.estagio),
       datasets: [{
         label: 'Quantidade',
-        data: data.map(d => d.count),
+        data: dadosPorEstagio.map(d => d.count),
         backgroundColor: ['#8EA5B8', '#F4B740', '#FFB347', '#E85D5D', '#2D9F6C'],
-        borderColor: '#00A3B5',
-        borderWidth: 1
       }]
     },
     options: {
       indexAxis: 'y',
       responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#FFFFFF',
-          titleColor: '#00A3B5',
-          bodyColor: '#1A2738',
-          borderColor: '#E1E8ED',
-          borderWidth: 1
-        }
-      },
-      scales: {
-        x: { ticks: { color: '#5E7A91' }, grid: { color: 'rgba(94,122,145,0.1)' } },
-        y: { ticks: { color: '#1A2738' }, grid: { display: false } }
-      }
+      plugins: { legend: { display: false } }
     }
   });
-}
-
-function createStageChart(data) {
-  const ctx = document.getElementById('stageChart');
+  
+  const ctxStage = document.getElementById('stageChart');
   if (stageChart) stageChart.destroy();
   
-  stageChart = new Chart(ctx, {
+  stageChart = new Chart(ctxStage, {
     type: 'doughnut',
     data: {
-      labels: data.map(d => d.estagio),
+      labels: dadosPorEstagio.map(d => d.estagio),
       datasets: [{
-        data: data.map(d => d.valor),
+        data: dadosPorEstagio.map(d => d.valor),
         backgroundColor: ['#8EA5B8', '#F4B740', '#FFB347', '#E85D5D', '#2D9F6C'],
-        borderColor: '#FFFFFF',
-        borderWidth: 3
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#1A2738', padding: 15 } },
+        legend: { position: 'bottom' },
         tooltip: {
-          backgroundColor: '#FFFFFF',
-          titleColor: '#00A3B5',
-          bodyColor: '#1A2738',
-          borderColor: '#E1E8ED',
-          borderWidth: 1,
           callbacks: {
-            label: function(context) {
-              return context.label + ': ' + formatCurrency(context.parsed);
-            }
+            label: ctx => ctx.label + ': ' + formatBRL(ctx.parsed)
           }
         }
       }
@@ -797,9 +784,9 @@ function createStageChart(data) {
 }
 
 function populateFilters(data) {
-  const clientes = [...new Set(data.map(d => d.CUSTOMER).filter(Boolean))].sort();
-  const produtos = [...new Set(data.map(d => d.PRODUCT).filter(Boolean))].sort();
-  const estagios = [...new Set(data.map(d => d.ESTAGIO).filter(Boolean))].sort();
+  const clientes = [...new Set(data.map(d => d.cliente).filter(Boolean))].sort();
+  const produtos = [...new Set(data.map(d => d.produto).filter(Boolean))].sort();
+  const estagios = [...new Set(data.map(d => d.estagio).filter(Boolean))].sort();
   
   const filterCliente = document.getElementById('filterCliente');
   const filterProduto = document.getElementById('filterProduto');
@@ -826,7 +813,7 @@ function populateFilters(data) {
     filterEstagio.appendChild(opt);
   });
   
-  [filterCliente, filterProduto, filterEstagio, document.getElementById('filterStatus'), document.getElementById('filterAlertas')].forEach(filter => {
+  [filterCliente, filterProduto, filterEstagio, document.getElementById('filterStatus'), document.getElementById('filterPrioridade')].forEach(filter => {
     filter.addEventListener('change', applyFilters);
   });
 }
@@ -836,38 +823,17 @@ function applyFilters() {
   const filterProduto = document.getElementById('filterProduto').value;
   const filterEstagio = document.getElementById('filterEstagio').value;
   const filterStatus = document.getElementById('filterStatus').value;
-  const filterAlertas = document.getElementById('filterAlertas').value;
+  const filterPrioridade = document.getElementById('filterPrioridade').value;
   
   let filtered = [...allData];
   
-  if (filterCliente) filtered = filtered.filter(d => d.CUSTOMER === filterCliente);
-  if (filterProduto) filtered = filtered.filter(d => d.PRODUCT === filterProduto);
-  if (filterEstagio) filtered = filtered.filter(d => d.ESTAGIO === filterEstagio);
-  if (filterStatus === 'ativo') filtered = filtered.filter(d => d.ESTAGIO && d.ESTAGIO !== 'Fechado-Ganho' && d.ESTAGIO !== 'Fechado-Perdido');
-  if (filterStatus === 'ganho') filtered = filtered.filter(d => d.ESTAGIO === 'Fechado-Ganho');
-  if (filterStatus === 'perdido') filtered = filtered.filter(d => d.ESTAGIO === 'Fechado-Perdido');
-  
-  if (filterAlertas === 'risco') {
-    const hoje = new Date();
-    const seisMesesDepois = new Date(hoje);
-    seisMesesDepois.setMonth(hoje.getMonth() + 6);
-    filtered = filtered.filter(d => {
-      const valor = parseFloat(d['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-      const prob = parseFloat(d['PROBABILIDADE'] || 0);
-      const dataFechamento = new Date(d['DATA DE FECHAMENTO']);
-      return valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois;
-    });
-  }
-  if (filterAlertas === 'sem-acao') filtered = filtered.filter(d => !d['PROX PASSO'] || d['PROX PASSO'].trim() === '');
-  if (filterAlertas === 'desatualizado') {
-    const hoje = new Date();
-    const trintaDiasAtras = new Date(hoje);
-    trintaDiasAtras.setDate(hoje.getDate() - 30);
-    filtered = filtered.filter(d => {
-      const dataAtualizacao = new Date(d['DATA DA ULTIMA ATUALIZAÇÃO']);
-      return dataAtualizacao < trintaDiasAtras;
-    });
-  }
+  if (filterCliente) filtered = filtered.filter(d => d.cliente === filterCliente);
+  if (filterProduto) filtered = filtered.filter(d => d.produto === filterProduto);
+  if (filterEstagio) filtered = filtered.filter(d => d.estagio === filterEstagio);
+  if (filterStatus === 'ativo') filtered = filtered.filter(d => d.status && d.status.toLowerCase() === 'ativo');
+  if (filterStatus === 'ganho') filtered = filtered.filter(d => d.status && d.status.toLowerCase() === 'ganho');
+  if (filterStatus === 'perdido') filtered = filtered.filter(d => d.status && d.status.toLowerCase() === 'perdido');
+  if (filterPrioridade) filtered = filtered.filter(d => d.prioridade === filterPrioridade);
   
   populateTable(filtered);
 }
@@ -876,41 +842,23 @@ function populateTable(data) {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
   
-  data.sort((a, b) => {
-    const valorA = parseFloat(a['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    const valorB = parseFloat(b['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    return valorB - valorA;
-  });
+  data.sort((a, b) => parseFloat(b.total_net_brl || 0) - parseFloat(a.total_net_brl || 0));
   
   data.forEach(opp => {
     const tr = document.createElement('tr');
-    const valor = parseFloat(opp['NET PRICE (USD)']?.replace(/[^\d.-]/g, '') || 0);
-    const statusClass = getStatusClass(opp.ESTAGIO);
-    
-    // Alertas
-    const alertas = [];
-    const hoje = new Date();
-    const seisMesesDepois = new Date(hoje);
-    seisMesesDepois.setMonth(hoje.getMonth() + 6);
-    const dataFechamento = new Date(opp['DATA DE FECHAMENTO']);
-    const prob = parseFloat(opp['PROBABILIDADE'] || 0);
-    
-    if (valor >= 500000 && prob >= 70 && dataFechamento <= seisMesesDepois) {
-      alertas.push('<span class="alert-badge alert-risk" title="Em risco"></span>');
-    }
-    if (!opp['PROX PASSO'] || opp['PROX PASSO'].trim() === '') {
-      alertas.push('<span class="alert-badge alert-warning" title="Sem ação"></span>');
-    }
+    const valor = parseFloat(opp.total_net_brl || 0);
+    const statusClass = getStatusClass(opp.estagio);
+    const prob = opp.probabilidade || '-';
     
     tr.innerHTML = `
-      <td>${opp['ID AUTOMATICO'] || '-'}</td>
-      <td>${opp['CUSTOMER'] || '-'}</td>
-      <td>${opp['PRODUCT'] || '-'}</td>
-      <td>${formatCurrency(valor)}</td>
-      <td><span class="status-badge ${statusClass}">${opp.ESTAGIO || '-'}</span></td>
-      <td>${opp['PROBABILIDADE'] || '-'}%</td>
-      <td>${formatDate(opp['DATA DE FECHAMENTO']) || '-'}</td>
-      <td>${alertas.join('')}</td>
+      <td>${opp.id_opportunity || '-'}</td>
+      <td>${opp.cliente || '-'}</td>
+      <td>${opp.produto || '-'}</td>
+      <td>${formatBRL(valor)}</td>
+      <td><span class="status-badge ${statusClass}">${opp.estagio || '-'}</span></td>
+      <td>${prob}</td>
+      <td>${formatDate(opp.data_fechamento_prevista) || '-'}</td>
+      <td><span style="font-weight:600;color:${opp.prioridade === 'Alta' ? '#E85D5D' : '#5E7A91'}">${opp.prioridade || '-'}</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -928,10 +876,10 @@ function getStatusClass(status) {
   return map[status] || 'st-prospeccao';
 }
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat('en-US', {
+function formatBRL(value) {
+  return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'BRL',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(value);
@@ -939,9 +887,24 @@ function formatCurrency(value) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  if (isNaN(date)) return dateStr;
+  const date = parseDate(dateStr);
+  if (!date) return dateStr;
   return date.toLocaleDateString('pt-BR');
+}
+
+function parseDate(dateStr) {
+  if (!dateStr) return null;
+  
+  let date = new Date(dateStr);
+  if (!isNaN(date)) return date;
+  
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    date = new Date(parts[2], parts[1] - 1, parts[0]);
+    if (!isNaN(date)) return date;
+  }
+  
+  return null;
 }
 
 loadData();
