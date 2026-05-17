@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM E-Mobility · Livoltek Power Brasil</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A1628;--s1:#0F1E35;--s2:#152540;
+  --br:rgba(255,255,255,.07);
+  --teal:#00D4E8;--teal-a:rgba(0,212,232,.1);
+  --amber:#FFB347;--amber-a:rgba(255,179,71,.1);
+  --green:#3DD68C;--green-a:rgba(61,214,140,.1);
+  --txt:#D8EAF5;--muted:#5B7A99;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+
+/* LOGO */
+.logo{display:flex;align-items:center;gap:14px;margin-bottom:48px}
+.logo-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#00D4E8,#0074B7);display:grid;place-items:center;font-size:24px;box-shadow:0 0 32px rgba(0,212,232,.25)}
+.logo-title{font-family:var(--fh);font-size:1.6rem;font-weight:800;letter-spacing:-.02em}
+.logo-title span{color:var(--teal)}
+.logo-sub{font-size:.75rem;color:var(--muted);margin-top:3px}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:860px}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:28px 26px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:14px;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden;cursor:pointer}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.card-teal::before{background:linear-gradient(90deg,var(--teal),transparent)}
+.card-amber::before{background:linear-gradient(90deg,var(--amber),transparent)}
+.card-dir::before{background:linear-gradient(90deg,var(--green),var(--amber))}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.card-teal:hover{border-color:rgba(0,212,232,.3)}
+.card-amber:hover{border-color:rgba(255,179,71,.3)}
+.card-dir:hover{border-color:rgba(61,214,140,.3)}
+
+.card-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.ci-teal{background:var(--teal-a)}
+.ci-amber{background:var(--amber-a)}
+.ci-green{background:var(--green-a)}
+
+.card-name{font-family:var(--fh);font-size:1rem;font-weight:700}
+.card-role{font-size:.72rem;color:var(--muted);margin-top:2px}
+.card-desc{font-size:.76rem;color:var(--muted);line-height:1.65;flex:1}
+
+.card-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.7rem;font-weight:600;width:fit-content;margin-top:4px}
+.tag-teal{background:var(--teal-a);color:var(--teal);border:1px solid rgba(0,212,232,.2)}
+.tag-amber{background:var(--amber-a);color:var(--amber);border:1px solid rgba(255,179,71,.2)}
+.tag-green{background:var(--green-a);color:var(--green);border:1px solid rgba(61,214,140,.2)}
+.tag-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+
+.card-arrow{position:absolute;bottom:22px;right:22px;font-size:1rem;color:var(--muted);opacity:.4;transition:opacity .2s,transform .2s}
+.card:hover .card-arrow{opacity:1;transform:translateX(3px)}
+
+/* FOOTER */
+.footer{margin-top:48px;font-size:.68rem;color:var(--muted);text-align:center;line-height:1.8}
+
+/* GRID RULE */
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(0,212,232,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,232,.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none}
+.logo,.cards,.footer{position:relative;z-index:1}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card:nth-child(1){animation:fadeUp .4s .05s ease both}
+.card:nth-child(2){animation:fadeUp .4s .15s ease both}
+.card:nth-child(3){animation:fadeUp .4s .25s ease both}
+
+@media(max-width:680px){
+  .cards{grid-template-columns:1fr}
+  .logo-title{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-title">CRM <span>E-MOBILITY</span></div>
+      <div class="logo-sub">Livoltek Power Brasil · Selecione seu perfil de acesso</div>
+    </div>
+  </div>
+
+  <div class="cards">
+
+    <!-- Bruno Reis -->
+    <a class="card card-teal" href="dashboard-bruno-reis.html">
+      <div class="card-icon ci-teal">👤</div>
+      <div>
+        <div class="card-name" style="color:#00D4E8">Bruno Reis</div>
+        <div class="card-role">Executivo de Vendas</div>
+      </div>
+      <div class="card-desc">Pipeline pessoal, top 10 oportunidades-chave, fechamentos previstos e acompanhamento diário.</div>
+      <span class="card-tag tag-teal"><span class="tag-dot"></span>Acesso individual</span>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- Felipe Hanker -->
+    <a class="card card-amber" href="dashboard-felipe-hanker.html">
+      <div class="card-icon ci-amber">👤</div>
+      <div>
+        <div class="card-name" style="color:#FFB347">Felipe Hanker</div>
+        <div class="card-role">Executivo de Vendas</div>
+      </div>
+      <div class="card-desc">Pipeline pessoal, top 10 oportunidades-chave, fechamentos previstos e acompanhamento diário.</div>
+      <span class="card-tag tag-amber"><span class="tag-dot"></span>Acesso individual</span>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- Direção -->
+    <a class="card card-dir" href="dashboard-direcao.html">
+      <div class="card-icon ci-green">📊</div>
+      <div>
+        <div class="card-name" style="color:#3DD68C">Direção</div>
+        <div class="card-role">Visão Gerencial Completa</div>
+      </div>
+      <div class="card-desc">Todos os vendedores, comparativo semanal via Snapshots, forecast e análise de pipeline LVK vs Total.</div>
+      <span class="card-tag tag-green"><span class="tag-dot"></span>Acesso direção</span>
+      <span class="card-arrow">→</span>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    Livoltek Power Brasil · CRM E-Mobility 2026<br>
+    Dados atualizados automaticamente via Google Sheets · Sem intervenção manual
+  </div>
+
+</body>
+</html>
