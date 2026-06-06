@@ -3,2041 +3,647 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>CRM Projects E-Mobility 2026 · Livoltek</title>
+<title>E-Mobility CRM Dashboard | Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#EEF2FA;--s1:#FFFFFF;--s2:#F4F7FC;--s3:#E6EBF5;
-  --brd:rgba(30,70,160,.13);--brd2:rgba(30,70,160,.07);
-  --teal:#006E9C;--teal2:rgba(0,110,156,.1);
-  --green:#0A8F48;--green2:rgba(10,143,72,.1);
-  --amber:#A86200;--amber2:rgba(168,98,0,.1);
-  --red:#BE1E1E;--red2:rgba(190,30,30,.1);
-  --blue:#1A3FD4;--blue2:rgba(26,63,212,.1);
-  --purple:#6020C8;--purple2:rgba(96,32,200,.1);
-  --text:#1C2A44;--muted:#7080A0;--muted2:#405070;
-  --fh:'Barlow Condensed',sans-serif;
-  --fb:'DM Sans',sans-serif;
-  --fm:'DM Mono',monospace;
+  --bg:#FAFBFC;--s1:#FFFFFF;--s2:#F8FAFB;
+  --brd:#E5E7EB;--brd-light:#F0F1F3;
+  --green:#10B981;--green-bg:#ECFDF5;
+  --amber:#F59E0B;--amber-bg:#FFFBEB;
+  --red:#EF4444;--red-bg:#FEF2F2;
+  --blue:#3B82F6;--blue-bg:#EFF6FF;
+  --text:#1F2937;--muted:#6B7280;--muted2:#9CA3AF;
+  --fh:'Plus Jakarta Sans',sans-serif;
+  --fb:'Lato',sans-serif;
+  --fm:'IBM Plex Mono',monospace;
 }
 html{font-size:14px;scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse 900px 600px at 0% 0%,rgba(26,63,212,.04),transparent 50%),
-             radial-gradient(ellipse 700px 500px at 100% 100%,rgba(96,32,200,.03),transparent 50%)}
-.wrap{position:relative;z-index:1;max-width:1680px;margin:0 auto;padding:18px 22px 48px}
 
-/* ─── HEADER ─── */
+.wrap{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:24px 32px 48px}
+
+/* HEADER */
 .hdr{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid var(--brd);flex-wrap:wrap;gap:10px}
-.hdr-l{display:flex;align-items:center;gap:0}
-.hdr-t{font-family:var(--fh);font-size:1.65rem;font-weight:900;letter-spacing:-.01em;
-  line-height:1;color:var(--teal)}
-.hdr-s{font-size:.68rem;color:var(--muted2);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
-.hdr-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;
-  font-size:.71rem;font-family:var(--fb);font-weight:500;border:1px solid;white-space:nowrap}
-.p-load{background:var(--amber2);border-color:rgba(168,98,0,.3);color:var(--amber)}
-.p-ok  {background:var(--green2);border-color:rgba(10,143,72,.3);color:var(--green)}
-.p-err {background:var(--red2);border-color:rgba(190,30,30,.25);color:var(--red)}
-.p-date{background:var(--blue2);border-color:rgba(26,63,212,.2);color:var(--blue)}
-.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:currentColor;animation:blink 1.4s ease infinite}
-@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-.btn{background:var(--s1);border:1px solid var(--brd);border-radius:7px;padding:6px 13px;
-  color:var(--muted2);font-size:.72rem;font-family:var(--fb);cursor:pointer;
-  transition:all .15s;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.btn:hover{background:var(--s2);color:var(--blue);border-color:rgba(26,63,212,.3)}
-.btn-b{background:var(--blue2);border-color:rgba(26,63,212,.25);color:var(--blue)}
+  margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--brd);gap:20px;flex-wrap:wrap}
+.hdr-l{display:flex;align-items:baseline;gap:12px}
+.hdr-t{font-family:var(--fh);font-size:2rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
+.hdr-s{font-size:.75rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;
+  font-size:.72rem;font-family:var(--fb);font-weight:600;border:1px solid;white-space:nowrap;letter-spacing:.03em;background:#fff}
+.p-load{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.p-ok{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.p-err{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.p-date{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse-anim 1.4s ease infinite}
+@keyframes pulse-anim{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
 
-/* ─── LOADING / ERROR ─── */
-.state{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:55vh;gap:14px;text-align:center;padding:0 20px}
+/* NAVIGATION */
+.nav-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--brd);padding-bottom:0}
+.nav-tab{padding:12px 16px;background:transparent;border:none;color:var(--muted2);cursor:pointer;
+  font-family:var(--fh);font-weight:600;font-size:.9rem;letter-spacing:.02em;
+  border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .2s;position:relative}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* GRID & SPACING */
+.g1{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:768px){.g2,.g3,.g4,.g6{grid-template-columns:1fr}}
+
+/* KPI CARD */
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:18px;
+  position:relative;overflow:hidden;transition:all .2s}
+.kpi:hover{border-color:#D1D5DB;background:var(--s2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.kpi.t::before{background:var(--blue)}.kpi.g::before{background:var(--green)}
+.kpi.a::before{background:var(--amber)}.kpi.r::before{background:var(--red)}
+.kpi.b::before{background:var(--blue)}.kpi.p::before{background:var(--blue)}
+
+.kpi-l{font-size:.76rem;color:var(--muted2);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.kpi-v{font-family:var(--fh);font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;color:var(--text)}
+.kpi-v.t{color:var(--blue)}.kpi-v.g{color:var(--green)}.kpi-v.a{color:var(--amber)}.kpi-v.r{color:var(--red)}.kpi-v.b{color:var(--blue)}
+.kpi-s{font-size:.7rem;color:var(--muted2);margin-top:8px}
+
+/* TRAFFIC LIGHT */
+.semaforo{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.tl{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:20px;text-align:center;
+  transition:all .2s;position:relative;overflow:hidden}
+.tl:hover{border-color:#D1D5DB}
+.tl::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.tl.healthy::before{background:rgba(16,185,129,.04)}.tl.warning::before{background:rgba(245,158,11,.04)}.tl.critical::before{background:rgba(239,68,68,.04)}
+.tl:hover::before{opacity:1}
+.tl-icon{font-size:3rem;margin-bottom:8px}
+.tl-label{font-family:var(--fh);font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.tl-desc{font-size:.75rem;color:var(--muted);line-height:1.6}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:20px;margin-bottom:20px}
+.card-t{font-family:var(--fh);font-size:1.05rem;font-weight:700;color:var(--text);
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;letter-spacing:-.01em}
+.card-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+
+/* SECTION */
+.sec{font-family:var(--fh);font-size:.65rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text);margin-bottom:14px;margin-top:24px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--brd)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{background:var(--s2);color:var(--muted);font-weight:600;padding:10px 12px;text-align:left;
+  border-bottom:1px solid var(--brd);font-size:.73rem;letter-spacing:.04em;text-transform:uppercase}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--brd-light);color:var(--text)}
+.tbl tr:hover{background:var(--s2)}
+.tbl .muted{color:var(--muted2);font-size:.78rem}
+.tbl .num{font-family:var(--fm);font-weight:600;text-align:right}
+.tbl .status{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;white-space:nowrap;background:#f3f4f6;color:var(--muted)}
+.tbl .status.lead{background:var(--blue-bg);color:var(--blue)}
+.tbl .status.proposta{background:var(--amber-bg);color:var(--amber)}
+.tbl .status.negociacao{background:var(--blue-bg);color:var(--blue)}
+.tbl .status.ganhou{background:var(--green-bg);color:var(--green)}
+.tbl .status.perdida{background:var(--red-bg);color:var(--red)}
+
+/* ALERT */
+.alert{background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:12px 14px;
+  margin-bottom:12px;font-size:.8rem;color:var(--red);display:flex;align-items:flex-start;gap:8px}
+.alert-icon{flex-shrink:0;margin-top:1px}
+
+/* LOADING */
+.loader{text-align:center;padding:40px 20px;color:var(--muted)}
 .spinner{width:40px;height:40px;border:3px solid var(--brd);border-top-color:var(--blue);
-  border-radius:50%;animation:spin .85s linear infinite}
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.st-t{font-family:var(--fh);font-size:1.3rem;font-weight:700;color:var(--text)}
-.st-s{font-size:.79rem;color:var(--muted2);max-width:400px;line-height:1.7}
-.sbox{background:var(--s2);border:1px solid var(--brd);border-radius:10px;
-  padding:13px 17px;max-width:430px;width:100%}
-.step{display:flex;align-items:flex-start;gap:9px;padding:6px 0;
-  border-bottom:1px solid var(--brd2);font-size:.74rem;color:var(--muted2)}
-.step:last-child{border-bottom:none}
-.step.done{color:var(--green)}.step.active{color:var(--blue)}.step.fail{color:var(--red)}
-.step-i{width:15px;flex-shrink:0;font-style:normal}
 
-/* ─── DEBUG ─── */
-.dbar{background:var(--s2);border:1px solid var(--brd);border-radius:8px;
-  padding:7px 13px;margin-bottom:11px;display:flex;align-items:center;
-  flex-wrap:wrap;gap:9px;font-size:.69rem;color:var(--muted2);font-family:var(--fm)}
-.dbar strong{color:var(--blue);font-weight:500}
-.cpanel{display:none;background:var(--s2);border:1px solid var(--brd);border-radius:8px;
-  padding:9px 13px;margin-bottom:11px;font-size:.68rem;color:var(--muted2);
-  font-family:var(--fm);max-height:170px;overflow-y:auto}
-.cchip{display:inline-block;margin:2px 4px 2px 0;padding:2px 6px;
-  background:var(--s3);border-radius:4px;border:1px solid var(--brd)}
-.cchip.found{background:var(--blue2);border-color:rgba(26,63,212,.3);color:var(--blue)}
+/* HIDDEN */
+.hidden{display:none}
 
-/* ─── SECTION ─── */
-.sec{font-family:var(--fh);font-size:.66rem;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--teal);margin-bottom:10px;
-  display:flex;align-items:center;gap:7px}
-.sec::after{content:'';flex:1;height:1px;background:var(--brd2)}
-.sn{background:var(--teal);color:#fff;border-radius:3px;padding:1px 6px;
-  font-size:.59rem;font-weight:800}
-
-/* ─── GRID ─── */
-.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:16px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px}
-.mb{margin-bottom:16px}
-
-/* ─── CARD ─── */
-.card{background:var(--s1);border:1px solid var(--brd);border-radius:12px;
-  padding:17px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.ct{font-family:var(--fh);font-size:.88rem;font-weight:700;
-  display:flex;align-items:center;gap:7px;margin-bottom:13px;color:var(--text)}
-.cdot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0}
-
-/* ─── KPI ─── */
-.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;
-  padding:15px;position:relative;overflow:hidden;
-  transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.kpi:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.09)}
-.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
-.kpi.t::after{background:var(--teal)}.kpi.g::after{background:var(--green)}
-.kpi.a::after{background:var(--amber)}.kpi.r::after{background:var(--red)}
-.kpi.b::after{background:var(--blue)}.kpi.p::after{background:var(--purple)}
-.kl{font-size:.66rem;color:var(--muted2);text-transform:uppercase;
-  letter-spacing:.06em;margin-bottom:4px;font-weight:600}
-.kv{font-family:var(--fh);font-weight:800;font-size:1.55rem;line-height:1;margin-bottom:3px}
-.kv.t{color:var(--teal)}.kv.g{color:var(--green)}.kv.a{color:var(--amber)}
-.kv.r{color:var(--red)}.kv.b{color:var(--blue)}.kv.p{color:var(--purple)}
-.ks{font-size:.66rem;color:var(--muted);line-height:1.4}
-.kico{position:absolute;right:11px;bottom:7px;font-size:1.45rem;opacity:.07}
-.ktag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;
-  font-size:.64rem;font-weight:600;margin-top:3px}
-.ktag.g{background:var(--green2);color:var(--green)}
-.ktag.a{background:var(--amber2);color:var(--amber)}
-.ktag.r{background:var(--red2);color:var(--red)}
-
-/* ─── PROGRESS ─── */
-.prog{height:6px;background:rgba(0,0,0,.08);border-radius:3px;
-  overflow:hidden;margin-top:6px}
-.prog-f{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
-
-/* ─── VENDOR ─── */
-.vc-name{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--text)}
-.vc-cnt{font-size:.66rem;color:var(--muted2);margin-top:2px}
-.vc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:9px}
-.vs{background:var(--s2);border:1px solid var(--brd2);border-radius:6px;padding:7px 8px}
-.vs-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;
-  letter-spacing:.04em;margin-bottom:2px;font-weight:600}
-.vs-v{font-family:var(--fm);font-size:.77rem;color:var(--text)}
-.vbadge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;
-  font-size:.65rem;font-weight:700;white-space:nowrap}
-.vb-g{background:var(--green2);color:var(--green)}
-.vb-a{background:var(--amber2);color:var(--amber)}
-.vb-r{background:var(--red2);color:var(--red)}
-.vpills{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
-.vp{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;
-  border-radius:4px;font-size:.62rem;font-weight:600}
-.vp-r{background:rgba(190,30,30,.09);color:var(--red)}
-.vp-a{background:rgba(168,98,0,.09);color:var(--amber)}
-.vp-m{background:rgba(112,128,160,.1);color:var(--muted2)}
-.vp-b{background:rgba(26,63,212,.09);color:var(--blue)}
-
-/* ─── FUNIL MINI ─── */
-.fn-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
-.fn-st{font-family:var(--fh);font-size:.7rem;font-weight:700;width:82px;
-  color:var(--muted2);text-transform:uppercase;letter-spacing:.03em}
-.fn-bg{flex:1;height:22px;background:rgba(0,0,0,.06);border-radius:5px;overflow:hidden}
-.fn-f{height:100%;border-radius:5px;display:flex;align-items:center;padding:0 7px;
-  font-size:.66rem;font-weight:700;color:rgba(255,255,255,.95);
-  transition:width 1s cubic-bezier(.4,0,.2,1)}
-.fn-v{font-family:var(--fm);font-size:.74rem;color:var(--text);min-width:100px;text-align:right}
-
-/* ─── QUALITY MINI ─── */
-.qrow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--brd2)}
-.qrow:last-child{border-bottom:none}
-.qlbl{flex:1;font-size:.72rem;color:var(--text)}
-.qbar{flex:1;height:6px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden}
-.qf{height:100%;border-radius:3px;transition:width .9s ease}
-.qpct{font-family:var(--fm);font-size:.75rem;min-width:32px;text-align:right;font-weight:600}
-
-/* ─── FORECAST ─── */
-.fc-wrap{height:260px;position:relative}
-
-/* ─── ACTION ─── */
-.aitem{background:var(--s1);border:1px solid var(--brd);border-radius:10px;
-  padding:12px 14px;margin-bottom:7px;display:grid;
-  grid-template-columns:1fr auto;gap:12px;align-items:center;
-  box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.aitem:last-child{margin-bottom:0}
-.alitem{background:var(--s1);border:1px solid var(--brd);border-radius:8px;
-  padding:9px 12px;display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
-.alitem:last-child{margin-bottom:0}
-.alb{flex:1;font-size:.73rem;color:var(--text)}.alb strong{font-weight:600}
-.alb-s{font-size:.67rem;color:var(--muted2);margin-top:1px}
-
-/* ─── TABLE FILTERS ─── */
-.tbl-filters{background:var(--s1);border:1px solid var(--brd);border-radius:10px;
-  padding:13px 15px;margin-bottom:11px;display:flex;align-items:center;
-  flex-wrap:wrap;gap:7px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.flbl{font-size:.67rem;color:var(--muted2);font-weight:700;
-  text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;margin-right:2px}
-select.fsel,input.fsrch{background:var(--s1);border:1px solid var(--brd);border-radius:7px;
-  color:var(--text);font-size:.73rem;font-family:var(--fb);padding:7px 10px;
-  outline:none;transition:border .15s;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-select.fsel:focus,input.fsrch:focus{border-color:rgba(26,63,212,.45)}
-select.fsel option{background:#fff}
-input.fsrch{min-width:165px}
-input.fsrch::placeholder{color:var(--muted)}
-.f-count{font-size:.7rem;color:var(--muted2);font-family:var(--fm);margin-left:4px}
-
-/* ─── TABLE ─── */
-.twrap{overflow-x:auto;border-radius:10px;border:1px solid var(--brd);
-  box-shadow:0 1px 4px rgba(0,0,0,.06)}
-table{width:100%;border-collapse:collapse;font-size:.74rem}
-thead tr{background:var(--s2)}
-th{padding:9px 10px;font-family:var(--fh);font-size:.64rem;font-weight:700;
-  letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);
-  border-bottom:1px solid var(--brd);white-space:nowrap;cursor:pointer;
-  user-select:none;text-align:left}
-th:hover{color:var(--blue)}
-th.sk{color:var(--blue)}
-td{padding:8px 10px;border-bottom:1px solid var(--brd2);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(26,63,212,.025)}
-tr.tr-crit td{background:rgba(190,30,30,.04)}
-tr.tr-warn td{background:rgba(168,98,0,.035)}
-tr.tr-hot  td{background:rgba(10,143,72,.03)}
-.tb{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700}
-.tb-le{background:rgba(112,128,160,.14);color:#385070}
-.tb-pr{background:var(--amber2);color:var(--amber)}
-.tb-ne{background:var(--blue2);color:var(--blue)}
-.tb-qu{background:var(--purple2);color:var(--purple)}
-.tb-fe{background:var(--green2);color:var(--green)}
-.tb-rB{background:var(--green2);color:var(--green)}
-.tb-rM{background:var(--amber2);color:var(--amber)}
-.tb-rA{background:var(--red2);color:var(--red)}
-.tb-ab{background:var(--teal2);color:var(--teal)}
-.tb-pa{background:rgba(168,98,0,.1);color:var(--amber)}
-.tb-ga{background:var(--green2);color:var(--green)}
-.tb-pe{background:var(--red2);color:var(--red)}
-.tm{font-family:var(--fm);font-size:.73rem}
-.pbw{display:inline-flex;align-items:center;gap:5px}
-.pbb{width:38px;height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden}
-.pbf{height:100%;border-radius:2px}
-.flag{display:inline-flex;padding:1px 5px;border-radius:3px;font-size:.61rem;font-weight:700;margin-left:3px}
-.fl-r{background:var(--red2);color:var(--red)}
-.fl-a{background:var(--amber2);color:var(--amber)}
-.fl-g{background:var(--green2);color:var(--green)}
-
-/* ─── PAGINATION ─── */
-.pg{display:flex;align-items:center;justify-content:space-between;
-  padding:9px 13px;border-top:1px solid var(--brd2);font-size:.7rem;color:var(--muted2)}
-.pg-btns{display:flex;gap:4px;align-items:center}
-.pg-btns button{background:var(--s2);border:1px solid var(--brd);border-radius:5px;
-  padding:4px 10px;color:var(--text);cursor:pointer;font-family:var(--fb);font-size:.69rem}
-.pg-btns button:disabled{opacity:.3;cursor:not-allowed}
-.pg-btns button:not(:disabled):hover{background:var(--blue2);color:var(--blue)}
-
-/* ─── SNAPSHOT ─── */
-.snap-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
-.snap-kpi{background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px}
-.snap-kpi-l{font-size:.65rem;color:var(--muted2);text-transform:uppercase;
-  letter-spacing:.06em;margin-bottom:4px;font-weight:600}
-.snap-kpi-v{font-family:var(--fh);font-size:1.4rem;font-weight:800}
-
-/* ─── FOOTER ─── */
-.footer{text-align:center;margin-top:26px;padding-top:13px;
-  border-top:1px solid var(--brd);font-size:.66rem;color:var(--muted);letter-spacing:.04em}
-
-@media(max-width:1200px){.g6{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:960px){.g2{grid-template-columns:1fr}}
-@media(max-width:640px){.g6{grid-template-columns:1fr 1fr}.hdr{flex-direction:column;align-items:flex-start}}
-@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.kpi,.card{animation:up .38s ease both}
-
-/* ── TOP 10 ── */
-.t10-wrap{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-@media(max-width:880px){.t10-wrap{grid-template-columns:1fr}}
-.t10-card{background:var(--s1);border:1px solid var(--brd);border-radius:14px;overflow:hidden;position:relative}
-.t10-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,230,.14),transparent)}
-.t10-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 11px;border-bottom:1px solid var(--brd2);gap:10px}
-.t10-name{font-family:var(--fh);font-size:.95rem;font-weight:700;line-height:1.1}
-.t10-sub{font-size:.63rem;color:var(--muted2);margin-top:2px}
-.t10-ttl{font-family:var(--fm);font-size:.72rem;color:var(--teal);background:var(--teal2);border:1px solid rgba(0,200,230,.18);padding:3px 9px;border-radius:5px;white-space:nowrap}
-.t10-row{display:grid;grid-template-columns:26px 1fr 34px 90px;gap:0 8px;align-items:center;padding:7px 16px;border-bottom:1px solid var(--brd2);transition:background .13s}
-.t10-row:last-child{border-bottom:none}
-.t10-row:hover{background:rgba(255,255,255,.018)}
-.t10-row.hi{background:rgba(0,200,230,.022)}
-.t10-rk{font-family:var(--fm);font-size:.7rem;color:var(--muted);text-align:center;line-height:1}
-.t10-client{font-size:.77rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.t10-meta{font-size:.62rem;color:var(--muted2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.t10-prob{font-family:var(--fm);font-size:.7rem;text-align:right;white-space:nowrap}
-.t10-val{font-family:var(--fm);font-size:.77rem;color:var(--teal);font-weight:500;text-align:right;white-space:nowrap}
-.t10-flag{display:inline-flex;padding:1px 4px;border-radius:3px;font-size:.57rem;font-weight:700;margin-left:2px;vertical-align:middle}
-.t10-empty{padding:22px 16px;text-align:center;font-size:.77rem;color:var(--muted)}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .wrap{padding:16px 16px 32px}
+  .hdr{flex-direction:column;align-items:flex-start}
+  .hdr-t{font-size:1.5rem}
+  .nav-tabs{flex-wrap:wrap;gap:4px}
+  .nav-tab{padding:10px 12px;font-size:.85rem}
+}
 </style>
 </head>
 <body>
+
 <div class="wrap">
-
-<!-- HEADER -->
-<header class="hdr">
-  <div class="hdr-l">
-    <div>
-      <div class="hdr-t">CRM PROJECTS E-MOBILITY</div>
-      <div class="hdr-s">Dashboard Executivo · Livoltek Power Brasil · Sales Management</div>
-    </div>
-  </div>
-  <div class="hdr-r">
-    <span class="pill p-date" id="date-pill">📅 —</span>
-    <span class="pill p-load" id="status-pill"><span class="pulse"></span> Carregando...</span>
-    <button class="btn" onclick="reload()">↻ Recarregar</button>
-    <button class="btn btn-b" onclick="toggleDbg()">⚙ Debug</button>
-  </div>
-</header>
-
-<!-- DEBUG -->
-<div class="dbar" id="dbar" style="display:none">
-  Fonte: <strong id="db-m">—</strong> | Linhas: <strong id="db-r">—</strong>
-  | Válidos: <strong id="db-v">—</strong>
-  | Col.LVK: <strong id="db-lvk" style="color:var(--amber)">—</strong>
-  | Fetch: <strong id="db-t">—</strong>
-  | <button onclick="toggleCols()" style="background:none;border:1px solid var(--brd);
-      border-radius:4px;padding:1px 8px;color:var(--muted2);cursor:pointer;font-size:.68rem">
-      Ver colunas</button>
-  | <button onclick="toggleDiag()" style="background:none;border:1px solid var(--brd);
-      border-radius:4px;padding:1px 8px;color:var(--muted2);cursor:pointer;font-size:.68rem">
-      Ver valores LVK</button>
-</div>
-<div class="cpanel" id="cpanel"></div>
-<div class="cpanel" id="diagpanel"></div>
-
-<!-- LOADING -->
-<div class="state" id="s-load">
-  <div class="spinner"></div>
-  <div class="st-t">Carregando dados...</div>
-  <div class="st-s" id="s-msg">Conectando ao Google Sheets</div>
-  <div class="sbox">
-    <div class="step" id="st1"><i class="step-i">⏳</i><span id="st1-t">Acesso direto ao Google Sheets</span></div>
-    <div class="step" id="st2"><i class="step-i">⏳</i><span id="st2-t">Claude API como proxy</span></div>
-    <div class="step" id="st3"><i class="step-i">⏳</i><span id="st3-t">Proxy alternativo (allorigins)</span></div>
-    <div class="step" id="st4"><i class="step-i">⏳</i><span id="st4-t">Processando com PapaParse</span></div>
-  </div>
-</div>
-
-<!-- ERROR -->
-<div class="state" id="s-err" style="display:none">
-  <div style="font-size:2rem">⚠️</div>
-  <div class="st-t" style="color:var(--red)">Erro ao carregar dados</div>
-  <div class="st-s" id="err-msg">—</div>
-  <button class="btn btn-b" onclick="reload()" style="margin-top:8px">↻ Tentar novamente</button>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dash" style="display:none">
-
-  <!-- 1. KPIs -->
-  <div class="sec"><span class="sn">1</span>Resumo Executivo</div>
-  <div class="g6 mb" id="kpi-grid"></div>
-
-  <!-- 2. PERFORMANCE VENDEDOR -->
-  <div class="sec"><span class="sn">2</span>Performance por Vendedor</div>
-  <div class="g2 mb" id="vend-grid"></div>
-
-  <!-- 3. TOP 10 POR VENDEDOR -->
-  <div class="sec"><span class="sn">3</span>Top 10 Oportunidades por Vendedor</div>
-  <div id="top10-grid" class="mb"></div>
-
-  <!-- 4. FORECAST -->
-  <div class="sec"><span class="sn">4</span>Forecast por Vendedor — Fechamentos por Mês</div>
-  <div id="fc-all" class="mb"></div>
-
-  <!-- 5. SNAPSHOT -->
-  <div class="sec"><span class="sn">5</span>Evolução Semanal do Pipeline</div>
-  <div class="card mb">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;
-        margin-bottom:13px;flex-wrap:wrap;gap:8px">
+  <div class="hdr">
+    <div class="hdr-l">
       <div>
-        <div class="ct" style="margin-bottom:3px">
-          <span class="cdot" style="background:var(--purple)"></span>
-          Comparativo Semana Anterior vs Atual
-        </div>
-        <div style="font-size:.71rem;color:var(--muted2)">
-          Aba <strong>SNAPSHOTS</strong> · <span id="snap-dates"></span>
-        </div>
+        <div class="hdr-t">E-Mobility CRM</div>
+        <div class="hdr-s">Dashboard Executivo</div>
       </div>
-      <button class="btn" onclick="loadSnap()">↻ Carregar snapshot</button>
     </div>
-    <div id="snap-body">
-      <div style="color:var(--muted2);font-size:.78rem;text-align:center;padding:16px 0">
-        Clique em <strong>↻ Carregar snapshot</strong> para ver o comparativo semanal.
-      </div>
+    <div class="hdr-r">
+      <span id="date-pill" class="pill p-date">📅 Loading...</span>
+      <span id="status-pill" class="pill p-load"><span class="pulse"></span> Carregando dados...</span>
     </div>
   </div>
 
-  <!-- 6. PAINEL DE AÇÃO -->
-  <div class="sec"><span class="sn">6</span>Painel de Ação — O que tratar hoje?</div>
-  <div class="mb">
-    <div class="card">
-      <div class="ct" style="color:var(--red)">
-        <span class="cdot" style="background:var(--red)"></span>
-        O que tratar · Quem é responsável · Qual impacto
-      </div>
-      <div id="act-opps"></div>
-    </div>
-  </div>
-  <div id="act-vend" style="display:none"></div>
-
-  <!-- 7. TABELA DETALHADA -->
-  <div class="sec"><span class="sn">7</span>Tabela Detalhada</div>
-
-  <!-- FILTROS — FIXOS ACIMA DA TABELA -->
-  <div class="tbl-filters">
-    <span class="flbl">Filtros</span>
-    <input class="fsrch" id="f-q" type="text"
-      placeholder="🔍 Buscar cliente, ID..." oninput="applyF()">
-    <select class="fsel" id="f-v"  onchange="applyF()">
-      <option value="">Todos os vendedores</option></select>
-    <select class="fsel" id="f-sol" onchange="applyF()">
-      <option value="">Todas as soluções</option></select>
-    <select class="fsel" id="f-e"  onchange="applyF()">
-      <option value="">Todos os estágios</option></select>
-    <select class="fsel" id="f-st" onchange="applyF()">
-      <option value="">Todos os status</option>
-      <option>Aberto</option><option>Parado</option>
-      <option>Ganho</option><option>Perdido</option>
-    </select>
-    <select class="fsel" id="f-fech" onchange="applyF()">
-      <option value="">Todos os fechamentos</option></select>
-    <select class="fsel" id="f-prob" onchange="applyF()">
-      <option value="">Todas as probs.</option>
-      <option value="alta">Alta (&gt;70%)</option>
-      <option value="media">Média (40–70%)</option>
-      <option value="baixa">Baixa (&lt;40%)</option>
-    </select>
-    <select class="fsel" id="f-alert" onchange="applyF()">
-      <option value="">Todos os alertas</option>
-      <option value="urgente">⏳ Fecha em ≤4 meses</option>
-      <option value="semacao">⚠ Sem próximo passo</option>
-      <option value="stale">⏰ Desatualizado</option>
-    </select>
-    <button class="btn" onclick="clearF()" style="white-space:nowrap">✕ Limpar</button>
-    <span class="f-count" id="f-count"></span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('diretoria')">📊 Dashboard Diretoria</button>
+    <button class="nav-tab" onclick="switchTab('bruno')">👤 Bruno Reis</button>
+    <button class="nav-tab" onclick="switchTab('felipe')">👤 Felipe Hanke</button>
+    <button class="nav-tab" onclick="switchTab('oportunidades')">📋 Oportunidades</button>
   </div>
 
-  <div class="card" style="padding:0">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th onclick="srt('ID_OPP')">ID</th>
-          <th onclick="srt('CUSTOMER')">Cliente</th>
-          <th onclick="srt('VENDEDOR')">Vendedor</th>
-          <th onclick="srt('SOLUTION')">Solução/BID</th>
-          <th onclick="srt('PRODUCT')">Produto</th>
-          <th onclick="srt('ESTAGIO')">Estágio</th>
-          <th onclick="srt('STATUS')">Status</th>
-          <th onclick="srt('RISCO')">Risco</th>
-          <th onclick="srt('_val')" class="sk">Valor LVK ↓</th>
-          <th onclick="srt('_prob')">Prob.</th>
-          <th onclick="srt('_dtF')">Fech.</th>
-          <th>Próx. Passo</th>
-          <th onclick="srt('_dtA')">Últ. Atualiz.</th>
-          <th>Alerta</th>
-        </tr></thead>
-        <tbody id="tbl-body"></tbody>
-      </table>
-    </div>
-    <div class="pg">
-      <span id="pg-info" style="font-family:var(--fm);font-size:.7rem;color:var(--muted2)"></span>
-      <div class="pg-btns">
-        <span style="font-size:.69rem;color:var(--muted)">
-          Pág <span id="pg-c">1</span>/<span id="pg-t">1</span></span>
-        <button id="pg-p" onclick="pgCh(-1)" disabled>‹</button>
-        <button id="pg-n" onclick="pgCh(1)">›</button>
-      </div>
-    </div>
+  <!-- DIRETORIA -->
+  <div id="diretoria" class="tab-content">
+    <div id="diretoria-content"></div>
   </div>
 
-</div><!-- /dash -->
+  <!-- BRUNO -->
+  <div id="bruno" class="tab-content hidden">
+    <div id="bruno-content"></div>
+  </div>
 
-<div class="footer">
-  Livoltek Power Brasil · Sales Management · Cristiane Marques —
-  CRM Projects E-Mobility 2026 · Dados: Google Sheets
+  <!-- FELIPE -->
+  <div id="felipe" class="tab-content hidden">
+    <div id="felipe-content"></div>
+  </div>
+
+  <!-- OPORTUNIDADES -->
+  <div id="oportunidades" class="tab-content hidden">
+    <div id="oportunidades-content"></div>
+  </div>
 </div>
-</div><!-- /wrap -->
 
 <script>
-/* ═══════════════════════════════════════════════════
-   CONFIG
-═══════════════════════════════════════════════════ */
-const CSV_URL  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1937499442&single=true&output=csv';
-const SNAP_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=1580774303&single=true&output=csv';
-const METAS     = { 'Bruno Reis': 50000000, 'Felipe Hanker': 12000000 };
-// SNAPSHOTS tab — substitua o GID abaixo (veja: abre a aba SNAPSHOTS no Sheets, copie o número após &gid= na URL)
-// SNAPSHOTS tab GID = 202441246 (from user's link)
-const SNAP_SHOTS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub?gid=202441246&single=true&output=csv';
-const DIAS_STALE = 7;   // alertas: sem atualização há > 7 dias   // dias sem atualização = desatualizado
-const DIAS_CRIT  = 180;  // ≤ 6 meses = prazo mínimo China
-const PAGE_SZ    = 15;
+const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub';
+const URLS = {
+  base: BASE_URL + '?gid=1937499442&single=true&output=csv',
+  snapshot: BASE_URL + '?gid=202441246&single=true&output=csv'
+};
 
-/* ═══════════════════════════════════════════════════
-   STATE  (separado: RAW para dashboard, FIL para tabela)
-═══════════════════════════════════════════════════ */
-let RAW = [], FIL = [];
-let _rawDiag  = []; // diagnostic: raw LVK values per row
-let _snapPrev = null; // previous snapshot data {date, byVendor: {vendor: {pipe, count}}}
-let _sk = '_val', _sa = false, _pg = 1;
-let _chart = null, _dbg = false, _colsVis = false;
-let _allCols = [], _lvkKey = '';
-const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
+const METAS = { 'bruno': 50000000, 'felipe': 12000000 };
+const REUNIOES = ['2026-06-08', '2026-06-23', '2026-07-08', '2026-07-23', '2026-08-08'];
 
-function getMeta(v) {
-  for (const k of Object.keys(METAS))
-    if (v.toLowerCase().includes(k.split(' ')[0].toLowerCase())) return METAS[k];
-  return 0;
-}
+let DATA = { base: [], snapshot: [] };
 
-/* ═══════════════════════════════════════════════════
-   FORMATTERS
-═══════════════════════════════════════════════════ */
-// Explicit Brazilian number: 1950000 → "1.950.000"
-function brNum(n, dec) {
-  if (isNaN(n) || n === null) return '0';
-  var abs = Math.abs(n), sign = n < 0 ? '-' : '';
-  var str = dec > 0 ? abs.toFixed(dec) : String(Math.round(abs));
-  var parts = str.split('.');
-  var ip = parts[0], dp = parts[1];
-  var r = '';
-  for (var i = 0; i < ip.length; i++) {
-    if (i > 0 && (ip.length - i) % 3 === 0) r += '.';
-    r += ip[i];
-  }
-  return sign + r + (dp !== undefined ? ',' + dp : '');
-}
-// Full BRL — always dots, no M/B abbrev in values
-function fK(v) {
-  if (!v && v !== 0) return '—';
-  return 'R$ ' + brNum(Math.round(v), 0);
-}
-// Short for chart axis only
-function fKs(v) {
-  if (!v && v !== 0) return '—';
-  if (v >= 1e9) return 'R$' + brNum(v / 1e9, 1) + ' B';
-  if (v >= 1e6) return 'R$' + brNum(v / 1e6, 1) + ' M';
-  if (v >= 1e3) return 'R$' + brNum(v / 1e3, 0) + 'k';
-  return 'R$' + brNum(v, 0);
-}
-const fDt = d => d ? d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
-const norm = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-const dAgo   = d => d ? Math.floor((TODAY - d) / 86400000) : 9999;
-const dUntil = d => d ? Math.floor((d - TODAY) / 86400000) : 9999;
-const nCol   = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    .toUpperCase().trim().replace(/\s+/g, ' ');
+// ─── UTILITIES ───
+function fK(n){if(!n)return'R$ 0';const v=n/1000000;return v.toFixed(1)+'M'}
+function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
+function getProxReuniao(){const hoje=new Date();const next=REUNIOES.find(d=>new Date(d)>hoje);return next||REUNIOES[REUNIOES.length-1]}
+function get2SemAtas(){const reuniao=getProxReuniao();const d=new Date(reuniao);d.setDate(d.getDate()-14);return d.toISOString().split('T')[0]}
+function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
+function parseData(d){if(!d)return null;const p=String(d).split(/[-\/]/);if(p[2].length===4)return new Date(p[2],parseInt(p[1])-1,parseInt(p[0]));return new Date(d)}
+function diasDesde(d){const t=parseData(d);if(!t)return 999;return Math.floor((new Date()-t)/(1000*60*60*24))}
+function diasAte(d){const t=parseData(d);if(!t)return 999;return Math.floor((t-new Date())/(1000*60*60*24))}
 
-/* ═══════════════════════════════════════════════════
-   PARSERS
-═══════════════════════════════════════════════════ */
-function parseBRL(s) {
-  if (!s && s !== 0) return 0;
-  const v = parseFloat(
-    String(s).trim()
-      .replace(/\s/g, '')
-      .replace(/^R\$\s*/i, '')
-      .replace(/\./g, '')    // remove separador de mil
-      .replace(',', '.')     // decimal
-  );
-  return isNaN(v) ? 0 : v;
-}
-
-function parseProb(s) {
-  if (!s) return 0;
-  const v = parseFloat(String(s).trim().replace('%', '').replace(',', '.'));
-  if (isNaN(v)) return 0;
-  return v > 1 ? v / 100 : v;
-}
-
-function parseDt(s) {
-  if (!s) return null;
-  const st = String(s).trim();
-  if (!st || st === '-' || st === '—' || st === '0' || st.toLowerCase() === 'null') return null;
-  if (st.startsWith('#')) return null; // #N/A, #VALUE!, etc.
-  // Número puro = serial Excel (ex: 46233)
-  if (/^\d{4,6}$/.test(st)) {
-    const serial = parseInt(st);
-    const d = new Date(Date.UTC(1899, 11, 31) + serial * 86400000);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  // DD/MM/YYYY
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(st)) {
-    const [d, m, y] = st.split('/');
-    const yr = parseInt(y);
-    if (yr > 2100 || yr < 1990) return null;
-    return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
-  }
-  // DD-MM-YYYY
-  if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(st)) {
-    const [d, m, y] = st.split('-');
-    const yr = parseInt(y);
-    if (yr > 2100 || yr < 1990) return null;
-    return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
-  }
-  // YYYY-MM-DD HH:MM:SS (datetime with space — normalize to ISO T)
-  if (/^\d{4}-\d{2}-\d{2}\s/.test(st)) {
-    const d = new Date(st.replace(' ', 'T'));
-    return isNaN(d.getTime()) ? null : d;
-  }
-  // YYYY-MM-DD or other ISO
-  const d = new Date(st);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-/* ═══════════════════════════════════════════════════
-   COLUMN FINDER
-═══════════════════════════════════════════════════ */
-function gcol(row, ...names) {
-  for (const name of names) {
-    if (row[name] !== undefined && row[name] !== null && row[name] !== '') return row[name];
-    const nn = nCol(name);
-    for (const k of Object.keys(row)) {
-      if (nCol(k) === nn && row[k] !== undefined) return row[k];
-    }
-  }
-  // Partial fallback
-  for (const name of names) {
-    const nn = nCol(name);
-    for (const k of Object.keys(row)) {
-      const kn = nCol(k);
-      if ((kn.includes(nn) || nn.includes(kn)) && kn.length > 2 && row[k] !== undefined)
-        return row[k];
-    }
-  }
-  return '';
-}
-
-function detectLVK(row) {
-  const keys = Object.keys(row);
-  // LVK + R$
-  for (const k of keys) {
-    const n = nCol(k);
-    if (n.includes('LVK') && (n.includes('R$') || n.includes('(R)'))) return k;
-  }
-  // apenas LVK
-  for (const k of keys) { if (nCol(k).includes('LVK')) return k; }
-  // último TOTAL NET
-  const tn = keys.filter(k => nCol(k).startsWith('TOTAL NET'));
-  return tn[tn.length - 1] || '';
-}
-
-/* ═══════════════════════════════════════════════════
-   ROW NORMALIZE
-═══════════════════════════════════════════════════ */
-function normRow(raw, idx) {
-  if (idx === 0) {
-    _allCols = Object.keys(raw);
-    _lvkKey  = detectLVK(raw);
-    setDb('db-lvk', _lvkKey ? `"${_lvkKey}"` : '⚠ NÃO ENCONTRADA');
-    console.group('=== Colunas Google Sheets ===');
-    _allCols.forEach((k, i) => console.log(`${i+1}. "${k}" = "${raw[k]}"`));
-    console.log('Col LVK detectada:', _lvkKey, '=', raw[_lvkKey]);
-    console.groupEnd();
-  }
-
-  // Col R = TOTAL NET (R$) = Pipeline LVK
-  const valR = parseBRL(gcol(raw, 'TOTAL NET (R$)', ' TOTAL NET (R$) ', 'TOTALNET'));
-  // Col S = TOTAL NET LVK (R$) = Pipeline Ponderado / Ticket
-  const _rawLvk = _lvkKey ? raw[_lvkKey] : '';
-  const valS = parseBRL(_rawLvk) ||
-               parseBRL(gcol(raw, 'TOTAL NET LVK (R$)', ' TOTAL NET LVK (R$) ', 'TOTALNETLVK'));
-  const val  = valR;  // _val = col R for backward compat
-  // Diagnostic
-  if (idx < 30) {
-    _rawDiag.push({
-      idx, customer: gcol(raw,'CUSTOMER','CLIENTE')||'?',
-      vendedor: gcol(raw,'VENDEDOR')||'?',
-      lvkKey: _lvkKey, rawVal: _rawLvk,
-      valR, valS
-    });
-  }
-  const prob    = parseProb(gcol(raw, 'PROBABILIDADE', 'PROB', 'PROBABILITY'));
-  const dtF     = parseDt(gcol(raw, 'DATA DE FECHAMENTO', 'DATA FECHAMENTO', 'FECHAMENTO', 'DT FECHAMENTO'));
-  const dtA     = parseDt(gcol(raw, 'DATA DA ULTIMA ATUALIZACAO', 'DATA DA ÚLTIMA ATUALIZAÇÃO',
-                                    'ULTIMA ATUALIZACAO', 'LAST UPDATE'));
-  const prox    = gcol(raw, 'PROX PASSO', 'PRÓXIMO PASSO', 'PROXIMO PASSO', 'NEXT STEP', 'PROX_PASSO') || '';
-  const risco   = gcol(raw, 'RISCO', 'RISK') || '—';
-  const status  = gcol(raw, 'STATUS') || '—';
-  const estagio = gcol(raw, 'ESTAGIO', 'ESTÁGIO', 'STAGE', 'FASE', 'ETAPA') || '—';
-
-  const dClose   = dUntil(dtF);
-  const semProx  = !prox || prox.trim() === '' || prox.trim() === '-' || prox.trim() === 'N/A';
-  const isStale  = semProx;  // desatualizado = sem próximo passo (col X vazia)
-  const urg4m    = dClose >= 0 && dClose <= DIAS_CRIT;
-  const isCrit   = norm(risco) === 'alto' || (urg4m && (semProx || isStale));
-  // "Aberto" e "Parado" entram no pipeline
-  // Aberto = anything that is NOT explicitly Ganho or Perdido
-  const isAberto = norm(status) !== 'ganho' && norm(status) !== 'perdido';
-
-  return {
-    _idx: idx,
-    ID_OPP:   gcol(raw, 'ID_OPORTUNIDADE', 'ID OPORTUNIDADE', 'ID AUTOMÁTICO', 'ID AUTOMATICO', 'ID') || `R${idx+1}`,
-    CUSTOMER: gcol(raw, 'CUSTOMER', 'CLIENTE') || '—',
-    VENDEDOR: gcol(raw, 'VENDEDOR', 'SALESPERSON') || '—',
-    COUNTRY:  gcol(raw, 'COUNTRY', 'PAIS', 'PAÍS') || '—',
-    PRODUCT:  gcol(raw, 'PRODUCT', 'PRODUTO') || '—',
-    SOLUTION: gcol(raw, 'SOLUTION/BID', 'SOLUTION', 'BID', 'SOLUCAO', 'SOLUÇÃO') || '—',
-    ESTAGIO: estagio, STATUS: status, RISCO: risco, PROX_PASSO: prox,
-    ALERTA: gcol(raw, 'ALERTA AUTOMATICO', 'ALERTA AUTOMÁTICO', 'ALERTA') || '',
-    _val: valR, _valR: valR, _valS: valS, _prob: prob, _dtF: dtF, _dtA: dtA,
-    _semProx: semProx, _isCrit: isCrit, _isStale: isStale,
-    _urg4m: urg4m, _dClose: dClose, _isAberto: isAberto,
-  };
-}
-
-function validRow(r) {
-  return r.CUSTOMER && r.CUSTOMER !== '—' && r.CUSTOMER.trim() !== ''
-    && !['customer', 'cliente', 'total', 'subtotal'].includes(r.CUSTOMER.toLowerCase());
-}
-
-/* ═══════════════════════════════════════════════════
-   FETCH — 4 estratégias
-═══════════════════════════════════════════════════ */
-function stepSet(n, state, msg) {
-  const el = document.getElementById('st' + n);
-  const ti = document.getElementById('st' + n + '-t');
-  if (!el || !ti) return;
-  el.className = 'step ' + state;
-  el.querySelector('.step-i').textContent = {active:'⟳', done:'✓', fail:'✗'}[state] || '⏳';
-  ti.textContent = msg;
-}
-
-async function tryFetch(url) {
-  const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const t = await r.text();
-  if (!t || t.length < 20) throw new Error('Vazio');
-  return t;
-}
-
-async function fetchCSV() {
-  const errors = [];
-
-  // 1. Direto
-  try {
-    stepSet(1, 'active', 'Tentando acesso direto...');
-    const t = await tryFetch(CSV_URL);
-    stepSet(1, 'done', '✓ Acesso direto OK');
-    setDb('db-m', 'Direto (GitHub Pages)');
-    return t;
-  } catch(e) { stepSet(1, 'fail', '✗ CORS'); errors.push(e.message); }
-
-  // 2. Claude API
-  try {
-    stepSet(2, 'active', 'Claude API como proxy...');
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8192,
-        system: 'CSV proxy. Use web_search to fetch the URL. Return ONLY raw CSV, no markdown.',
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: 'Fetch raw CSV:\n' + CSV_URL }]
-      })
-    });
-    if (!resp.ok) throw new Error('API HTTP ' + resp.status);
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text)
-      .join('\n').replace(/^```(?:csv)?\n?/m, '').replace(/\n?```$/m, '').trim();
-    if (!txt || txt.length < 20) throw new Error('Resposta vazia');
-    stepSet(2, 'done', '✓ Claude API OK');
-    setDb('db-m', 'Claude API');
-    return txt;
-  } catch(e) { stepSet(2, 'fail', '✗ ' + e.message.slice(0, 40)); errors.push(e.message); }
-
-  // 3. allorigins.win
-  try {
-    stepSet(3, 'active', 'Tentando allorigins...');
-    const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(CSV_URL),
-      { signal: AbortSignal.timeout(12000) });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const t = (await r.json()).contents;
-    if (!t || t.length < 20) throw new Error('Vazio');
-    stepSet(3, 'done', '✓ allorigins OK');
-    setDb('db-m', 'allorigins.win');
-    return t;
-  } catch(e) { errors.push(e.message); }
-
-  // 4. corsproxy.io
-  try {
-    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(CSV_URL),
-      { signal: AbortSignal.timeout(12000) });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const t = await r.text();
-    if (!t || t.length < 20) throw new Error('Vazio');
-    stepSet(3, 'done', '✓ corsproxy OK');
-    setDb('db-m', 'corsproxy.io');
-    return t;
-  } catch(e) { errors.push(e.message); }
-
-  throw new Error('Todas as estratégias falharam: ' + errors.join(' | '));
-}
-
-/* ═══════════════════════════════════════════════════
-   LOAD DATA
-═══════════════════════════════════════════════════ */
-async function loadData() {
-  showSt('load');
-  _allCols = []; _lvkKey = '';
-  ['st1','st2','st3','st4'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.className = 'step'; el.querySelector('.step-i').textContent = '⏳'; }
-  });
-
-  try {
-    const csv = await fetchCSV();
-    stepSet(4, 'active', 'Processando com PapaParse...');
-
-    const res = Papa.parse(csv.replace(/^\uFEFF/, '').trim(), {
-      header: true, skipEmptyLines: 'greedy', trimHeaders: true, dynamicTyping: false
-    });
-    if (res.errors.length) console.warn('PapaParse:', res.errors.slice(0, 3));
-
-    const raw = res.data;
-    if (!raw || !raw.length) throw new Error('CSV vazio');
-    setDb('db-r', raw.length);
-
-    const rows = raw.map((r, i) => normRow(r, i)).filter(validRow);
-    setDb('db-v', rows.length);
-    if (!rows.length) throw new Error('Nenhum registro válido. Verifique a aba publicada.');
-
-    RAW = rows;
-    stepSet(4, 'done', '✓ ' + rows.length + ' registros');
-
-    // Populate filter dropdowns from real data
-    popFilters();
-
-    // Render dashboard (uses RAW — all data always)
-    renderDashboard();
-
-    // Render table (starts showing all, FIL = RAW copy)
-    FIL = [...RAW];
-    _pg = 1;
-    renderTbl();
-    updCount();
-
-    showSt('dash');
-    const ts = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-    setDb('db-t', ts);
-    setPill('ok', '✓ ' + rows.length + ' registros · ' + ts);
-    // Debug: show sample LVK values to diagnose Felipe's pipeline
-    const sampleLVK = rows.slice(0, 10).map(r => r.CUSTOMER.slice(0,12) + ':' + r._val);
-    console.log('=== PRIMEIROS 10 VALORES LVK ===', sampleLVK);
-    const felipeRows = rows.filter(r => r.VENDEDOR && r.VENDEDOR.includes('Felipe'));
-    console.log('=== FELIPE ROWS ===', felipeRows.length, felipeRows.map(r => r.CUSTOMER + ':' + r._val));
-    setDb('db-lvk', _lvkKey + ' | Felipe: R$' + felipeRows.reduce((s,r)=>s+r._val,0).toLocaleString('pt-BR'));
-
-  } catch(e) {
+// ─── CARREGA DADOS ───
+async function loadData(){
+  try{
+    const [resBase,resSnap]=[await fetch(URLS.base),await fetch(URLS.snapshot)];
+    const txtBase=await resBase.text(),txtSnap=await resSnap.text();
+    DATA.base=Papa.parse(txtBase,{header:true,skipEmptyLines:true}).data;
+    DATA.snapshot=Papa.parse(txtSnap,{header:true,skipEmptyLines:true}).data;
+    normalize();
+    setPill('ok','✓ Dados carregados');
+    renderAll();
+  }catch(e){
+    setPill('err','✗ Erro ao carregar');
     console.error(e);
-    showErr(e.message.split('\n')[0]);
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   FILTERS  ← só afetam a tabela, NÃO o dashboard
-═══════════════════════════════════════════════════ */
-function popFilters() {
-  const pop = (id, vals) => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const first = sel.options[0].cloneNode(true);
-    sel.innerHTML = '';
-    sel.appendChild(first);
-    [...new Set(vals)].filter(Boolean).sort()
-      .forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
-  };
-
-  pop('f-v',   RAW.map(r => r.VENDEDOR));
-  pop('f-sol', RAW.map(r => r.SOLUTION));
-
-  // Estágio — da planilha real
-  const stageSel = document.getElementById('f-e');
-  if (stageSel) {
-    const first = stageSel.options[0].cloneNode(true);
-    stageSel.innerHTML = ''; stageSel.appendChild(first);
-    [...new Set(RAW.map(r => r.ESTAGIO).filter(e => e && e !== '—'))].sort()
-      .forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; stageSel.appendChild(o); });
-  }
-
-  // Fechamento — meses únicos
-  const fechSel = document.getElementById('f-fech');
-  if (fechSel) {
-    const fechMap = {};
-    RAW.forEach(r => {
-      if (!r._dtF) return;
-      const d = r._dtF;
-      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      const lb  = d.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
-        .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
-      fechMap[key] = lb;
+function normalize(){
+  [DATA.base,DATA.snapshot].forEach(rows=>{
+    rows.forEach(r=>{
+      r._val=parseBRL(r[' TOTAL NET LVK (R$) ']||r.val);
+      r._val_ponderado=r._val*(parseFloat(r.PROBABILIDADE||0)/100);
+      r._vendor=(r.VENDEDOR||'').toLowerCase();
+      r._fechamento=parseData(r['DATA DE FECHAMENTO']||r.data_fechamento);
+      r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||r.updated);
+      r._dias_sem_atualizar=diasDesde(r._atualizacao);
+      r._dias_ate_fechamento=diasAte(r._fechamento);
     });
-    const first = fechSel.options[0].cloneNode(true);
-    fechSel.innerHTML = ''; fechSel.appendChild(first);
-    Object.keys(fechMap).sort().forEach(k => {
-      const o = document.createElement('option'); o.value = k; o.textContent = fechMap[k]; fechSel.appendChild(o);
-    });
-  }
-}
-
-// ─── applyF: APENAS tabela ───────────────────────────────────────
-function applyF() {
-  const q  = (document.getElementById('f-q')     || {value:''}).value.toLowerCase().trim();
-  const v  = (document.getElementById('f-v')     || {value:''}).value;
-  const sol= (document.getElementById('f-sol')   || {value:''}).value;
-  const e  = (document.getElementById('f-e')     || {value:''}).value;
-  const st = (document.getElementById('f-st')    || {value:''}).value;
-  const fech=(document.getElementById('f-fech')  || {value:''}).value;
-  const prob=(document.getElementById('f-prob')  || {value:''}).value;
-  const alt =(document.getElementById('f-alert') || {value:''}).value;
-
-  FIL = RAW.filter(o => {
-    if (q   && !`${o.CUSTOMER} ${o.ID_OPP} ${o.PRODUCT} ${o.VENDEDOR} ${o.SOLUTION}`.toLowerCase().includes(q)) return false;
-    if (v   && o.VENDEDOR !== v)               return false;
-    if (sol && norm(o.SOLUTION) !== norm(sol)) return false;
-    if (e   && norm(o.ESTAGIO)  !== norm(e))   return false;
-    if (st  && norm(o.STATUS)   !== norm(st))  return false;
-    if (fech && o._dtF) {
-      const key = o._dtF.getFullYear() + '-' + String(o._dtF.getMonth()+1).padStart(2,'0');
-      if (key !== fech) return false;
-    } else if (fech && !o._dtF) return false;
-    if (prob === 'alta'  && o._prob < .7)                    return false;
-    if (prob === 'media' && (o._prob < .4 || o._prob >= .7)) return false;
-    if (prob === 'baixa' && o._prob >= .4)                   return false;
-    if (alt === 'urgente' && !o._urg4m)    return false;
-    if (alt === 'semacao' && !o._semProx)  return false;
-    if (alt === 'stale'   && !o._isStale)  return false;
-    return true;
   });
-  _pg = 1;
-  renderTbl();
-  try { renderTop10(); } catch(e) {}
-  updCount();
 }
 
-function clearF() {
-  ['f-q','f-v','f-sol','f-e','f-st','f-fech','f-prob','f-alert'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (el.tagName === 'INPUT') el.value = ''; else el.selectedIndex = 0;
+// ─── MÉTRICAS ───
+function getMetricas(rows,vendor){
+  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const pipeline=filtered.reduce((s,r)=>s+r._val,0);
+  const ponderado=filtered.reduce((s,r)=>s+r._val_ponderado,0);
+  const ganhos=filtered.filter(r=>r.STATUS==='Ganhou').length;
+  const perdidos=filtered.filter(r=>r.STATUS==='Perdida').length;
+  const fechados=filtered.filter(r=>r.STATUS==='Ganhou').reduce((s,r)=>s+r._val,0);
+  const tempo=[];
+  filtered.forEach(r=>{if(r.BID_DATE&&r._fechamento){const ms=r._fechamento-parseData(r.BID_DATE);tempo.push(ms/(1000*60*60*24))}});
+  const velocity=tempo.length?tempo.reduce((a,b)=>a+b)/tempo.length:0;
+  const winrate=ganhos+perdidos>0?(ganhos/(ganhos+perdidos))*100:0;
+  const ticket=filtered.length>0?pipeline/filtered.length:0;
+  
+  return{pipeline,ponderado,ganhos,perdidos,fechados,velocity,winrate,ticket,count:filtered.length};
+}
+
+function getFunil(rows,vendor){
+  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const stages={'Lead':0,'Proposta':0,'Negociação':0,'Ganhou':0,'Perdida':0};
+  const values={'Lead':0,'Proposta':0,'Negociação':0,'Ganhou':0,'Perdida':0};
+  filtered.forEach(r=>{
+    const st=r.ESTAGIO||'Lead';
+    stages[st]=(stages[st]||0)+1;
+    values[st]=(values[st]||0)+r._val;
   });
-  FIL = [...RAW];
-  _pg = 1;
-  renderTbl();
-  try { renderTop10(); } catch(e) {}
-  updCount();
+  return{stages,values};
 }
 
-function updCount() {
-  const el = document.getElementById('f-count');
-  if (el) el.textContent = FIL.length + ' de ' + RAW.length + ' registros';
-}
-
-/* ═══════════════════════════════════════════════════
-   COMPUTE  (sempre usa RAW para o dashboard)
-═══════════════════════════════════════════════════ */
-function compute() {
-  const data = RAW;
-  const ab   = data.filter(r => r._isAberto);
-
-  // Pipeline LVK = soma col R (TOTAL NET R$)
-  const pipe  = ab.reduce((s, r) => s + r._valR, 0);
-  // Ponderado = soma col S (TOTAL NET LVK R$)
-  const pond  = ab.reduce((s, r) => s + r._valS, 0);
-  // Ticket médio = ponderado / count (col S)
-  const ticket = ab.length ? pond / ab.length : 0;
-
-  const crit  = ab.filter(r => r._isCrit).length;
-  const pend  = ab.filter(r => r._semProx).length;
-  const stale = ab.filter(r => r._isStale).length;
-
-  const vends = [...new Set(data.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
-  const perV  = vends.map(v => {
-    const vAll    = data.filter(r => r.VENDEDOR === v);
-    const va      = ab.filter(r => r.VENDEDOR === v);
-    const vGanhos = vAll.filter(r => norm(r.STATUS) === 'ganho');
-    const vpipe   = va.reduce((s, r) => s + r._valR, 0);   // col R
-    const vpond   = va.reduce((s, r) => s + r._valS, 0);   // col S
-    const vreal   = vGanhos.reduce((s, r) => s + r._valR, 0);
-    const meta    = getMeta(v);
-    const clients = [...new Set(va.map(r => r.CUSTOMER).filter(c => c && c !== '—'))].length;
-    return {
-      v, count: va.length, pipe: vpipe, pond: vpond, clients,
-      realizado: vreal, meta,
-      pct:     meta > 0 ? Math.min(vpipe / meta, 1) : 0,
-      pctReal: meta > 0 ? Math.min(vreal / meta, 1) : 0,
-      atingido: meta > 0 && vreal >= meta,
-      gap:  meta > 0 ? Math.max(0, meta - vreal) : 0,
-      crit:  va.filter(r => r._isCrit).length,
-      urg4m: va.filter(r => r._urg4m).length,
-      pend:  va.filter(r => r._semProx).length,
-      stale: va.filter(r => r._isStale).length,
-      // Top 5 critical by closing date (for alerts panel)
-      top5crit: va
-        .filter(r => r._urg4m || r._semProx || r._isCrit)
-        .sort((a, b) => {
-          const da = a._dClose < 0 ? -9999 : (a._dClose === 9999 ? 9999 : a._dClose);
-          const db = b._dClose < 0 ? -9999 : (b._dClose === 9999 ? 9999 : b._dClose);
-          return da - db;
-        })
-        .slice(0, 5),
-    };
-  }).sort((a, b) => b.pipe - a.pipe);
-
-  // Stages from column T — all unique stages in open opps
-  const stageOrder = ['Lead','Proposta','Qualificação','Negociação','Fechamento'];
-  const uniqueStages = [...new Set(ab.map(r => r.ESTAGIO).filter(e => e && e !== '—'))];
-  const stages = [
-    ...stageOrder.filter(s => uniqueStages.some(u => norm(u) === norm(s))),
-    ...uniqueStages.filter(u => !stageOrder.some(s => norm(s) === norm(u)))
-  ];
-  const perSt = stages.map(e => {
-    const it = ab.filter(r => norm(r.ESTAGIO) === norm(e));
-    return { e, count: it.length, tot: it.reduce((s, r) => s + r._valR, 0) };
-  }).filter(s => s.count > 0);
-
-  // Forecast months (include past = dClose < 0)
-  const mMap = {};
-  ab.forEach(r => {
-    if (!r._dtF) return;
-    const dd  = r._dtF;
-    const key = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0');
-    const lb  = dd.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
-      .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
-    if (!mMap[key]) mMap[key] = { key, lb, tot:0, pond:0, cnt:0, overdue: r._dClose < 0 };
-    mMap[key].tot  += r._valR;
-    mMap[key].pond += r._valS;
-    mMap[key].cnt++;
+function getAging(rows,vendor){
+  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const bins={0:0,30:0,60:0,90:0};
+  filtered.forEach(r=>{
+    if(!r._atualizacao)return;
+    const dias=r._dias_sem_atualizar;
+    if(dias<=30)bins[0]+=r._val;
+    else if(dias<=60)bins[30]+=r._val;
+    else if(dias<=90)bins[60]+=r._val;
+    else bins[90]+=r._val;
   });
-  const perM = Object.values(mMap).sort((a, b) => a.key.localeCompare(b.key));
-
-  // Quality
-  const qCP = ab.length ? (ab.length - pend) / ab.length : 0;
-  const qAR = ab.length ? crit / ab.length : 0;
-  const qAP = ab.length ? ab.filter(r => r._prob >= .7).length / ab.length : 0;
-  const qSt = ab.length ? stale / ab.length : 0;
-
-  return { ab, pipe, pond, ticket, crit, pend, stale,
-           total: data.length, perV, perSt, perM, qCP, qAR, qAP, qSt };
+  return bins;
 }
 
-
-/* ─── TOP 10 POR VENDEDOR ─── */
-function renderTop10() {
-  const el = document.getElementById('top10-grid');
-  if (!el) return;
-
-  // Use FIL so it responds to vendor filter; fall back to RAW
-  const src = (typeof FIL !== 'undefined' && FIL.length) ? FIL : RAW;
-  const ab  = src.filter(r => r._isAberto);
-
-  const vendors = [...new Set(src.map(r => r.VENDEDOR))]
-    .filter(v => v && v !== '—')
-    .sort((a, b) => {
-      const pa = ab.filter(r => r.VENDEDOR === a).reduce((s, r) => s + r._valR, 0);
-      const pb = ab.filter(r => r.VENDEDOR === b).reduce((s, r) => s + r._valR, 0);
-      return pb - pa;
-    });
-
-  if (!vendors.length) {
-    el.innerHTML = '<div style="color:var(--muted);padding:18px 0;text-align:center">Sem dados de vendedor</div>';
-    return;
-  }
-
-  const STAGE_C = {
-    lead:'rgba(90,132,154,.18)', proposta:'rgba(245,166,35,.18)',
-    qualificacao:'rgba(159,103,245,.18)', negociacao:'rgba(59,139,246,.18)',
-    fechamento:'rgba(32,199,101,.18)'
-  };
-  const STAGE_T = {
-    lead:'#7AAABF', proposta:'#F5A623', qualificacao:'#9F67F5',
-    negociacao:'#60A5FA', fechamento:'#20C765'
-  };
-
-  el.innerHTML = '<div class="t10-wrap">' + vendors.map(vName => {
-    const top = ab
-      .filter(r => r.VENDEDOR === vName)
-      .sort((a, b) => b._valR - a._valR)
-      .slice(0, 10);
-
-    const countAll = ab.filter(r => r.VENDEDOR === vName).length;
-    const total    = top.reduce((s, r) => s + r._valR, 0);
-
-    const rows = top.length ? top.map((r, i) => {
-      const rkLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉'
-                    : `<span style="color:var(--muted)">${i+1}</span>`;
-      const stN  = norm(r.ESTAGIO);
-      const stBg = STAGE_C[stN] || STAGE_C.lead;
-      const stTx = STAGE_T[stN] || '#7AAABF';
-      const pc   = r._prob >= .7 ? 'var(--green)' : r._prob >= .4 ? 'var(--amber)' : 'var(--red)';
-      const flags = [
-        r._isCrit  ? '<span class="t10-flag" style="background:rgba(240,68,68,.12);color:#F87171">RISCO</span>' : '',
-        r._semProx ? '<span class="t10-flag" style="background:rgba(245,166,35,.12);color:#FBBF24">SEM AÇÃO</span>' : '',
-        r._prob >= .8 ? '<span class="t10-flag" style="background:rgba(32,199,101,.12);color:#20C765">HOT</span>' : '',
-      ].filter(Boolean).join('');
-      const country = r.COUNTRY && r.COUNTRY !== '—' ? r.COUNTRY : '';
-      const dtF    = r._dtF ? fDt(r._dtF) : '';
-      const meta   = [
-        `<span style="background:${stBg};color:${stTx};padding:1px 5px;border-radius:3px;font-size:.59rem;font-weight:700">${r.ESTAGIO}</span>`,
-        country,
-        dtF ? `fech. ${dtF}` : '',
-      ].filter(Boolean).join('<span style="color:var(--brd);margin:0 2px">·</span>');
-
-      return `<div class="t10-row${i < 3 ? ' hi' : ''}">
-        <div class="t10-rk">${rkLabel}</div>
-        <div style="min-width:0">
-          <div class="t10-client">${r.CUSTOMER}${flags}</div>
-          <div class="t10-meta">${meta}</div>
-        </div>
-        <div class="t10-prob" style="color:${pc}">${Math.round(r._prob * 100)}%</div>
-        <div class="t10-val">${fK(r._valR)}</div>
-      </div>`;
-    }).join('') : `<div class="t10-empty">Sem oportunidades abertas</div>`;
-
-    return `<div class="t10-card">
-      <div class="t10-hd">
-        <div>
-          <div class="t10-name">${vName}</div>
-          <div class="t10-sub">${top.length} de ${countAll} opp. abertas · ordenado por valor LVK</div>
-        </div>
-        <div class="t10-ttl">${fK(total)}</div>
-      </div>
-      ${rows}
-    </div>`;
-  }).join('') + '</div>';
+function getDependencia(rows,vendor){
+  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const byClient={};
+  filtered.forEach(r=>{
+    const c=r.CUSTOMER||'Unknown';
+    byClient[c]=(byClient[c]||0)+r._val;
+  });
+  const sorted=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
+  const top5=sorted.slice(0,5).reduce((s,e)=>s+e[1],0);
+  const total=filtered.reduce((s,r)=>s+r._val,0);
+  return{concentration:(top5/total*100)||0,top5:sorted.slice(0,5)};
 }
 
-/* ═══════════════════════════════════════════════════
-   RENDER DASHBOARD  (renderDashboard uses RAW via compute())
-═══════════════════════════════════════════════════ */
-function renderDashboard() {
-  try {
-    const d = compute(); // compute uses RAW
-    renderKPIs(d);
-  } catch(e) { console.warn('KPIs:', e); }
-  try { renderVend();   } catch(e) { console.warn('Vend:', e);   }
-  try { renderTop10();  } catch(e) { console.warn('Top10:', e);  }
-  try { renderFC();     } catch(e) { console.warn('FC:', e);     }
-  try { renderAct();    } catch(e) { console.warn('Act:', e);    }
+function getAlertasVendedor(rows,vendor){
+  const filtered=rows.filter(r=>r._vendor.includes(vendor));
+  const alertas=[];
+  filtered.forEach(r=>{
+    if(r._dias_sem_atualizar>15)alertas.push({tipo:'sem-atualizacao',dias:r._dias_sem_atualizar,cliente:r.CUSTOMER,valor:r._val});
+    if(r._dias_ate_fechamento<90&&r._dias_ate_fechamento>0)alertas.push({tipo:'vencimento',dias:r._dias_ate_fechamento,cliente:r.CUSTOMER});
+    if(!r['PROX PASSO']||String(r['PROX PASSO']).trim()==='')alertas.push({tipo:'sem-passo',cliente:r.CUSTOMER});
+  });
+  return alertas.sort((a,b)=>(a.dias||999)-(b.dias||999)).slice(0,10);
 }
 
-/* ─── KPIs ─── */
-function renderKPIs(d) {
-  // Week-over-week variation from snapshot
-  function wowBadge(curr, prevVal, label) {
-    if (!_snapPrev || prevVal === undefined || prevVal === 0) return '';
-    const dv   = curr - prevVal;
-    const dpct = dv / prevVal * 100;
-    const c    = dv > 0 ? '#0A8F48' : '#BE1E1E';
-    const arr  = dv > 0 ? '🔼' : '🔽';
-    return `<div style="font-size:.69rem;font-weight:700;color:${c};margin-top:3px">${arr} ${dpct>=0?'+':''}${dpct.toFixed(1)}% vs semana passada</div>`;
-  }
-
-  const prevPipe  = _snapPrev ? Object.values(_snapPrev.byVendor).reduce((s,v)=>s+v.pipe,0) : 0;
-  const prevCount = _snapPrev ? Object.values(_snapPrev.byVendor).reduce((s,v)=>s+v.count,0) : 0;
-
-  document.getElementById('kpi-grid').innerHTML = `
+// ─── RENDER DIRETORIA ───
+function renderDiretoria(){
+  const rows=DATA.base;
+  const met={bruno:getMetricas(rows,'bruno'),felipe:getMetricas(rows,'felipe'),total:getMetricas(rows)};
+  const funil={bruno:getFunil(rows,'bruno'),felipe:getFunil(rows,'felipe')};
+  
+  const metaBruno=METAS.bruno,metaFelipe=METAS.felipe;
+  const coberturaB=met.bruno.pipeline/metaBruno,coberturaF=met.felipe.pipeline/metaFelipe;
+  const coverageTotal=met.total.pipeline/(metaBruno+metaFelipe);
+  
+  const statusB=coberturaB>=4?'healthy':coberturaB>=2?'warning':'critical';
+  const statusF=coberturaF>=4?'healthy':coberturaF>=2?'warning':'critical';
+  
+  let html=`
+  <div class="g4">
     <div class="kpi t">
-      <div class="kl">Pipeline Total</div>
-      <div class="kv t">${fK(d.pipe)}</div>
-      <div class="ks">${d.ab.length} oportunidades abertas</div>
-      ${wowBadge(d.pipe, prevPipe, 'pipeline')}
-      <div class="kico">💰</div>
+      <div class="kpi-l">Pipeline Total</div>
+      <div class="kpi-v t">${fK(met.total.pipeline)}</div>
+      <div class="kpi-s">Todos os vendedores</div>
     </div>
     <div class="kpi b">
-      <div class="kl">Pipeline Ponderado</div>
-      <div class="kv b">${fK(d.pond)}</div>
-      <div class="ks">${d.pipe > 0 ? (d.pond/d.pipe*100).toFixed(0) : 0}% do total · valor confiável</div>
-      ${wowBadge(d.pond, prevPipe > 0 ? prevPipe*0.35 : 0, 'ponderado')}
-      <div class="kico">⚖️</div>
+      <div class="kpi-l">Pipeline Ponderado</div>
+      <div class="kpi-v b">${fK(met.total.ponderado)}</div>
+      <div class="kpi-s">Prob. média: ${(met.total.ponderado/met.total.pipeline*100||0).toFixed(0)}%</div>
     </div>
-    <div class="kpi p">
-      <div class="kl">Ticket Médio</div>
-      <div class="kv p">${fK(d.ticket)}</div>
-      <div class="ks">média por oportunidade aberta</div>
-      <div class="kico">🏷️</div>
+    <div class="kpi g">
+      <div class="kpi-l">Meta Anual</div>
+      <div class="kpi-v g">${fK(metaBruno+metaFelipe)}</div>
+      <div class="kpi-s">Jan-Dez 2026</div>
     </div>
     <div class="kpi a">
-      <div class="kl">Oportunidades</div>
-      <div class="kv a">${d.ab.length}</div>
-      <div class="ks">abertas (total: ${d.total})</div>
-      ${wowBadge(d.ab.length, prevCount, 'opps')}
-      <div class="kico">📋</div>
+      <div class="kpi-l">Cobertura da Meta</div>
+      <div class="kpi-v a">${(coverageTotal*100).toFixed(0)}%</div>
+      <div class="kpi-s">${coverageTotal>=3?'✓ Saudável':'⚠ Verificar'}</div>
     </div>
-    <div class="kpi r">
-      <div class="kl">Risco Imediato</div>
-      <div class="kv r">${d.crit}</div>
-      <div class="ks">risco alto ou fecha ≤4 meses sem ação</div>
-      <div class="kico">🚨</div>
-      <div class="ktag ${d.crit > 0 ? 'r' : 'g'}">${d.crit > 0 ? '⚠ Requer atenção' : '✓ Nenhuma'}</div>
+  </div>
+
+  <div class="sec">Semáforo Comercial</div>
+  <div class="semaforo">
+    <div class="tl ${statusB}">
+      <div class="tl-icon">${statusB==='healthy'?'🟢':statusB==='warning'?'🟡':'🔴'}</div>
+      <div class="tl-label">Bruno Reis</div>
+      <div class="tl-desc">Cobertura: ${(coberturaB*100).toFixed(0)}%<br>${coberturaB>=4?'Pipeline saudável':coberturaB>=2?'Atenção necessária':'CRÍTICO'}</div>
     </div>
-    <div class="kpi ${d.pend > 0 ? 'a' : 'g'}">
-      <div class="kl">Pendências</div>
-      <div class="kv ${d.pend > 0 ? 'a' : 'g'}">${d.pend}</div>
-      <div class="ks">sem próximo passo${d.stale > 0 ? ' · '+d.stale+' desatualiz.' : ''}</div>
-      <div class="kico">⚠️</div>
-      <div class="ktag ${d.pend > 0 ? 'a' : 'g'}">${d.pend > 0 ? 'Definir ação' : '✓ Todas com plano'}</div>
-    </div>`;
-}
-
-
-/* ─── VENDEDOR ─── */
-function renderVend() {
-  const d     = compute();
-  const SC    = { Lead:'#385070', Proposta:'#A86200', Negociação:'#1A3FD4',
-                  Qualificação:'#6020C8', Fechamento:'#0A8F48' };
-
-  if (!d.perV.length) {
-    document.getElementById('vend-grid').innerHTML = '<div style="color:var(--muted)">Sem dados</div>';
-    return;
-  }
-
-  document.getElementById('vend-grid').innerHTML = d.perV.map((v, i) => {
-    const hasMeta  = v.meta > 0;
-    const barColor = !hasMeta ? 'var(--teal)'
-                   : v.atingido  ? 'var(--green)'
-                   : v.pct >= .7 ? 'var(--amber)'
-                   : 'var(--red)';
-    const badge = !hasMeta ? null
-                : v.atingido  ? ['vb-g','✅ Meta atingida']
-                : v.pct >= .7 ? ['vb-a','🟡 Em andamento']
-                :               ['vb-r','🔴 Abaixo da meta'];
-
-    const pills = [
-      v.urg4m > 0 ? `<span class="vp vp-r">⏳ ${v.urg4m} fecha ≤4 meses</span>` : '',
-      v.crit  > 0 ? `<span class="vp vp-r">🔴 ${v.crit} crítico(s)</span>` : '',
-      v.pend  > 0 ? `<span class="vp vp-a">⚠ ${v.pend} sem ação</span>` : '',
-      v.stale > 0 ? `<span class="vp vp-m">⏰ ${v.stale} desatualiz.</span>` : '',
-    ].filter(Boolean).join('');
-
-    // Mini funil
-    // Build stage list from THIS vendor's own open opportunities
-    const vAb       = d.ab.filter(r => r.VENDEDOR === v.v);
-    const stgOrder  = ['Lead','Proposta','Qualificação','Negociação','Fechamento'];
-    const vStagesRaw= [...new Set(vAb.map(r => r.ESTAGIO).filter(e => e && e !== '—'))];
-    const vStages   = [
-      ...stgOrder.filter(s => vStagesRaw.some(u => norm(u) === norm(s))),
-      ...vStagesRaw.filter(u => !stgOrder.some(s => norm(s) === norm(u)))
-    ];
-    const vFun = vStages.map(e => {
-      const its = vAb.filter(r => norm(r.ESTAGIO) === norm(e));
-      return { e, count: its.length, tot: its.reduce((a, r) => a + r._valR, 0) };
-    }).filter(s => s.count > 0);
-    const funMax = Math.max(...vFun.map(s => s.tot), 1);
-    const miniFunil = vFun.map(s => {
-      const pct = Math.max(3, Math.round(s.tot / funMax * 80));
-      const c   = SC[s.e] || '#385070';
-      return `<div class="fn-row">
-        <div class="fn-st">${s.e}</div>
-        <div class="fn-bg"><div class="fn-f" style="width:${pct}%;background:${c}">
-          <span>${s.count} opp.</span></div></div>
-        <div class="fn-v">${fK(s.tot)}</div>
-      </div>`;
-    }).join('');
-
-    // Mini quality
-    const va  = d.ab.filter(r => r.VENDEDOR === v.v);
-    const vl  = va.length || 1;
-    const qCP = (va.length - va.filter(r => r._semProx).length) / vl;
-    const qAR = va.filter(r => r._isCrit).length / vl;
-    const qAP = va.filter(r => r._prob >= .7).length / vl;
-    const qs  = qCP * .4 + (1 - qAR) * .3 + qAP * .3;
-    const qlbl = qs >= .7 ? ['var(--green)', '✅ Pipeline Forte']
-               : qs >= .5 ? ['var(--amber)', '⚠ Pipeline Regular']
-               :            ['var(--red)',   '🔴 Pipeline Fraco'];
-
-    return `<div class="card" style="padding:15px;position:relative">
-      ${i === 0 ? '<span style="position:absolute;top:12px;right:13px;font-size:.9rem" title="Maior pipeline">🏆</span>' : ''}
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px;gap:8px;padding-right:${i===0?'26px':'0'}">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <div class="vc-name">${v.v}</div>
-            ${_snapPrev && _snapPrev.byVendor[v.v] ? (() => {
-              const prev = _snapPrev.byVendor[v.v];
-              const dv   = v.pipe - prev.pipe;
-              const dpct = prev.pipe > 0 ? dv/prev.pipe*100 : 0;
-              if (Math.abs(dpct) < 0.1) return '';
-              const c = dv > 0 ? '#0A8F48' : '#BE1E1E';
-              const a = dv > 0 ? '🔼' : '🔽';
-              return '<span style="font-size:.76rem;font-weight:700;color:'+c+'">'+a+' '+(dpct>=0?'+':'')+dpct.toFixed(1)+'%</span>';
-            })() : ''}
-          </div>
-          <div class="vc-cnt">${v.count} opp. abertas · ${v.clients} cliente(s)</div>
-        </div>
-        ${badge ? `<span class="vbadge ${badge[0]}">${badge[1]}</span>` : ''}
-      </div>
-      <div class="vc-grid">
-        <div class="vs"><div class="vs-l">Pipeline LVK</div><div class="vs-v" style="color:var(--teal)">${fK(v.pipe)}</div></div>
-        <div class="vs"><div class="vs-l">Total LVK</div><div class="vs-v">${fK(v.pond)}</div></div>
-        ${hasMeta
-          ? `<div class="vs"><div class="vs-l">Meta</div><div class="vs-v">${fK(v.meta)}</div></div>
-             <div class="vs"><div class="vs-l">Gap</div><div class="vs-v" style="color:${v.atingido?'var(--green)':'var(--red)'}">${v.atingido ? '✅ Atingido' : '- ' + fK(v.gap)}</div></div>`
-          : `<div class="vs"><div class="vs-l">Pond. %</div><div class="vs-v">${(v.pipe > 0 ? v.pond/v.pipe*100 : 0).toFixed(0)}%</div></div>
-             <div class="vs"><div class="vs-l">Negócios</div><div class="vs-v">${v.count}</div></div>`}
-      </div>
-      ${hasMeta ? `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:.66rem;margin-bottom:3px;color:var(--muted2)">
-          <span>Realizado (Ganhos) vs Meta</span>
-          <span style="font-weight:700;color:${v.atingido?'var(--green)':'var(--red)'}">${(v.pctReal*100).toFixed(1)}%</span>
-        </div>
-        <div style="height:9px;background:rgba(0,0,0,.08);border-radius:5px;overflow:hidden;position:relative">
-          <div style="position:absolute;top:0;left:0;width:${Math.min(v.pct*100,100)}%;height:100%;background:rgba(26,63,212,.18);border-radius:5px"></div>
-          <div style="position:absolute;top:0;left:0;width:${v.pctReal*100}%;height:100%;background:${barColor};border-radius:5px"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:.61rem;color:var(--muted);margin-top:3px">
-          <span>🟩 Realizado: ${fK(v.realizado)} · 🟦 Pipeline aberto: ${fK(v.pipe)}</span>
-          <span>Meta: ${fK(v.meta)}</span>
-        </div>
-      </div>` : ''}
-      ${pills ? `<div class="vpills" style="margin-bottom:10px">${pills}</div>` : ''}
-      ${miniFunil ? `
-      <div style="border-top:1px solid var(--brd2);padding-top:9px;margin-bottom:9px">
-        <div style="font-family:var(--fh);font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:6px">Funil de Vendas</div>
-        ${miniFunil}
-      </div>` : ''}
-      <div style="border-top:1px solid var(--brd2);padding-top:9px">
-        <div style="font-family:var(--fh);font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:6px">Qualidade</div>
-        ${[
-          {ico:'📋', lbl:'Com próx. passo', pct:qCP, c:'#0A8F48'},
-          {ico:'⭐', lbl:'Alta prob. (>70%)', pct:qAP, c:'#006E9C'},
-          {ico:'🚨', lbl:'Risco alto', pct:qAR, c:'#BE1E1E'},
-        ].map(m => `<div class="qrow">
-          <span style="font-size:.8rem;width:18px">${m.ico}</span>
-          <div class="qlbl">${m.lbl}</div>
-          <div class="qbar"><div class="qf" style="width:${m.pct*100}%;background:${m.c}"></div></div>
-          <div class="qpct" style="color:${m.c}">${(m.pct*100).toFixed(0)}%</div>
-        </div>`).join('')}
-        <div style="margin-top:7px;padding:3px 8px;border-radius:5px;font-size:.68rem;font-weight:600;display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.04);color:${qlbl[0]}">${qlbl[1]}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ─── FORECAST ─── */
-function renderFC() {
-  if (_chart) { _chart.destroy(); _chart = null; }
-  const container = document.getElementById('fc-all');
-  if (!container) return;
-
-  // Register datalabels plugin if available
-  if (window.ChartDataLabels) {
-    Chart.register(window.ChartDataLabels);
-  }
-
-  const d = compute();
-  const vendors = [...new Set(RAW.map(r => r.VENDEDOR))].filter(v => v && v !== '—');
-  const allRows  = RAW.filter(r => r._dtF);
-  const monthSet = {};
-  allRows.forEach(r => {
-    const dd  = r._dtF;
-    const key = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0');
-    const lb  = dd.toLocaleDateString('pt-BR', { month:'short', year:'2-digit' })
-      .replace(' de ', '/').replace('.', '').replace(/^\w/, c => c.toUpperCase());
-    monthSet[key] = lb;
-  });
-  const allKeys   = Object.keys(monthSet).sort();
-  const allLabels = allKeys.map(k => monthSet[k]);
-
-  if (!vendors.length || !allKeys.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem datas de fechamento preenchidas</div>';
-    return;
-  }
-
-  const today_key = TODAY.getFullYear() + '-' + String(TODAY.getMonth()+1).padStart(2,'0');
-  const PIPE_C = ['rgba(26,63,212,.82)','rgba(10,143,72,.82)','rgba(168,98,0,.82)','rgba(96,32,200,.82)'];
-  const PAST_C = ['rgba(26,63,212,.30)','rgba(10,143,72,.30)','rgba(168,98,0,.30)','rgba(96,32,200,.30)'];
-
-  const datasets = vendors.map((v, i) => {
-    const vItems = RAW.filter(r => r.VENDEDOR === v && r._dtF);
-    const key4row = r => r._dtF.getFullYear() + '-' + String(r._dtF.getMonth()+1).padStart(2,'0');
-    const data    = allKeys.map(k => vItems.filter(r => key4row(r) === k).reduce((s,r) => s + r._valR, 0));
-    const cnt     = allKeys.map(k => vItems.filter(r => key4row(r) === k).length);
-    const bgC     = allKeys.map(k => k < today_key ? PAST_C[i%4] : PIPE_C[i%4]);
-    return { label: v, data, _cnt: cnt, backgroundColor: bgC, borderRadius: 4, borderSkipped: false };
-  }).filter(ds => ds.data.some(v => v > 0));
-
-  if (!datasets.length) {
-    container.innerHTML = '<div class="card" style="padding:17px;color:var(--muted);text-align:center">Sem dados</div>';
-    return;
-  }
-
-  // Total per month per bar index (for labels on top)
-  const monthTotals = allKeys.map((k,ki) =>
-    datasets.reduce((s, ds) => s + (ds.data[ki] || 0), 0)
-  );
-
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px 16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.05)';
-  wrap.innerHTML = `
-    <div style="font-size:.66rem;color:var(--muted);margin-bottom:6px;display:flex;gap:14px">
-      <span style="display:inline-flex;align-items:center;gap:4px">
-        <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.82)"></span>Futuro
-      </span>
-      <span style="display:inline-flex;align-items:center;gap:4px">
-        <span style="width:10px;height:10px;border-radius:2px;background:rgba(26,63,212,.3)"></span>Meses passados
-      </span>
+    <div class="tl ${statusF}">
+      <div class="tl-icon">${statusF==='healthy'?'🟢':statusF==='warning'?'🟡':'🔴'}</div>
+      <div class="tl-label">Felipe Hanke</div>
+      <div class="tl-desc">Cobertura: ${(coberturaF*100).toFixed(0)}%<br>${coberturaF>=4?'Pipeline saudável':coberturaF>=2?'Atenção necessária':'CRÍTICO'}</div>
     </div>
-    <div style="position:relative;height:190px"><canvas id="ch-fc"></canvas></div>`;
-  container.innerHTML = '';
-  container.appendChild(wrap);
-
-  const canvas = document.getElementById('ch-fc');
-  _chart = new Chart(canvas, {
-    type: 'bar',
-    data: { labels: allLabels, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 22 } },
-      plugins: {
-        legend: { position:'top', align:'start', labels:{ color:'#405070', font:{family:'DM Sans',size:11}, boxWidth:11, padding:14 } },
-        tooltip: {
-          callbacks: {
-            title: items => (allKeys[items[0].dataIndex] < today_key ? '⚠ Não fechado — ' : 'Previsão — ') + items[0].label,
-            label: c => {
-              const cnt = datasets[c.datasetIndex]._cnt[c.dataIndex];
-              return `${c.dataset.label}: ${fK(c.raw)}${cnt > 0 ? '  ('+cnt+' opp.)' : ''}`;
-            },
-            footer: items => {
-              const tot = monthTotals[items[0].dataIndex];
-              return tot > 0 ? 'Total: ' + fK(tot) : '';
-            }
-          }
-        },
-        // Datalabels: show value on each individual bar
-        datalabels: window.ChartDataLabels ? {
-          display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0,
-          formatter: (value) => fKs(value),
-          anchor: 'end',
-          align: 'end',
-          offset: 2,
-          color: (ctx) => {
-            const colors = ['#1A3FD4','#0A8F48','#A86200','#6020C8'];
-            return colors[ctx.datasetIndex % 4];
-          },
-          font: { family: 'DM Sans', size: 9, weight: '600' },
-        } : false,
-      },
-      scales: {
-        x: { ticks:{ color:'#7080A0', font:{family:'DM Sans',size:11} }, grid:{color:'rgba(30,70,160,.05)'} },
-        y: {
-          min: 0,
-          ticks:{ color:'#7080A0', maxTicksLimit:5, callback:v=>fKs(v), font:{family:'DM Sans',size:10} },
-          grid:{ color:'rgba(30,70,160,.07)' }
-        }
-      }
-    }
-  });
-}
-
-
-/* ─── ACTION PANEL ─── */
-function renderAct() {
-  const d = compute();
-
-  // ── BLOCO 1: Resumo macro ─────────────────────────────────────
-  const totalUrgVal  = d.ab.filter(r => r._urg4m).reduce((s,r) => s+r._valR, 0);
-  const semAcaoOpps  = d.ab.filter(r => r._semProx);
-  const staleOpps    = d.ab.filter(r => r._isStale);
-
-  // Top 3 sem ação por vendedor
-  const semAcaoByVend = {};
-  semAcaoOpps.forEach(r => {
-    if (!semAcaoByVend[r.VENDEDOR]) semAcaoByVend[r.VENDEDOR] = [];
-    if (semAcaoByVend[r.VENDEDOR].length < 3) semAcaoByVend[r.VENDEDOR].push(r.CUSTOMER);
-  });
-  // Top 3 desatualizados por vendedor
-  const staleByVend = {};
-  staleOpps.forEach(r => {
-    if (!staleByVend[r.VENDEDOR]) staleByVend[r.VENDEDOR] = [];
-    if (staleByVend[r.VENDEDOR].length < 3) staleByVend[r.VENDEDOR].push(r.CUSTOMER);
-  });
-
-  const block1 = `
-  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:10px;padding:13px 15px;margin-bottom:14px">
-    <div style="font-family:var(--fh);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px">🔷 Prioridade Macro</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      <div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:8px;padding:10px 12px">
-        <div style="font-size:.65rem;color:var(--red);font-weight:700;text-transform:uppercase;margin-bottom:4px">🔴 Valor em Risco</div>
-        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--red)">${fKs(totalUrgVal)}</div>
-        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">vencem em ≤ 4 meses</div>
-      </div>
-      <div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:10px 12px">
-        <div style="font-size:.65rem;color:var(--amber);font-weight:700;text-transform:uppercase;margin-bottom:4px">⚠ Sem Ação</div>
-        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--amber)">${semAcaoOpps.length}</div>
-        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">
-          ${Object.entries(semAcaoByVend).map(([v,cs]) =>
-            `<div>${v.split(' ')[0]}: ${cs.slice(0,3).join(', ')}${cs.length < semAcaoOpps.filter(r=>r.VENDEDOR===v).length ? '...' : ''}</div>`
-          ).join('')}
-        </div>
-      </div>
-      <div style="background:rgba(112,128,160,.08);border:1px solid var(--brd);border-radius:8px;padding:10px 12px">
-        <div style="font-size:.65rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:4px">⏰ Desatualizadas</div>
-        <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800;color:var(--muted2)">${staleOpps.length}</div>
-        <div style="font-size:.68rem;color:var(--muted2);margin-top:2px">
-          ${Object.entries(staleByVend).map(([v,cs]) =>
-            `<div>${v.split(' ')[0]}: ${cs.slice(0,3).join(', ')}</div>`
-          ).join('')}
-        </div>
-      </div>
+    <div class="tl">
+      <div class="tl-icon">📊</div>
+      <div class="tl-label">Equipe</div>
+      <div class="tl-desc">Cobertura total: ${(coverageTotal*100).toFixed(0)}%<br>${coverageTotal>=3?'✓ Acima da meta':coverageTotal>=2?'⚠ Próximo de meta':'✗ Abaixo da meta'}</div>
     </div>
-  </div>`;
+  </div>
 
-  // ── BLOCO 2: Por vendedor ─────────────────────────────────────
-  const block2 = d.perV.map(v => {
-    const vRisk    = d.ab.filter(r => r.VENDEDOR === v.v && r._urg4m);
-    const vSemAcao = d.ab.filter(r => r.VENDEDOR === v.v && r._semProx).slice(0,3);
-    const vRiskVal = vRisk.reduce((s,r) => s+r._valR, 0);
+  <div class="sec">Meta por Vendedor</div>
+  <table class="tbl" style="margin-bottom:20px">
+    <tr>
+      <th>Vendedor</th>
+      <th class="num">Meta</th>
+      <th class="num">Pipeline</th>
+      <th class="num">Ponderado</th>
+      <th class="num">GAP</th>
+      <th class="num">Cobertura</th>
+    </tr>
+    <tr>
+      <td><strong>Bruno Reis</strong></td>
+      <td class="num">${fK(metaBruno)}</td>
+      <td class="num">${fK(met.bruno.pipeline)}</td>
+      <td class="num">${fK(met.bruno.ponderado)}</td>
+      <td class="num" style="color:${met.bruno.pipeline>=metaBruno?'var(--green)':'var(--red)'}">${fK(met.bruno.pipeline-metaBruno)}</td>
+      <td class="num" style="color:${coberturaB>=2?'var(--green)':'var(--amber)'}">${(coberturaB*100).toFixed(0)}%</td>
+    </tr>
+    <tr>
+      <td><strong>Felipe Hanke</strong></td>
+      <td class="num">${fK(metaFelipe)}</td>
+      <td class="num">${fK(met.felipe.pipeline)}</td>
+      <td class="num">${fK(met.felipe.ponderado)}</td>
+      <td class="num" style="color:${met.felipe.pipeline>=metaFelipe?'var(--green)':'var(--red)'}">${fK(met.felipe.pipeline-metaFelipe)}</td>
+      <td class="num" style="color:${coberturaF>=2?'var(--green)':'var(--amber)'}">${(coberturaF*100).toFixed(0)}%</td>
+    </tr>
+  </table>
 
-    // Top 5 critical by closing date
-    const top5 = d.ab
-      .filter(r => r.VENDEDOR === v.v && (r._urg4m || norm(r.RISCO)==='alto'))
-      .sort((a,b) => {
-        const da = a._dClose < 0 ? -9999 : a._dClose === 9999 ? 99999 : a._dClose;
-        const db = b._dClose < 0 ? -9999 : b._dClose === 9999 ? 99999 : b._dClose;
-        return da - db;
-      })
-      .slice(0, 5);
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">🎯 Win Rate</div>
+      <table class="tbl" style="font-size:.8rem">
+        <tr><td><strong>Bruno</strong></td><td class="num">${met.bruno.winrate.toFixed(0)}%</td></tr>
+        <tr><td><strong>Felipe</strong></td><td class="num">${met.felipe.winrate.toFixed(0)}%</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-t">⏱️ Velocity (dias médios)</div>
+      <table class="tbl" style="font-size:.8rem">
+        <tr><td><strong>Bruno</strong></td><td class="num">${met.bruno.velocity.toFixed(0)}</td></tr>
+        <tr><td><strong>Felipe</strong></td><td class="num">${met.felipe.velocity.toFixed(0)}</td></tr>
+      </table>
+    </div>
+  </div>
 
-    if (!top5.length && !vSemAcao.length) return '';
-
-    const top5rows = top5.map(r => {
-      const dc    = r._dClose;
-      const dcC   = dc < 0 ? 'var(--red)' : dc <= 30 ? 'var(--red)' : dc <= 90 ? 'var(--amber)' : 'var(--muted2)';
-      const dcT   = dc < 0 ? `VENCIDA ${Math.abs(dc)}d` : dc === 9999 ? 'Sem data' : `${dc}d`;
-      const prox  = r.PROX_PASSO && r.PROX_PASSO.trim() && r.PROX_PASSO.trim() !== '-'
-                    ? r.PROX_PASSO.trim() : null;
-      return `<div style="padding:7px 0;border-bottom:1px solid var(--brd2)">
-        <div style="display:grid;grid-template-columns:1fr 80px 100px;gap:6px;align-items:center;font-size:.73rem">
-          <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
-          <span style="font-family:var(--fm);color:${dcC};font-size:.69rem;white-space:nowrap;text-align:center">${dcT}</span>
-          <span style="font-family:var(--fm);color:var(--blue);font-size:.70rem;text-align:right;font-weight:600">${fKs(r._valR)}</span>
-        </div>
-        ${prox
-          ? '<div style="font-size:.66rem;color:var(--teal);margin-top:2px">▶ ' + prox + '</div>'
-          : '<div style="font-size:.66rem;color:var(--amber);margin-top:2px">⚠ Sem próximo passo definido</div>'
-        }
-      </div>`;
-    }).join('');;
-
-    const semAcaoText = vSemAcao.length
-      ? `<div style="font-size:.68rem;color:var(--amber);margin-top:5px">⚠ Sem ação: ${vSemAcao.map(r=>r.CUSTOMER).join(', ')}</div>`
-      : '';
-
-    return `
-    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-        <span style="font-family:var(--fh);font-size:.92rem;font-weight:700;color:var(--text)">${v.v}</span>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${vRiskVal > 0 ? `<span style="background:var(--red2);color:var(--red);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">🔴 ${fKs(vRiskVal)} em risco</span>` : ''}
-          ${vSemAcao.length > 0 ? `<span style="background:var(--amber2);color:var(--amber);padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700">⚠ ${vSemAcao.length} sem ação</span>` : ''}
-        </div>
-      </div>
-      ${top5.length ? `
-      <div style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:4px">Top ${top5.length} por prazo &nbsp;<span style="color:var(--muted2);font-weight:400">→ O QUE tratar &nbsp;·&nbsp; QUANDO &nbsp;·&nbsp; QUAL impacto</span></div>
-      <div style="font-size:.62rem;color:var(--muted2);display:grid;grid-template-columns:1fr 80px 100px;gap:6px;padding:3px 0;font-weight:700;border-bottom:2px solid var(--brd)">
-        <span>Cliente · Próximo Passo</span><span style="text-align:center">Prazo</span><span style="text-align:right">Valor</span>
-      </div>
-      ${top5rows}` : ''}
-      ${semAcaoText}
-    </div>`;
-  }).filter(Boolean).join('');
-
-  document.getElementById('act-opps').innerHTML = block1 + block2 ||
-    '<div style="color:var(--green);font-size:.8rem;padding:14px 0;text-align:center;font-weight:600">✅ Nenhuma oportunidade crítica</div>';
-
-  // ── ALERTAS: Top 5 por vendedor — prob 100%, alto valor, desatualizados
-  const alertsHtml = d.perV.map(v => {
-    const va = d.ab.filter(r => r.VENDEDOR === v.v);
-    // Prob 100% + alto valor + desatualizado (>7d) ou sem atualização
-    const atRisk = va
-      .filter(r => r._prob >= 1.0 && (r._isStale || !r._dtA))
-      .sort((a,b) => b._valR - a._valR)
-      .slice(0, 5);
-
-    if (!atRisk.length) return '';
-
-    return `<div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-family:var(--fh);font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:7px">
-        ${v.v} <span style="font-size:.68rem;color:var(--muted2);font-weight:400">${atRisk.length} crítico(s)</span>
-      </div>
-      <div style="font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px;display:grid;grid-template-columns:1fr 70px 70px;gap:6px">
-        <span>Cliente · 100% prob.</span><span style="text-align:center">Últ. atualiz.</span><span style="text-align:right">Valor</span>
-      </div>
-      ${atRisk.map(r => {
-        const da  = dAgo(r._dtA);
-        const daC = da >= 9990 ? 'var(--red)' : da > 7 ? 'var(--amber)' : 'var(--green)';
-        const daT = da >= 9990 ? 'Nunca' : `${da}d atrás`;
-        return `<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--brd2);font-size:.71rem">
-          <span style="font-weight:600;color:var(--text)">${r.CUSTOMER}</span>
-          <span style="color:${daC};font-size:.68rem;text-align:center">${daT}</span>
-          <span style="font-family:var(--fm);color:var(--blue);font-size:.68rem;text-align:right">${fKs(r._valR)}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).filter(Boolean).join('');
-
-  document.getElementById('act-vend').innerHTML = alertsHtml ||
-    '<div style="color:var(--green);font-size:.78rem;padding:13px 0;text-align:center;font-weight:600">✅ Todos atualizados</div>';
-}
-
-
-/* ═══════════════════════════════════════════════════
-   RENDER TABLE  (usa FIL — pode ser filtrado)
-═══════════════════════════════════════════════════ */
-let _sKey = '_val', _sAsc = false;
-
-function srt(k) {
-  if (_sKey === k) _sAsc = !_sAsc; else { _sKey = k; _sAsc = false; }
-  _pg = 1;
-  renderTbl();
-}
-
-const pColor = p => p >= .7 ? '#0A8F48' : p >= .4 ? '#A86200' : '#BE1E1E';
-
-function stCls(e) {
-  const n = norm(e);
-  if (n === 'lead') return 'tb-le';
-  if (n === 'proposta') return 'tb-pr';
-  if (n.includes('negocia')) return 'tb-ne';
-  if (n === 'qualificacao' || n === 'qualificação') return 'tb-qu';
-  if (n === 'fechamento') return 'tb-fe';
-  return 'tb-le';
-}
-function rCls(r)  { return { Baixo:'tb-rB', Médio:'tb-rM', Alto:'tb-rA' }[r] || 'tb-rM'; }
-function stsCls(s) {
-  const n = norm(s || '');
-  if (n === 'ganho')  return 'tb-ga';
-  if (n === 'perdido') return 'tb-pe';
-  if (n === 'parado') return 'tb-pa';
-  return 'tb-ab';
-}
-
-function renderTbl() {
-  const sorted = [...FIL].sort((a, b) => {
-    const av = a[_sKey], bv = b[_sKey];
-    if (av instanceof Date && bv instanceof Date) return _sAsc ? av - bv : bv - av;
-    if (typeof av === 'number') return _sAsc ? av - bv : bv - av;
-    return _sAsc
-      ? (av||'').toString().localeCompare((bv||'').toString(), 'pt-BR')
-      : (bv||'').toString().localeCompare((av||'').toString(), 'pt-BR');
-  });
-
-  const total = sorted.length;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SZ));
-  if (_pg > pages) _pg = pages;
-  const rows = sorted.slice((_pg - 1) * PAGE_SZ, _pg * PAGE_SZ);
-
-  document.getElementById('pg-info').textContent = `${FIL.length} de ${RAW.length} registros`;
-  document.getElementById('pg-c').textContent = _pg;
-  document.getElementById('pg-t').textContent = pages;
-  document.getElementById('pg-p').disabled = _pg <= 1;
-  document.getElementById('pg-n').disabled = _pg >= pages;
-
-  if (!rows.length) {
-    document.getElementById('tbl-body').innerHTML =
-      '<tr><td colspan="14" style="text-align:center;padding:28px;color:var(--muted)">Nenhum registro encontrado com esses filtros</td></tr>';
-    return;
-  }
-
-  document.getElementById('tbl-body').innerHTML = rows.map(r => {
-    const rCl = r._isCrit ? 'tr-crit' : r._semProx ? 'tr-warn' : r._prob >= .8 ? 'tr-hot' : '';
-    const flags = [
-      r._isCrit  ? '<span class="flag fl-r">CRÍTICO</span>' : '',
-      r._semProx ? '<span class="flag fl-a">SEM AÇÃO</span>' : '',
-      r._isStale ? `<span class="flag fl-a">${dAgo(r._dtA) >= 9990 ? 'Nunca' : dAgo(r._dtA) + 'd'}</span>` : '',
-      r._prob >= .8 ? '<span class="flag fl-g">HOT</span>' : '',
-    ].filter(Boolean).join('');
-
-    const pc  = pColor(r._prob);
-    const dfC = r._dClose >= 0 && r._dClose < 15 ? 'color:var(--red);font-weight:700'
-              : r._dClose >= 0 && r._dClose < 30 ? 'color:var(--amber);font-weight:600'
-              : 'color:var(--muted2)';
-    const daC = r._isStale ? 'color:var(--red)' : 'color:var(--muted2)';
-    const da  = dAgo(r._dtA);
-    const daStr = da >= 9990 ? '<br><span style="font-size:.6rem;color:var(--red)">Nunca</span>'
-                : da > 0     ? `<br><span style="font-size:.6rem;color:var(--muted)">${da}d atrás</span>`
-                : '';
-    const al = r.ALERTA || (r._isCrit ? '🔴 Crítico' : r._semProx ? '⚠ Sem ação' : r._isStale ? '⏰ Desatualizado' : '');
-
-    return `<tr class="${rCl}">
-      <td class="tm" style="color:var(--muted2);white-space:nowrap">${r.ID_OPP}</td>
-      <td style="font-weight:600;max-width:148px;word-break:break-word">${r.CUSTOMER}${flags}</td>
-      <td style="white-space:nowrap">${r.VENDEDOR}</td>
-      <td style="color:var(--muted2);font-size:.7rem;max-width:120px">${r.SOLUTION}</td>
-      <td style="color:var(--muted2);font-size:.7rem;max-width:120px">${r.PRODUCT}</td>
-      <td><span class="tb ${stCls(r.ESTAGIO)}">${r.ESTAGIO}</span></td>
-      <td><span class="tb ${stsCls(r.STATUS)}">${r.STATUS}</span></td>
-      <td><span class="tb ${rCls(r.RISCO)}">${r.RISCO}</span></td>
-      <td class="tm" style="color:var(--blue);font-weight:600;white-space:nowrap">${fK(r._val)}</td>
-      <td><div class="pbw">
-        <div class="pbb"><div class="pbf" style="width:${r._prob*100}%;background:${pc}"></div></div>
-        <span class="tm" style="font-size:.7rem;color:${pc}">${Math.round(r._prob*100)}%</span>
-      </div></td>
-      <td style="${dfC};font-size:.71rem;white-space:nowrap">${fDt(r._dtF)}</td>
-      <td style="max-width:140px;font-size:.68rem;color:${r._semProx?'var(--amber)':'var(--muted2)'}">
-        ${r.PROX_PASSO || '<span style="color:var(--amber);font-weight:600">⚠ Não definido</span>'}
-      </td>
-      <td style="${daC};font-size:.68rem;white-space:nowrap">${fDt(r._dtA)}${daStr}</td>
-      <td style="font-size:.67rem;color:var(--muted2);max-width:108px">${al || '—'}</td>
+  <div class="sec">Top 10 Projetos da Empresa</div>
+  <table class="tbl" style="margin-bottom:20px">
+    <tr>
+      <th style="width:50%">Cliente</th>
+      <th class="num">Valor</th>
+      <th style="text-align:center">Vendedor</th>
+    </tr>
+  `;
+  const top10=rows.sort((a,b)=>b._val-a._val).slice(0,10);
+  top10.forEach(r=>{
+    html+=`<tr>
+      <td><strong>${r.CUSTOMER||'?'}</strong></td>
+      <td class="num">${fK(r._val)}</td>
+      <td style="text-align:center;color:var(--muted2);font-size:.8rem">${(r.VENDEDOR||'').split(' ')[0]}</td>
     </tr>`;
-  }).join('');
-}
-
-function pgCh(dir) {
-  const pages = Math.max(1, Math.ceil(FIL.length / PAGE_SZ));
-  _pg = Math.max(1, Math.min(pages, _pg + dir));
-  renderTbl();
-}
-
-/* ═══════════════════════════════════════════════════
-   SNAPSHOT — usa aba SNAPSHOTS do Google Sheets
-═══════════════════════════════════════════════════ */
-async function loadSnap() {
-  const body  = document.getElementById('snap-body');
-  const dates = document.getElementById('snap-dates');
-  if (!body) return;
-
-  // ── Inline progress updates ──
-  const progress = (msg, pct) => {
-    body.innerHTML = `<div style="padding:16px 0;text-align:center">
-      <div style="color:var(--muted2);font-size:.79rem;margin-bottom:10px">${msg}</div>
-      <div style="height:4px;background:var(--brd);border-radius:2px;overflow:hidden;max-width:300px;margin:0 auto">
-        <div style="height:100%;background:var(--blue);border-radius:2px;width:${pct}%;transition:width .4s"></div>
-      </div>
-    </div>`;
-  };
-
-  progress('⟳ Conectando ao Google Sheets...', 10);
-
-  const proxies = [
-    // 1. Direct (works from GitHub Pages)
-    async () => {
-      const r = await fetch(SNAP_SHOTS_URL, { signal: AbortSignal.timeout(10000) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return await r.text();
-    },
-    // 2. allorigins
-    async () => {
-      progress('⟳ Tentando proxy 1...', 35);
-      const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SNAP_SHOTS_URL),
-        { signal: AbortSignal.timeout(15000) });
-      const j = await r.json();
-      if (!j.contents || j.contents.length < 20) throw new Error('Vazio');
-      return j.contents;
-    },
-    // 3. corsproxy.io
-    async () => {
-      progress('⟳ Tentando proxy 2...', 55);
-      const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(SNAP_SHOTS_URL),
-        { signal: AbortSignal.timeout(15000) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return await r.text();
-    },
-    // 4. Claude API proxy
-    async () => {
-      progress('⟳ Tentando via Claude API...', 75);
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514', max_tokens: 8192,
-          system: 'CSV proxy. Use web_search, return ONLY raw CSV, no markdown.',
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          messages: [{ role: 'user', content: 'Fetch raw CSV:\n' + SNAP_SHOTS_URL }]
-        })
-      });
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error.message);
-      const txt = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')
-        .replace(/^```(?:csv)?\n?/m,'').replace(/\n?```$/m,'').trim();
-      if (!txt || txt.length < 20) throw new Error('Resposta vazia');
-      return txt;
-    }
-  ];
-
-  let txt = null, lastError = '';
-  for (const proxy of proxies) {
-    try {
-      txt = await proxy();
-      if (txt && txt.length > 20) break;
-    } catch(e) {
-      lastError = e.message;
-      console.warn('Proxy falhou:', e.message);
-    }
-  }
-
-  if (!txt || txt.length < 20) {
-    body.innerHTML = `<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:9px;padding:13px 16px;font-size:.77rem;color:var(--red)">
-      <strong>⚠ Não foi possível carregar a aba SNAPSHOTS.</strong><br>
-      <span style="color:var(--muted2);font-size:.7rem">
-        A aba está publicada (você confirmou), mas todas as ${proxies.length} estratégias de acesso falharam.<br>
-        Último erro: <code>${lastError}</code><br><br>
-        Verifique: Arquivo → Compartilhar → Publicar na web → selecione
-        <strong>SNAPSHOTS</strong> especificamente → formato <strong>CSV</strong> → Publicar.
-      </span>
-    </div>`;
-    return;
-  }
-
-  progress('⟳ Processando dados...', 90);
-  setTimeout(() => renderSnapFromHistory(txt), 50);
-}
-
-// ── Parses CSV and routes to correct renderer
-function renderSnapFromHistory(txt) {
-  const body  = document.getElementById('snap-body');
-  const dates = document.getElementById('snap-dates');
-  const res   = Papa.parse(txt.replace(/^\uFEFF/,'').trim(), {
-    header:true, skipEmptyLines:'greedy', trimHeaders:true, dynamicTyping:false
   });
-  const rows = res.data.filter(r => Object.values(r).some(v=>v&&String(v).trim()));
-  if (!rows||rows.length<1) { body.innerHTML='<div style="color:var(--muted)">Dados vazios</div>'; return; }
-  const cols = Object.keys(rows[0]);
-  const colsUp = cols.map(c=>c.toUpperCase());
-  const colDisplay = `<div style="background:var(--blue2);border:1px solid rgba(26,63,212,.15);border-radius:8px;padding:8px 13px;margin-bottom:12px;font-size:.71rem;color:var(--blue)">
-    ✓ ${rows.length} linhas carregadas · ${cols.length} colunas
-  </div>`;
-  console.log('SNAPSHOTS cols:', cols, '| rows:', rows.length);
-  const isSnapshots = colsUp.some(c=>c.includes('DATA_SNAPSHOT'));
-  if (isSnapshots) renderFromSnapshots(rows, body, dates, colDisplay);
-  else renderFromComparacao(rows, cols, body, dates, colDisplay);
+  html+=`</table>`;
+
+  document.getElementById('diretoria-content').innerHTML=html;
 }
 
-// ── SNAPSHOTS tab renderer (field-by-field diff)
-function renderFromSnapshots(rows, body, dates, colDisplay='') {
-  function parseBRLSnap(v){ if(!v)return 0; const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim(); const n=parseFloat(s); return isNaN(n)?0:n; }
-  function parseDtSnap(v){ if(!v)return null; const s=String(v).trim(); if(!s||s==='—'||s==='-')return null; if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){const[d,m,y]=s.split('/');return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);}  if(/^\d{4,6}$/.test(s))return new Date(Date.UTC(1899,11,31)+parseInt(s)*86400000); const dt=new Date(s.replace(' ','T')); return isNaN(dt.getTime())?null:dt; }
-  const fmtDt=d=>d?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+function renderBruno(){
+  const rows=DATA.base.filter(r=>r._vendor.includes('bruno'));
+  const met=getMetricas(rows);
+  const funil=getFunil(rows);
+  const aging=getAging(rows);
+  const dep=getDependencia(rows);
+  const alertas=getAlertasVendedor(rows,'bruno');
+  
+  const meta=METAS.bruno;
+  const cobertura=met.pipeline/meta;
+  
+  let html=`
+  <div class="g4">
+    <div class="kpi t">
+      <div class="kpi-l">Meta</div>
+      <div class="kpi-v t">${fK(meta)}</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-l">Realizado</div>
+      <div class="kpi-v g">${fK(met.fechados)}</div>
+      <div class="kpi-s">${met.ganhos} operações</div>
+    </div>
+    <div class="kpi b">
+      <div class="kpi-l">Pipeline</div>
+      <div class="kpi-v b">${fK(met.pipeline)}</div>
+      <div class="kpi-s">Cobertura: ${(cobertura*100).toFixed(0)}%</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-l">Ponderado</div>
+      <div class="kpi-v a">${fK(met.ponderado)}</div>
+      <div class="kpi-s">Prob. média: ${(met.ponderado/met.pipeline*100||0).toFixed(0)}%</div>
+    </div>
+  </div>
 
-  function normSnapDate(v){ if(!v)return''; const s=String(v).trim();
-    if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){const[d,m,y]=s.split('/');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
-    if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
-    if(/^\d{1,2}-\d{1,2}-\d{4}$/.test(s)){const[d,m,y]=s.split('-');return`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
-    return s.slice(0,10); }
+  ${alertas.length>0?`<div class="alert"><div class="alert-icon">⚠️</div><div><strong>O que fazer hoje:</strong><br>${alertas.slice(0,5).map(a=>
+    a.tipo==='sem-atualizacao'?`🔴 Atualizar ${a.cliente} (${a.dias} dias sem atualizar)`:
+    a.tipo==='vencimento'?`🟡 ${a.cliente} vence em ${a.dias} dias`:
+    `🟡 Definir próximo passo: ${a.cliente}`
+  ).join('<br>')}</div></div>`:''}
 
-  const dateSet={};
-  rows.forEach(r=>{ const d=normSnapDate((r['DATA_SNAPSHOT']||r['data_snapshot']||'').trim()); if(d) dateSet[d]=true; });
-  const allDates=Object.keys(dateSet).sort();
-  console.log('Datas SNAPSHOTS:', allDates, '| rows:', rows.length);
+  <div class="sec">Meu Funil</div>
+  <div class="g2">
+    <table class="tbl">
+      <tr><th>Estágio</th><th class="num">Qty</th><th class="num">Valor</th></tr>
+      <tr><td>Lead</td><td class="num">${funil.stages.Lead||0}</td><td class="num">${fK(funil.values.Lead)}</td></tr>
+      <tr><td>Proposta</td><td class="num">${funil.stages.Proposta||0}</td><td class="num">${fK(funil.values.Proposta)}</td></tr>
+      <tr><td>Negociação</td><td class="num">${funil.stages.Negociação||0}</td><td class="num">${fK(funil.values.Negociação)}</td></tr>
+      <tr><td>Ganhou</td><td class="num">${funil.stages.Ganhou||0}</td><td class="num">${fK(funil.values.Ganhou)}</td></tr>
+    </table>
+    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:18px">
+      <div style="color:var(--muted2);font-size:.8rem;margin-bottom:8px">INDICADORES</div>
+      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Win Rate</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--green);font-weight:700">${met.winrate.toFixed(0)}%</div></div>
+      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Velocity</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--blue);font-weight:700">${met.velocity.toFixed(0)}d</div></div>
+      <div><div style="color:var(--muted2);font-size:.75rem">Ticket Médio</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--amber);font-weight:700">${fK(met.ticket)}</div></div>
+    </div>
+  </div>
 
-  if(allDates.length<2){
-    body.innerHTML=colDisplay+`<div style="background:var(--amber2);border:1px solid rgba(168,98,0,.2);border-radius:8px;padding:12px 15px;font-size:.77rem;color:var(--amber)">
-      Apenas 1 data encontrada (${allDates[0]||'nenhuma'}) — ${rows.length} linhas carregadas.<br>
-      Adicione registros da segunda semana com DATA_SNAPSHOT diferente.</div>`;
-    return;
-  }
+  <div class="sec">Próximos Fechamentos (30 dias)</div>
+  <table class="tbl" style="margin-bottom:20px;font-size:.85rem">
+    <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  `;
+  rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30)
+    .sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento)
+    .slice(0,10)
+    .forEach(r=>{
+      html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${r._dias_ate_fechamento<=7?'var(--red)':'var(--amber)'}">${r._dias_ate_fechamento}</td></tr>`;
+    });
+  html+=`</table>`;
 
-  const dateAnt=allDates[allDates.length-2], dateAtu=allDates[allDates.length-1];
-  const fmtKey=k=>{const[y,m,d]=k.split('-');return`${d}/${m}/${y}`;};
-  if(dates) dates.textContent=`${fmtKey(dateAnt)}  →  ${fmtKey(dateAtu)}`;
+  html+=`
+  <div class="sec">Qualidade do Pipeline</div>
+  <table class="tbl">
+    <tr><th>Indicador</th><th class="num">Meta</th><th class="num">Real</th></tr>
+    <tr><td>Próximo passo definido</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r['PROX PASSO']).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Atualizado últimos 7 dias</td><td class="num">90%</td><td class="num">${(rows.filter(r=>r._dias_sem_atualizar<=7).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Probabilidade preenchida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r.PROBABILIDADE).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Data fechamento válida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r._fechamento).length/rows.length*100||0).toFixed(0)}%</td></tr>
+  </table>
+  `;
 
-  const rowsAnt=rows.filter(r=>normSnapDate((r['DATA_SNAPSHOT']||'').trim())===dateAnt);
-  const rowsAtu=rows.filter(r=>normSnapDate((r['DATA_SNAPSHOT']||'').trim())===dateAtu);
-  console.log(`${fmtKey(dateAnt)}: ${rowsAnt.length} rows | ${fmtKey(dateAtu)}: ${rowsAtu.length} rows`);
+  document.getElementById('bruno-content').innerHTML=html;
+}
 
-  const normID=v=>String(v||'').trim().toUpperCase();
-  const mapAnt={}, mapAtu={};
-  rowsAnt.forEach(r=>{ const id=normID(r['ID_OPORTUNIDADE']||r['ID AUTOMÁTICO']); if(id) mapAnt[id]=r; });
-  rowsAtu.forEach(r=>{ const id=normID(r['ID_OPORTUNIDADE']||r['ID AUTOMÁTICO']); if(id) mapAtu[id]=r; });
+function renderFelipe(){
+  const rows=DATA.base.filter(r=>r._vendor.includes('felipe'));
+  const met=getMetricas(rows);
+  const funil=getFunil(rows);
+  const aging=getAging(rows);
+  const dep=getDependencia(rows);
+  const alertas=getAlertasVendedor(rows,'felipe');
+  
+  const meta=METAS.felipe;
+  const cobertura=met.pipeline/meta;
+  
+  let html=`
+  <div class="g4">
+    <div class="kpi t">
+      <div class="kpi-l">Meta</div>
+      <div class="kpi-v t">${fK(meta)}</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-l">Realizado</div>
+      <div class="kpi-v g">${fK(met.fechados)}</div>
+      <div class="kpi-s">${met.ganhos} operações</div>
+    </div>
+    <div class="kpi b">
+      <div class="kpi-l">Pipeline</div>
+      <div class="kpi-v b">${fK(met.pipeline)}</div>
+      <div class="kpi-s">Cobertura: ${(cobertura*100).toFixed(0)}%</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-l">Ponderado</div>
+      <div class="kpi-v a">${fK(met.ponderado)}</div>
+      <div class="kpi-s">Prob. média: ${(met.ponderado/met.pipeline*100||0).toFixed(0)}%</div>
+    </div>
+  </div>
 
-  const getLVK=r=>parseBRLSnap(r['TOTAL NET LVK (R$)']||r['TOTAL NET (R$)']||'');
-  const getVend=r=>(r['VENDEDOR']||'').trim();
-  const pipAnt=rowsAnt.reduce((s,r)=>s+getLVK(r),0), pipAtu=rowsAtu.reduce((s,r)=>s+getLVK(r),0);
-  const varPipe=pipAtu-pipAnt, varPct=pipAnt>0?varPipe/pipAnt*100:0;
-  const varC=varPipe>0?'var(--green)':varPipe<0?'var(--red)':'var(--muted2)';
-  const varArr=varPipe>0?'▲':varPipe<0?'▼':'→';
+  ${alertas.length>0?`<div class="alert"><div class="alert-icon">⚠️</div><div><strong>O que fazer hoje:</strong><br>${alertas.slice(0,5).map(a=>
+    a.tipo==='sem-atualizacao'?`🔴 Atualizar ${a.cliente} (${a.dias} dias sem atualizar)`:
+    a.tipo==='vencimento'?`🟡 ${a.cliente} vence em ${a.dias} dias`:
+    `🟡 Definir próximo passo: ${a.cliente}`
+  ).join('<br>')}</div></div>`:''}
 
-  const vends=[...new Set([...rowsAnt,...rowsAtu].map(r=>getVend(r)).filter(Boolean))];
-  const vendSt={};
-  vends.forEach(v=>{vendSt[v]={pipAnt:0,pipAtu:0,cntAnt:0,cntAtu:0};});
-  rowsAnt.forEach(r=>{const v=getVend(r);if(v&&vendSt[v]){vendSt[v].pipAnt+=getLVK(r);vendSt[v].cntAnt++;}});
-  rowsAtu.forEach(r=>{const v=getVend(r);if(v&&vendSt[v]){vendSt[v].pipAtu+=getLVK(r);vendSt[v].cntAtu++;}});
-  _snapPrev={dateAnt,dateAtu,byVendor:{}};
-  Object.entries(vendSt).forEach(([v,s])=>{_snapPrev.byVendor[v]={pipe:s.pipAnt,count:s.cntAnt};});
+  <div class="sec">Meu Funil</div>
+  <div class="g2">
+    <table class="tbl">
+      <tr><th>Estágio</th><th class="num">Qty</th><th class="num">Valor</th></tr>
+      <tr><td>Lead</td><td class="num">${funil.stages.Lead||0}</td><td class="num">${fK(funil.values.Lead)}</td></tr>
+      <tr><td>Proposta</td><td class="num">${funil.stages.Proposta||0}</td><td class="num">${fK(funil.values.Proposta)}</td></tr>
+      <tr><td>Negociação</td><td class="num">${funil.stages.Negociação||0}</td><td class="num">${fK(funil.values.Negociação)}</td></tr>
+      <tr><td>Ganhou</td><td class="num">${funil.stages.Ganhou||0}</td><td class="num">${fK(funil.values.Ganhou)}</td></tr>
+    </table>
+    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:18px">
+      <div style="color:var(--muted2);font-size:.8rem;margin-bottom:8px">INDICADORES</div>
+      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Win Rate</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--green);font-weight:700">${met.winrate.toFixed(0)}%</div></div>
+      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Velocity</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--blue);font-weight:700">${met.velocity.toFixed(0)}d</div></div>
+      <div><div style="color:var(--muted2);font-size:.75rem">Ticket Médio</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--amber);font-weight:700">${fK(met.ticket)}</div></div>
+    </div>
+  </div>
 
-  const allIDs=new Set([...Object.keys(mapAnt),...Object.keys(mapAtu)]);
-  const newOpps=[],removedOpps=[],changedOpps=[];
-  allIDs.forEach(id=>{
-    const rA=mapAnt[id],rU=mapAtu[id];
-    if(!rA&&rU){const v=getLVK(rU);if(v>0)newOpps.push({id,customer:(rU['CUSTOMER']||id),vendor:getVend(rU),val:v,estagio:(rU['ESTAGIO']||'')});return;}
-    if(rA&&!rU){const v=getLVK(rA);if(v>0)removedOpps.push({id,customer:(rA['CUSTOMER']||id),vendor:getVend(rA),val:v});return;}
-    const diffs=[];
-    const vA=getLVK(rA),vU=getLVK(rU); if(Math.abs(vU-vA)>0) diffs.push({field:'Valor',from:fK(vA),to:fK(vU),delta:vU-vA});
-    const stA=String(rA['ESTAGIO']||'').trim(),stU=String(rU['ESTAGIO']||'').trim(); if(stA!==stU&&(stA||stU)) diffs.push({field:'Estágio',from:stA||'—',to:stU||'—'});
-    const ssA=String(rA['STATUS']||'').trim(),ssU=String(rU['STATUS']||'').trim(); if(ssA!==ssU&&(ssA||ssU)) diffs.push({field:'Status',from:ssA||'—',to:ssU||'—'});
-    const ppA=String(rA['PROX PASSO']||'').trim(),ppU=String(rU['PROX PASSO']||'').trim(); if(ppA!==ppU&&(ppA||ppU)) diffs.push({field:'Próx. Passo',from:ppA||'—',to:ppU.length>60?ppU.slice(0,60)+'…':ppU});
-    const fA=rA['DATA DE FECHAMENTO']||rA['DATA FECHAMENTO']||'',fU=rU['DATA DE FECHAMENTO']||rU['DATA FECHAMENTO']||'';
-    const dtA=parseDtSnap(fA),dtU=parseDtSnap(fU),dtAs=fmtDt(dtA),dtUs=fmtDt(dtU);
-    if(dtAs!==dtUs&&(fA||fU)) diffs.push({field:'Fechamento',from:dtAs,to:dtUs});
-    const riA=String(rA['RISCO']||'').trim(),riU=String(rU['RISCO']||'').trim(); if(riA!==riU&&(riA||riU)) diffs.push({field:'Risco',from:riA||'—',to:riU||'—'});
-    const prA=String(rA['PROBABILIDADE']||'').trim(),prU=String(rU['PROBABILIDADE']||'').trim(); if(prA!==prU&&(prA||prU)) diffs.push({field:'Prob.',from:prA||'—',to:prU||'—'});
-    if(diffs.length>0) changedOpps.push({id,customer:(rU['CUSTOMER']||id),vendor:getVend(rU),valAnt:vA,valAtu:vU,diffs});
+  <div class="sec">Próximos Fechamentos (30 dias)</div>
+  <table class="tbl" style="margin-bottom:20px;font-size:.85rem">
+    <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  `;
+  rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30)
+    .sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento)
+    .slice(0,10)
+    .forEach(r=>{
+      html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${r._dias_ate_fechamento<=7?'var(--red)':'var(--amber)'}">${r._dias_ate_fechamento}</td></tr>`;
+    });
+  html+=`</table>`;
+
+  html+=`
+  <div class="sec">Qualidade do Pipeline</div>
+  <table class="tbl">
+    <tr><th>Indicador</th><th class="num">Meta</th><th class="num">Real</th></tr>
+    <tr><td>Próximo passo definido</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r['PROX PASSO']).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Atualizado últimos 7 dias</td><td class="num">90%</td><td class="num">${(rows.filter(r=>r._dias_sem_atualizar<=7).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Probabilidade preenchida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r.PROBABILIDADE).length/rows.length*100||0).toFixed(0)}%</td></tr>
+    <tr><td>Data fechamento válida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r._fechamento).length/rows.length*100||0).toFixed(0)}%</td></tr>
+  </table>
+  `;
+
+  document.getElementById('felipe-content').innerHTML=html;
+}
+
+function renderOportunidades(){
+  const rows=DATA.base.filter(r=>r.CUSTOMER);
+  let html=`
+  <div class="card">
+    <div class="card-t">📋 Todas as Oportunidades</div>
+    <table class="tbl" style="font-size:.82rem">
+      <tr>
+        <th>Cliente</th>
+        <th>Vendedor</th>
+        <th>Estágio</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob.</th>
+        <th class="num">Atualizado</th>
+      </tr>
+  `;
+  rows.forEach(r=>{
+    html+=`<tr>
+      <td><strong>${r.CUSTOMER}</strong></td>
+      <td style="color:var(--muted2)">${(r.VENDEDOR||'').split(' ')[0]}</td>
+      <td><span class="status ${(r.ESTAGIO||'Lead').toLowerCase().replace(/ã/g,'a')}">${r.ESTAGIO||'Lead'}</span></td>
+      <td class="num">${fK(r._val)}</td>
+      <td class="num">${r.PROBABILIDADE||'-'}%</td>
+      <td class="num" style="color:${r._dias_sem_atualizar>15?'var(--red)':'var(--green)'}">há ${r._dias_sem_atualizar}d</td>
+    </tr>`;
   });
-  changedOpps.sort((a,b)=>b.valAtu-a.valAtu);
-
-  const vendorRows=Object.entries(vendSt).map(([v,s])=>{
-    const dv=s.pipAtu-s.pipAnt,dpct=s.pipAnt>0?dv/s.pipAnt*100:0;
-    const dc=dv>0?'var(--green)':dv<0?'var(--red)':'var(--muted2)';
-    const arr=dv>0?'🔼':dv<0?'🔽':'→';
-    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd2);gap:10px;flex-wrap:wrap">
-      <span style="font-weight:600;font-size:.78rem;color:var(--text)">${v}</span>
-      <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue)">${fK(s.pipAtu)}</span>
-      <span style="font-size:.75rem;font-weight:700;color:${dc}">${arr} ${dpct>=0?'+':''}${dpct.toFixed(1)}%</span>
-      <span style="font-size:.69rem;color:var(--muted2)">${(s.cntAtu-s.cntAnt)>=0?'+':''}${s.cntAtu-s.cntAnt} opp.</span>
-    </div>`;}).join('');
-
-  const diffBadge=(f,from,to,delta)=>{
-    let color='var(--blue)',bg='var(--blue2)';
-    if(f==='Valor'){color=delta>0?'var(--green)':'var(--red)';bg=delta>0?'var(--green2)':'var(--red2)';}
-    if(f==='Risco'){color='var(--red)';bg='var(--red2)';}
-    if(f==='Status'||f==='Estágio'){color='var(--teal)';bg='var(--teal2)';}
-    if(f==='Próx. Passo'){color='var(--purple)';bg='var(--purple2)';}
-    return`<span style="display:inline-flex;align-items:center;gap:3px;background:${bg};border-radius:4px;padding:2px 7px;font-size:.66rem;font-weight:600;color:${color};white-space:nowrap;flex-wrap:wrap">
-      <span style="color:var(--muted2);font-weight:400">${f}:</span>
-      <span style="text-decoration:line-through;opacity:.55">${from}</span>→ ${to}
-    </span>`;};
-
-  const changedRows=changedOpps.map(o=>`
-    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:9px;padding:10px 13px;margin-bottom:7px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px;flex-wrap:wrap">
-        <div>
-          <span style="font-weight:700;font-size:.8rem;color:var(--text)">${o.customer}</span>
-          <span style="font-size:.68rem;color:var(--muted2);margin-left:7px">${o.vendor} · ${o.id}</span>
-        </div>
-        <span style="font-family:var(--fm);font-size:.75rem;color:var(--blue);font-weight:600;white-space:nowrap">${fK(o.valAtu)}</span>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${o.diffs.map(d=>diffBadge(d.field,d.from,d.to,d.delta)).join('')}
-      </div>
-    </div>`).join('');
-
-  const mkSmallRows=arr=>arr.slice(0,5).map(o=>`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--brd2);font-size:.72rem;gap:8px">
-      <div><span style="font-weight:600;color:var(--text)">${o.customer}</span>
-        <span style="color:var(--muted2);margin-left:6px;font-size:.68rem">${o.vendor}</span></div>
-      <span style="font-family:var(--fm);font-weight:600;white-space:nowrap">${fKs(o.val)}</span>
-    </div>`).join('')+(arr.length>5?`<div style="font-size:.67rem;color:var(--muted);margin-top:4px">+${arr.length-5} mais</div>`:'');
-
-  body.innerHTML=colDisplay+`
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px">
-    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Anterior <span style="color:var(--muted);font-size:.61rem">${fmtKey(dateAnt)}</span></div>
-      <div class="snap-kpi-v" style="color:var(--muted2)">${fK(pipAnt)||'—'}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Pipeline Atual <span style="color:var(--muted);font-size:.61rem">${fmtKey(dateAtu)}</span></div>
-      <div class="snap-kpi-v" style="color:var(--blue)">${fK(pipAtu)||'—'}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Variação</div>
-      <div class="snap-kpi-v" style="color:${varC}">${varArr} ${Math.abs(varPct).toFixed(1)}%</div>
-      <div style="font-size:.66rem;color:${varC};margin-top:2px">${varPipe!==0?(varPipe>0?'+':'')+fK(varPipe):'Sem variação'}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Mudanças</div>
-      <div class="snap-kpi-v" style="color:var(--purple)">${changedOpps.length}</div>
-      <div style="font-size:.66rem;color:var(--muted2);margin-top:2px">opp. com alterações</div></div>
-  </div>
-  <div style="background:var(--s2);border:1px solid var(--brd);border-radius:9px;padding:11px 14px;margin-bottom:14px">
-    <div style="font-size:.64rem;color:var(--teal);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Por Vendedor</div>
-    ${vendorRows}
-  </div>
-  ${changedOpps.length?`
-  <div style="margin-bottom:14px">
-    <div style="font-size:.64rem;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">🔄 O QUE MUDOU — ${changedOpps.length} oportunidade(s)</div>
-    ${changedRows}
-  </div>`:`<div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 14px;margin-bottom:14px;font-size:.77rem;color:var(--green);text-align:center">✅ Nenhuma alteração detectada</div>`}
-  ${(newOpps.length||removedOpps.length)?`
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    ${newOpps.length?`<div style="background:var(--green2);border:1px solid rgba(10,143,72,.2);border-radius:9px;padding:11px 13px">
-      <div style="font-size:.64rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">🟢 Entraram (${newOpps.length})</div>
-      ${mkSmallRows(newOpps.sort((a,b)=>b.val-a.val))}</div>`:''}
-    ${removedOpps.length?`<div style="background:var(--red2);border:1px solid rgba(190,30,30,.2);border-radius:9px;padding:11px 13px">
-      <div style="font-size:.64rem;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">🔴 Saíram (${removedOpps.length})</div>
-      ${mkSmallRows(removedOpps.sort((a,b)=>b.val-a.val))}</div>`:''}
-  </div>`:''}`;
-
-  try{ renderVend(); }catch(e){}
+  html+=`</table></div>`;
+  document.getElementById('oportunidades-content').innerHTML=html;
 }
 
-// ── COMPARACAO tab renderer
-function renderFromComparacao(rows, cols, body, dates, colDisplay='') {
-  function parseBRLSnap(v){ if(!v)return 0; const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim(); const n=parseFloat(s); return isNaN(n)?0:n; }
-  function findCol(...cs){ for(const c of cs){ const cu=c.toUpperCase(); const ex=cols.find(k=>k.trim().toUpperCase()===cu); if(ex)return ex; } for(const c of cs){ const cu=c.toUpperCase(); const pt=cols.find(k=>k.trim().toUpperCase().includes(cu)); if(pt)return pt; } return null; }
-  const colID='ID OPP',colStAnt='STATUS_01',colStAtu='STATUS_02',colValAnt='VALOR_01',colValAtu='VALOR_02',colVend='VENDEDOR';
-  const dateAnt='03/04/2026',dateAtu='13/04/2026';
-  if(dates) dates.textContent=`${dateAnt}  →  ${dateAtu}`;
-  const validRows=rows.filter(r=>r[colID]&&String(r[colID]).trim()&&String(r[colID]).trim()!==colID);
-  if(!validRows.length){ body.innerHTML=colDisplay+'<div style="color:var(--muted);padding:14px 0;text-align:center">Nenhum dado</div>'; return; }
-  const idToCustomer={};
-  RAW.forEach(r=>{ if(r.ID_OPP) idToCustomer[r.ID_OPP.trim()]=r.CUSTOMER; });
-  const mk=(r,valCol,stCol)=>({CUSTOMER:idToCustomer[String(r[colID]).trim()]||String(r[colID]).trim(),VENDEDOR:String(r[colVend]||'').trim(),'TOTAL NET LVK (R$)':r[valCol]||0,ESTAGIO:String(r[stCol]||'').trim(),_id:String(r[colID]).trim()});
-  buildSnapCard(validRows.map(r=>mk(r,colValAnt,colStAnt)),validRows.map(r=>mk(r,colValAtu,colStAtu)),
-    r=>parseBRLSnap(r['TOTAL NET LVK (R$)']),r=>r['VENDEDOR'],r=>r['_id'],r=>r['CUSTOMER'],r=>r['ESTAGIO'],dateAnt,dateAtu,body,colDisplay);
+function renderAll(){
+  renderDiretoria();
+  renderBruno();
+  renderFelipe();
+  renderOportunidades();
 }
 
-// ── buildSnapCard (fallback simple version)
-function buildSnapCard(rowsAnt,rowsAtu,getLVK,getVend,getID,getCust,getEst,dateAnt,dateAtu,body,colDisplay=''){
-  const pipAnt=rowsAnt.reduce((s,r)=>s+getLVK(r),0),pipAtu=rowsAtu.reduce((s,r)=>s+getLVK(r),0);
-  const varPipe=pipAtu-pipAnt,varPct=pipAnt>0?varPipe/pipAnt*100:0;
-  const varC=varPipe>0?'var(--green)':varPipe<0?'var(--red)':'var(--muted2)';
-  body.innerHTML=colDisplay+`
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
-    <div class="snap-kpi"><div class="snap-kpi-l">Anterior (${dateAnt})</div><div class="snap-kpi-v" style="color:var(--muted2)">${fK(pipAnt)}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Atual (${dateAtu})</div><div class="snap-kpi-v" style="color:var(--blue)">${fK(pipAtu)}</div></div>
-    <div class="snap-kpi"><div class="snap-kpi-l">Variação</div>
-      <div class="snap-kpi-v" style="color:${varC}">${varPipe>0?'▲':'▼'} ${Math.abs(varPct).toFixed(1)}%</div>
-      <div style="font-size:.66rem;color:${varC}">${(varPipe>0?'+':'')+fK(varPipe)}</div></div>
-  </div>`;
-  try{ renderVend(); }catch(e){}
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+  document.getElementById(tab).classList.remove('hidden');
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  event.target.classList.add('active');
 }
 
-function renderSnap(txt){ renderSnapFromHistory(txt); }
-
-/* ═══ UI UTILITIES ═══ */
-function showSt(s){
-  document.getElementById('s-load').style.display=s==='load'?'flex':'none';
-  document.getElementById('s-err').style.display=s==='err'?'flex':'none';
-  document.getElementById('dash').style.display=s==='dash'?'block':'none';
+function setPill(status,text){
+  const pill=document.getElementById('status-pill');
+  pill.className='pill '+{ok:'p-ok',err:'p-err'}[status];
+  pill.innerHTML=(status==='ok'?'✓ ':'✗ ')+text;
 }
-function showErr(msg){showSt('err');const em=document.getElementById('err-msg');if(em)em.textContent=msg;setPill('err','✗ Erro');}
-function setPill(t,tx){const p=document.getElementById('status-pill');p.className='pill '+(t==='ok'?'p-ok':t==='err'?'p-err':'p-load');p.innerHTML=(t==='load'?'<span class="pulse"></span> ':'')+tx;}
-function setDb(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
-function toggleDbg(){_dbg=!_dbg;document.getElementById('dbar').style.display=_dbg?'flex':'none';}
-function toggleCols(){const p=document.getElementById('cpanel');_colsVis=!_colsVis;p.style.display=_colsVis?'block':'none';if(_colsVis&&_allCols.length)p.innerHTML='<strong style="color:var(--blue)">Colunas:</strong><br><br>'+_allCols.map((k,i)=>`<span class="cchip${k===_lvkKey?' found':''}">${i+1}. ${k}</span>`).join('');}
-function toggleDiag(){const p=document.getElementById('diagpanel');if(!p)return;if(p.style.display==='block'){p.style.display='none';return;}p.style.display='block';if(!_rawDiag.length){p.innerHTML='<em>Carregue os dados primeiro</em>';return;}const f=_rawDiag.filter(r=>r.vendedor&&r.vendedor.toLowerCase().includes('felipe'));const b=_rawDiag.filter(r=>r.vendedor&&r.vendedor.toLowerCase().includes('bruno'));const mk=d=>`<div style="padding:3px 0;border-bottom:1px solid var(--brd2);display:grid;grid-template-columns:180px 120px 1fr 1fr;gap:8px;font-size:.67rem"><span>${(d.customer||'').slice(0,22)}</span><span style="color:var(--muted2)">${(d.vendedor||'').split(' ')[0]}</span><span>RAW:${String(d.rawVal||'').slice(0,20)}</span><span style="color:${d.valR>0?'var(--green)':'var(--red)'}">R:${d.valR} S:${d.valS}</span></div>`;p.innerHTML='Diag LVK '+_rawDiag.length+':<br>'+f.map(mk).join('')+'<br>'+b.slice(0,3).map(mk).join('');}
-function reload(){loadData();}
 
-/* ═══ INIT ═══ */
-(function init(){
-  document.getElementById('date-pill').textContent='📅 '+
-    new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})
-              .replace(/^\w/,c=>c.toUpperCase());
+function updateDate(){
+  const d=new Date();
+  const next=getProxReuniao();
+  document.getElementById('date-pill').textContent='📅 '+d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' | Próx reunião: '+new Date(next).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+}
 
-  // Se aberto como arquivo local, mostra instrução clara em vez de travar
-  if (location.protocol === 'file:') {
-    showSt('err');
-    document.getElementById('err-msg').innerHTML =
-      '<strong>Arquivo aberto localmente (file://)</strong><br><br>' +
-      'O dashboard precisa estar no GitHub Pages para buscar dados.<br><br>' +
-      'Suba como <code>index.html</code> em <strong>smlivoltek/Projects-E-Mobility</strong> ' +
-      'e acesse pelo link do GitHub Pages.';
-    setPill('err', '✗ Arquivo local');
-    return;
-  }
-
-  loadData();
-})();
+updateDate();
+loadData();
 </script>
+
 </body>
 </html>
