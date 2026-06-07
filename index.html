@@ -251,7 +251,13 @@ function processCSV(){
 
 function normalize(){
   DATA.base.forEach(r=>{
-    r._val=parseBRL(r[' TOTAL NET LVK (R$) ']||r[' TOTAL NET (R$) ']||'0');
+    r._val=parseBRL(
+      r[' TOTAL NET LVK (R$) '] ||    // Com espaços (original)
+      r['TOTAL NET LVK (R$)'] ||      // Sem espaços (coluna S)
+      r[' TOTAL NET (R$) '] ||        // Com espaços (original)
+      r['TOTAL NET (R$)'] ||          // Sem espaços (coluna R)
+      '0'
+    );
     r._prob=parseFloat(r.PROBABILIDADE||0);
     r._ponderado=r._val*(r._prob/100);
     r._vendor=(r.VENDEDOR||'').toLowerCase();
