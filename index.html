@@ -138,8 +138,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 const METAS = {bruno: 50000000, felipe: 12000000};
 const SHEET_ID = '2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf';
 const URLS = {
-  base: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=1937499442&single=true&output=csv`,
-  snapshot: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=202441246&single=true&output=csv`
+  base: './base-geral.csv',
+  baseRemote: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=1937499442&single=true&output=csv`,
+  snapshot: './snapshot.csv',
+  snapshotRemote: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=202441246&single=true&output=csv`
 };
 
 let DATA = {base: [], snapshot: []};
@@ -156,13 +158,26 @@ function diasAte(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;r
 async function loadData(){
   try{
     console.log('Tentando carregar dados...');
-    const res=await fetch(URLS.base, {method:'GET', mode:'no-cors'});
-    const txt=await res.text();
+    
+    // Tentar carregar arquivo local PRIMEIRO
+    let txt;
+    try{
+      const res = await fetch(URLS.base, {method:'GET'});
+      if(!res.ok)throw new Error('Arquivo local não encontrado');
+      txt = await res.text();
+    }catch(e){
+      console.warn('Arquivo local falhou, tentando URL remota:', e.message);
+      // Fallback para URL remota do Google Sheets
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(URLS.baseRemote, {signal: controller.signal});
+      clearTimeout(timeoutId);
+      txt = await res.text();
+    }
     
     if(!txt || txt.length<100)throw new Error('Dados vazios');
     
-    DATA.base=Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    
+    DATA.base = Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
     if(DATA.base.length===0)throw new Error('Sem registros válidos');
     
     normalize();
@@ -170,8 +185,9 @@ async function loadData(){
     updateStatus('✓ Dados carregados: '+DATA.base.length+' oportunidades',true);
   }catch(e){
     console.error('Erro ao carregar:',e.message);
-    updateStatus('⚠️ Erro ao carregar - Tente colar dados',false);
-    showPasteModal();
+    updateStatus('⚠️ Clique aqui para carregar dados manualmente',false);
+    // Mostrar modal automaticamente após 2s
+    setTimeout(showPasteModal, 2000);
   }
 }
 
@@ -183,21 +199,35 @@ function updateStatus(msg,ok){
 
 function showPasteModal(){
   const modal=document.createElement('div');
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center';
-  modal.innerHTML=`<div style="background:#fff;border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">
-    <h2 style="margin-bottom:16px;color:#ef4444;font-family:var(--fh)">⚠️ Erro ao Carregar Dados</h2>
-    <p style="color:#6b7280;margin-bottom:16px;line-height:1.6">
-      <strong>Por favor, siga os passos:</strong><br>
-      1. Abra a planilha: <a href="https://docs.google.com/spreadsheets/d/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/edit" target="_blank" style="color:#3b82f6">Base-Geral</a><br>
-      2. Selecione todos os dados (Ctrl+A)<br>
-      3. Copie (Ctrl+C)<br>
-      4. Cole no campo abaixo<br>
-      5. Clique "Carregar"
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML=`<div style="background:#fff;border-radius:12px;padding:32px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <h2 style="margin-bottom:20px;color:#ef4444;font-family:var(--fh);font-size:1.5rem">⚠️ Carregar Dados Manualmente</h2>
+    
+    <p style="color:#666;margin-bottom:20px;line-height:1.8;font-size:1rem">
+      <strong>Google Sheets está bloqueando o acesso automático.</strong><br>
+      Siga os passos abaixo para carregar os dados:
     </p>
-    <textarea id="csv-input" style="width:100%;height:300px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:.85rem" placeholder="Colar dados aqui"></textarea>
-    <div style="margin-top:16px;display:flex;gap:8px">
-      <button onclick="processCSV()" style="background:#3b82f6;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:600">Carregar</button>
-      <button onclick="document.querySelector('[style*=position:fixed]').remove()" style="background:#e5e7eb;color:#1f2937;border:none;padding:10px 16px;border-radius:6px;cursor:pointer">Fechar</button>
+    
+    <div style="background:#f0f9ff;border-left:4px solid #3b82f6;padding:16px;margin-bottom:20px;border-radius:6px">
+      <div style="font-weight:600;color:#1f2937;margin-bottom:12px">📋 Passo a Passo:</div>
+      <ol style="margin:0;padding-left:20px;color:#666;line-height:2">
+        <li><strong>Abra a planilha:</strong> <a href="https://docs.google.com/spreadsheets/d/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/edit" target="_blank" style="color:#3b82f6;text-decoration:underline">Base-Geral</a></li>
+        <li><strong>Selecione todos:</strong> Clique na célula vazia superior esquerdo (entre A e 1)</li>
+        <li><strong>Copie:</strong> <kbd style="background:#e5e7eb;padding:4px 8px;border-radius:4px">Ctrl+C</kbd></li>
+        <li><strong>Cole aqui:</strong> Clique no campo abaixo e cole (<kbd style="background:#e5e7eb;padding:4px 8px;border-radius:4px">Ctrl+V</kbd>)</li>
+        <li><strong>Clique em "Carregar"</strong></li>
+      </ol>
+    </div>
+    
+    <div style="background:#fff5f5;border:1px solid #fca5a5;padding:12px;border-radius:6px;margin-bottom:20px;font-size:.9rem;color:#991b1b">
+      💡 <strong>Dica:</strong> Se a planilha tiver muitos dados, selecione apenas as colunas com dados (A até última coluna com informação)
+    </div>
+    
+    <textarea id="csv-input" style="width:100%;height:280px;padding:12px;border:2px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:.85rem;resize:vertical" placeholder="Cole os dados aqui..."></textarea>
+    
+    <div style="margin-top:20px;display:flex;gap:8px">
+      <button onclick="processCSV()" style="background:#3b82f6;color:#fff;border:none;padding:12px 20px;border-radius:6px;cursor:pointer;font-weight:600;font-size:1rem;flex:1">✓ Carregar Dados</button>
+      <button onclick="document.querySelector('[style*=position:fixed]').remove()" style="background:#e5e7eb;color:#1f2937;border:none;padding:12px 20px;border-radius:6px;cursor:pointer;font-weight:600">Fechar</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
