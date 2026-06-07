@@ -681,31 +681,30 @@ function renderGanhosChart(rows){
   const agora=new Date();
   const anoAtual=agora.getFullYear();
   
+  // 🔍 DEBUG: Mostrar todos os STATUS únicos no arquivo
+  const statusUnicos=new Set();
+  rows.forEach(r=>{
+    const status=(r.STATUS||'').trim();
+    if(status) statusUnicos.add(`"${status}"`);
+  });
+  console.log('📋 TODOS OS STATUS NO ARQUIVO:', Array.from(statusUnicos).join(', '));
+  
+  // 🔍 DEBUG: Mostrar linhas com STATUS que contem "ganh"
+  const statusGanho=rows.filter(r=>(r.STATUS||'').toLowerCase().includes('ganh'));
+  console.log('📊 REGISTROS COM STATUS CONTENDO "GANH":', statusGanho.length);
+  statusGanho.forEach(r=>{
+    console.log(`  - ${r.CUSTOMER}: STATUS="${r.STATUS}" | DATA DE GANHO="${r['DATA DE GANHO']}" | PARSEADA=${r._dataGanho}`);
+  });
+  
   let debugCount=0;
-  let debugFiltrados=[];
   
   rows.forEach(r=>{
-    // 🔧 Filtrar APENAS quando:
-    // 1. STATUS = "Ganho" ou "Ganhou"
-    // 2. DATA DE GANHO preenchida (coluna AF)
     const status=(r.STATUS||'').toLowerCase().trim();
     
-    // DEBUG
-    if(status.includes('ganh')){
-      debugFiltrados.push({
-        customer: r.CUSTOMER,
-        status: r.STATUS,
-        dataGanho: r['DATA DE GANHO'],
-        dataGanhoParseada: r._dataGanho,
-        vendor: r._vendor,
-        valor: r._val
-      });
-    }
-    
-    if(!status.includes('ganh'))return; // STATUS deve incluir "ganh"
+    if(!status.includes('ganh'))return;
     
     if(!r._dataGanho){
-      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO vazia (${r['DATA DE GANHO']})`);
+      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO vazia ou inválida`);
       return;
     }
     
@@ -722,9 +721,7 @@ function renderGanhosChart(rows){
     }
   });
   
-  console.log('🔍 DEBUG GANHOS:');
-  console.log('Registros com STATUS=Ganho:', debugFiltrados);
-  console.log('Registros processados:', debugCount);
+  console.log('✅ Registros processados:', debugCount);
   
   const ctx=document.getElementById('chart-ganhos');
   if(!ctx||!window.Chart)return;
