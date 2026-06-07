@@ -3,135 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>E-Mobility CRM Dashboard | Livoltek</title>
+<title>E-Mobility CRM | Executivo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#FAFBFC;--s1:#FFFFFF;--s2:#F8FAFB;
+  --bg:#FAFBFC;--s1:#FFFFFF;--s2:#F8FAFB;--s3:#F3F4F6;
   --brd:#E5E7EB;--brd-light:#F0F1F3;
   --green:#10B981;--green-bg:#ECFDF5;
   --amber:#F59E0B;--amber-bg:#FFFBEB;
   --red:#EF4444;--red-bg:#FEF2F2;
   --blue:#3B82F6;--blue-bg:#EFF6FF;
   --text:#1F2937;--muted:#6B7280;--muted2:#9CA3AF;
-  --fh:'Plus Jakarta Sans',sans-serif;
-  --fb:'Lato',sans-serif;
-  --fm:'IBM Plex Mono',monospace;
+  --fh:'Plus Jakarta Sans',sans-serif;--fb:'Lato',sans-serif;
 }
 html{font-size:14px;scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
-
-.wrap{position:relative;z-index:1;max-width:1800px;margin:0 auto;padding:24px 32px 48px}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.6}
+.wrap{max-width:1600px;margin:0 auto;padding:24px 32px}
 
 /* HEADER */
-.hdr{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--brd);gap:20px;flex-wrap:wrap}
-.hdr-l{display:flex;align-items:baseline;gap:12px}
-.hdr-t{font-family:var(--fh);font-size:2rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
-.hdr-s{font-size:.75rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
-.hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;
-  font-size:.72rem;font-family:var(--fb);font-weight:600;border:1px solid;white-space:nowrap;letter-spacing:.03em;background:#fff}
-.p-load{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--brd);flex-wrap:wrap;gap:16px}
+.hdr-t{font-family:var(--fh);font-size:2rem;font-weight:900;color:var(--text)}
+.hdr-s{font-size:.75rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:600;border:1px solid;background:#fff}
 .p-ok{background:var(--green-bg);border-color:var(--green);color:var(--green)}
 .p-err{background:var(--red-bg);border-color:var(--red);color:var(--red)}
-.p-date{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
-.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse-anim 1.4s ease infinite}
-@keyframes pulse-anim{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.p-warn{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
 
-/* NAVIGATION */
-.nav-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--brd);padding-bottom:0}
-.nav-tab{padding:12px 16px;background:transparent;border:none;color:var(--muted2);cursor:pointer;
-  font-family:var(--fh);font-weight:600;font-size:.9rem;letter-spacing:.02em;
-  border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .2s;position:relative}
+/* TABS */
+.nav-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--brd)}
+.nav-tab{padding:12px 16px;background:none;border:none;color:var(--muted2);cursor:pointer;font-family:var(--fh);font-weight:600;font-size:.9rem;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .2s}
 .nav-tab:hover{color:var(--text)}
 .nav-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 
-/* GRID & SPACING */
+/* GRID */
 .g1{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px}
 .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
-.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
-@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
-@media(max-width:768px){.g2,.g3,.g4,.g6{grid-template-columns:1fr}}
-
-/* KPI CARD */
-.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:18px;
-  position:relative;overflow:hidden;transition:all .2s}
-.kpi:hover{border-color:#D1D5DB;background:var(--s2)}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
-.kpi.t::before{background:var(--blue)}.kpi.g::before{background:var(--green)}
-.kpi.a::before{background:var(--amber)}.kpi.r::before{background:var(--red)}
-.kpi.b::before{background:var(--blue)}.kpi.p::before{background:var(--blue)}
-
-.kpi-l{font-size:.76rem;color:var(--muted2);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
-.kpi-v{font-family:var(--fh);font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;color:var(--text)}
-.kpi-v.t{color:var(--blue)}.kpi-v.g{color:var(--green)}.kpi-v.a{color:var(--amber)}.kpi-v.r{color:var(--red)}.kpi-v.b{color:var(--blue)}
-.kpi-s{font-size:.7rem;color:var(--muted2);margin-top:8px}
-
-/* TRAFFIC LIGHT */
-.semaforo{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
-.tl{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:20px;text-align:center;
-  transition:all .2s;position:relative;overflow:hidden}
-.tl:hover{border-color:#D1D5DB}
-.tl::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
-.tl.healthy::before{background:rgba(16,185,129,.04)}.tl.warning::before{background:rgba(245,158,11,.04)}.tl.critical::before{background:rgba(239,68,68,.04)}
-.tl:hover::before{opacity:1}
-.tl-icon{font-size:3rem;margin-bottom:8px}
-.tl-label{font-family:var(--fh);font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:6px}
-.tl-desc{font-size:.75rem;color:var(--muted);line-height:1.6}
+@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.g2,.g3,.g4{grid-template-columns:1fr}}
 
 /* CARD */
 .card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:20px;margin-bottom:20px}
-.card-t{font-family:var(--fh);font-size:1.05rem;font-weight:700;color:var(--text);
-  display:flex;align-items:center;gap:8px;margin-bottom:16px;letter-spacing:-.01em}
-.card-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.card-t{font-family:var(--fh);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* KPI CARD */
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:18px;position:relative;overflow:hidden;transition:all .2s}
+.kpi:hover{border-color:#D1D5DB;background:var(--s2)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.blue::before{background:var(--blue)}
+.kpi-l{font-size:.76rem;color:var(--muted2);font-weight:600;text-transform:uppercase;margin-bottom:8px}
+.kpi-v{font-family:var(--fh);font-size:2rem;font-weight:800;color:var(--text);margin-bottom:4px}
+.kpi-s{font-size:.7rem;color:var(--muted2);margin-top:8px}
 
 /* SECTION */
-.sec{font-family:var(--fh);font-size:.65rem;font-weight:700;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--text);margin-bottom:14px;margin-top:24px;display:flex;align-items:center;gap:8px}
+.sec{font-family:var(--fh);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-bottom:14px;margin-top:24px;display:flex;align-items:center;gap:8px}
 .sec::after{content:'';flex:1;height:1px;background:var(--brd)}
+
+/* ALERT BOX */
+.alert{background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:.8rem;color:var(--red);display:flex;align-items:flex-start;gap:8px}
+.alert.warn{background:var(--amber-bg);border-color:var(--amber);color:var(--amber)}
+.alert.ok{background:var(--green-bg);border-color:var(--green);color:var(--green)}
 
 /* TABLE */
 .tbl{width:100%;border-collapse:collapse;font-size:.85rem}
-.tbl th{background:var(--s2);color:var(--muted);font-weight:600;padding:10px 12px;text-align:left;
-  border-bottom:1px solid var(--brd);font-size:.73rem;letter-spacing:.04em;text-transform:uppercase}
+.tbl th{background:var(--s3);color:var(--muted);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--brd);font-size:.73rem;text-transform:uppercase}
 .tbl td{padding:11px 12px;border-bottom:1px solid var(--brd-light);color:var(--text)}
 .tbl tr:hover{background:var(--s2)}
-.tbl .muted{color:var(--muted2);font-size:.78rem}
-.tbl .num{font-family:var(--fm);font-weight:600;text-align:right}
-.tbl .status{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;white-space:nowrap;background:#f3f4f6;color:var(--muted)}
-.tbl .status.lead{background:var(--blue-bg);color:var(--blue)}
-.tbl .status.proposta{background:var(--amber-bg);color:var(--amber)}
-.tbl .status.negociacao{background:var(--blue-bg);color:var(--blue)}
-.tbl .status.ganhou{background:var(--green-bg);color:var(--green)}
-.tbl .status.perdida{background:var(--red-bg);color:var(--red)}
-
-/* ALERT */
-.alert{background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:12px 14px;
-  margin-bottom:12px;font-size:.8rem;color:var(--red);display:flex;align-items:flex-start;gap:8px}
-.alert-icon{flex-shrink:0;margin-top:1px}
-
-/* LOADING */
-.loader{text-align:center;padding:40px 20px;color:var(--muted)}
-.spinner{width:40px;height:40px;border:3px solid var(--brd);border-top-color:var(--blue);
-  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.tbl .num{text-align:right;font-family:monospace;font-weight:600}
+.tbl .status{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;white-space:nowrap}
+.tbl .status.ok{background:var(--green-bg);color:var(--green)}
+.tbl .status.warn{background:var(--amber-bg);color:var(--amber)}
+.tbl .status.critical{background:var(--red-bg);color:var(--red)}
 
 /* HIDDEN */
 .hidden{display:none}
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  .wrap{padding:16px 16px 32px}
+  .wrap{padding:16px}
   .hdr{flex-direction:column;align-items:flex-start}
-  .hdr-t{font-size:1.5rem}
-  .nav-tabs{flex-wrap:wrap;gap:4px}
-  .nav-tab{padding:10px 12px;font-size:.85rem}
+  .nav-tabs{flex-wrap:wrap}
+  .kpi-v{font-size:1.5rem}
 }
 </style>
 </head>
@@ -139,20 +95,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100
 
 <div class="wrap">
   <div class="hdr">
-    <div class="hdr-l">
-      <div>
-        <div class="hdr-t">E-Mobility CRM</div>
-        <div class="hdr-s">Dashboard Executivo</div>
-      </div>
+    <div>
+      <div class="hdr-t">E-Mobility CRM</div>
+      <div class="hdr-s">Executivo • Decisão Estratégica</div>
     </div>
-    <div class="hdr-r">
-      <span id="date-pill" class="pill p-date">📅 Loading...</span>
-      <span id="status-pill" class="pill p-load"><span class="pulse"></span> Carregando dados...</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="pill p-warn">📅 Próx. reunião: 08/06</span>
+      <span id="status-pill" class="pill p-ok">✓ Pronto</span>
     </div>
   </div>
 
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('diretoria')">📊 Dashboard Diretoria</button>
+    <button class="nav-tab active" onclick="switchTab('diretoria')">📊 Diretoria</button>
     <button class="nav-tab" onclick="switchTab('bruno')">👤 Bruno Reis</button>
     <button class="nav-tab" onclick="switchTab('felipe')">👤 Felipe Hanke</button>
     <button class="nav-tab" onclick="switchTab('oportunidades')">📋 Oportunidades</button>
@@ -180,646 +134,471 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100
 </div>
 
 <script>
+const METAS = {bruno: 50000000, felipe: 12000000};
 const BASE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf/pub';
-const URLS = {
-  base: BASE_URL + '?gid=1937499442&single=true&output=csv',
-  snapshot: BASE_URL + '?gid=202441246&single=true&output=csv'
-};
+const URLS = {base: BASE_URL + '?gid=1937499442&single=true&output=csv'};
 
-const METAS = { 'bruno': 50000000, 'felipe': 12000000 };
-const REUNIOES = ['2026-06-08', '2026-06-23', '2026-07-08', '2026-07-23', '2026-08-08'];
+let DATA = {base: []};
 
-let DATA = { base: [], snapshot: [] };
-
-// ─── UTILITIES ───
+// UTILIDADES
 function fK(n){if(!n)return'R$ 0';const v=n/1000000;return v.toFixed(1)+'M'}
 function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
-function getProxReuniao(){const hoje=new Date();const next=REUNIOES.find(d=>new Date(d)>hoje);return next||REUNIOES[REUNIOES.length-1]}
-function get2SemAtas(){const reuniao=getProxReuniao();const d=new Date(reuniao);d.setDate(d.getDate()-14);return d.toISOString().split('T')[0]}
 function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
-function parseData(d){
-  if(!d||d===''||d===null)return null;
-  try{
-    const s=String(d).trim();
-    if(!s)return null;
-    const p=s.split(/[-\/]/);
-    if(p.length<3)return null;
-    const ano=p[2],mes=p[1],dia=p[0];
-    if(ano.length===4){
-      return new Date(parseInt(ano),parseInt(mes)-1,parseInt(dia));
-    }
-    return new Date(s);
-  }catch(e){
-    return null;
-  }
-}
-function diasDesde(d){
-  if(!d)return 999;
-  try{
-    const t=parseData(d);
-    if(!t)return 999;
-    return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)));
-  }catch(e){
-    return 999;
-  }
-}
-function diasAte(d){
-  if(!d)return 999;
-  try{
-    const t=parseData(d);
-    if(!t)return 999;
-    return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)));
-  }catch(e){
-    return 999;
-  }
-}
+function parseData(d){if(!d||d==='')return null;try{const s=String(d).trim();if(!s)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;const ano=p[2],mes=p[1],dia=p[0];if(ano.length===4)return new Date(parseInt(ano),parseInt(mes)-1,parseInt(dia));return new Date(s)}catch(e){return null}}
+function diasDesde(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
+function diasAte(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
 
-// ─── CARREGA DADOS ───
+// LOAD DATA
 async function loadData(){
   try{
-    const [resBase,resSnap]=[await fetch(URLS.base),await fetch(URLS.snapshot)];
-    const txtBase=await resBase.text(),txtSnap=await resSnap.text();
-    DATA.base=Papa.parse(txtBase,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    DATA.snapshot=Papa.parse(txtSnap,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    if(!DATA.base.length)throw new Error('Sem dados');
+    const res=await fetch(URLS.base);
+    const txt=await res.text();
+    DATA.base=Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
     normalize();
-    setPill('ok','✓ Dados carregados');
     renderAll();
   }catch(e){
-    setPill('err','✗ Clique para carregar manualmente');
-    document.getElementById('status-pill').style.cursor='pointer';
-    document.getElementById('status-pill').onclick=showPasteModal;
-    console.log('Erro ao buscar CSVs. Use o modal de colagem.');
+    showPasteModal();
   }
 }
 
 function showPasteModal(){
   const modal=document.createElement('div');
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;display:flex;align-items:center;justify-content:center';
-  modal.innerHTML=`
-  <div style="background:#fff;border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">
+  modal.innerHTML=`<div style="background:#fff;border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">
     <h2 style="margin-bottom:16px;color:#1f2937;font-family:var(--fh)">Colar Dados CSV</h2>
-    <p style="color:#6b7280;margin-bottom:12px;font-size:.9rem">Cole aqui o conteúdo da planilha (BASE-GERAL):</p>
-    <textarea id="csv-input" style="width:100%;height:300px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:.85rem" placeholder="Copie do Google Sheets (Ctrl+A → Ctrl+C) e cole aqui"></textarea>
+    <p style="color:#6b7280;margin-bottom:12px;font-size:.9rem">Cole aqui (Ctrl+A → Ctrl+C no Google Sheets):</p>
+    <textarea id="csv-input" style="width:100%;height:300px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:.85rem" placeholder="Colar dados aqui"></textarea>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button onclick="processManualCSV()" style="background:#3b82f6;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:600">Carregar Dados</button>
-      <button onclick="this.closest('div').parentElement.remove()" style="background:#e5e7eb;color:#1f2937;border:none;padding:10px 16px;border-radius:6px;cursor:pointer">Fechar</button>
+      <button onclick="processCSV()" style="background:#3b82f6;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:600">Carregar</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
 }
 
-function processManualCSV(){
+function processCSV(){
   const csv=document.getElementById('csv-input').value;
-  if(!csv.trim()){alert('Cole os dados!');return;}
+  if(!csv.trim())return;
   try{
     const parsed=Papa.parse(csv,{header:true,skipEmptyLines:true});
     DATA.base=parsed.data.filter(r=>r.CUSTOMER);
-    if(!DATA.base.length)throw new Error('Nenhum dado válido');
-    DATA.snapshot=DATA.base.slice(0,Math.floor(DATA.base.length*0.8));
+    if(!DATA.base.length)throw new Error('Sem dados');
     normalize();
     document.querySelector('[style*="position:fixed"]').remove();
-    setPill('ok','✓ Dados carregados manualmente');
     renderAll();
   }catch(e){
-    alert('Erro ao processar CSV: '+e.message);
+    alert('Erro: '+e.message);
   }
 }
 
 function normalize(){
-  [DATA.base,DATA.snapshot].forEach(rows=>{
-    rows.forEach(r=>{
-      r._val=parseBRL(r[' TOTAL NET LVK (R$) ']||r.val);
-      r._val_ponderado=r._val*(parseFloat(r.PROBABILIDADE||0)/100);
-      r._vendor=(r.VENDEDOR||'').toLowerCase();
-      r._fechamento=parseData(r['DATA DE FECHAMENTO']||r.data_fechamento);
-      r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||r.updated);
-      r._dias_sem_atualizar=diasDesde(r._atualizacao);
-      r._dias_ate_fechamento=diasAte(r._fechamento);
-    });
+  DATA.base.forEach(r=>{
+    r._val=parseBRL(r[' TOTAL NET LVK (R$) ']||r[' TOTAL NET (R$) ']||'0');
+    r._prob=parseFloat(r.PROBABILIDADE||0);
+    r._ponderado=r._val*(r._prob/100);
+    r._vendor=(r.VENDEDOR||'').toLowerCase();
+    r._fechamento=parseData(r['DATA DE FECHAMENTO']||'');
+    r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    r._dias_sem_atualizar=diasDesde(r._atualizacao);
+    r._dias_ate_fechamento=diasAte(r._fechamento);
   });
 }
 
-// ─── MÉTRICAS ───
+// MÉTRICAS
 function getMetricas(rows,vendor){
   const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
   const pipeline=filtered.reduce((s,r)=>s+r._val,0);
-  const ponderado=filtered.reduce((s,r)=>s+r._val_ponderado,0);
+  const ponderado=filtered.reduce((s,r)=>s+r._ponderado,0);
   const ganhos=filtered.filter(r=>r.STATUS==='Ganhou').length;
   const perdidos=filtered.filter(r=>r.STATUS==='Perdida').length;
   const fechados=filtered.filter(r=>r.STATUS==='Ganhou').reduce((s,r)=>s+r._val,0);
-  const tempo=[];
-  filtered.forEach(r=>{if(r.BID_DATE&&r._fechamento){const ms=r._fechamento-parseData(r.BID_DATE);tempo.push(ms/(1000*60*60*24))}});
-  const velocity=tempo.length?tempo.reduce((a,b)=>a+b)/tempo.length:0;
-  const winrate=ganhos+perdidos>0?(ganhos/(ganhos+perdidos))*100:0;
-  const ticket=filtered.length>0?pipeline/filtered.length:0;
-  
-  return{pipeline,ponderado,ganhos,perdidos,fechados,velocity,winrate,ticket,count:filtered.length};
+  return{pipeline,ponderado,ganhos,perdidos,fechados,count:filtered.length};
 }
 
-function getFunil(rows,vendor){
+function getConcentracao(rows,vendor){
   const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
-  const stages={'Lead':0,'Proposta':0,'Negociação':0,'Ganhou':0,'Perdida':0};
-  const values={'Lead':0,'Proposta':0,'Negociação':0,'Ganhou':0,'Perdida':0};
-  filtered.forEach(r=>{
-    const st=r.ESTAGIO||'Lead';
-    stages[st]=(stages[st]||0)+1;
-    values[st]=(values[st]||0)+r._val;
-  });
-  return{stages,values};
+  const byClient={};
+  filtered.forEach(r=>{const c=r.CUSTOMER||'Unknown';byClient[c]=(byClient[c]||0)+r._val});
+  const sorted=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
+  const top5=sorted.slice(0,5).reduce((s,e)=>s+e[1],0);
+  const total=filtered.reduce((s,r)=>s+r._val,0);
+  return{pct:(top5/total*100)||0,top5:sorted.slice(0,5)};
 }
 
 function getAging(rows,vendor){
   const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
-  const bins={0:0,30:0,60:0,90:0};
-  filtered.forEach(r=>{
-    if(!r._atualizacao)return;
-    const dias=r._dias_sem_atualizar;
-    if(dias<=30)bins[0]+=r._val;
-    else if(dias<=60)bins[30]+=r._val;
-    else if(dias<=90)bins[60]+=r._val;
-    else bins[90]+=r._val;
-  });
-  return bins;
+  return{
+    '0-30':filtered.filter(r=>r._dias_sem_atualizar<=30).reduce((s,r)=>s+r._val,0),
+    '31-60':filtered.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce((s,r)=>s+r._val,0),
+    '61-90':filtered.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce((s,r)=>s+r._val,0),
+    '90+':filtered.filter(r=>r._dias_sem_atualizar>90).reduce((s,r)=>s+r._val,0)
+  };
 }
 
-function getDependencia(rows,vendor){
-  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
-  const byClient={};
-  filtered.forEach(r=>{
-    const c=r.CUSTOMER||'Unknown';
-    byClient[c]=(byClient[c]||0)+r._val;
-  });
-  const sorted=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
-  const top5=sorted.slice(0,5).reduce((s,e)=>s+e[1],0);
-  const total=filtered.reduce((s,r)=>s+r._val,0);
-  return{concentration:(top5/total*100)||0,top5:sorted.slice(0,5)};
+function getOppsCriticas(rows){
+  return rows.filter(r=>r._val>0).sort((a,b)=>b._val-a._val).slice(0,5);
 }
 
-function getAlertasVendedor(rows,vendor){
-  const filtered=rows.filter(r=>r._vendor.includes(vendor));
-  const alertas=[];
-  filtered.forEach(r=>{
-    if(r._dias_sem_atualizar>15)alertas.push({tipo:'sem-atualizacao',dias:r._dias_sem_atualizar,cliente:r.CUSTOMER,valor:r._val});
-    if(r._dias_ate_fechamento<90&&r._dias_ate_fechamento>0)alertas.push({tipo:'vencimento',dias:r._dias_ate_fechamento,cliente:r.CUSTOMER});
-    if(!r['PROX PASSO']||String(r['PROX PASSO']).trim()==='')alertas.push({tipo:'sem-passo',cliente:r.CUSTOMER});
-  });
-  return alertas.sort((a,b)=>(a.dias||999)-(b.dias||999)).slice(0,10);
-}
-
-// ─── RENDER DIRETORIA ───
+// RENDER DIRETORIA
 function renderDiretoria(){
   const rows=DATA.base;
-  const met={bruno:getMetricas(rows,'bruno'),felipe:getMetricas(rows,'felipe'),total:getMetricas(rows)};
-  const funil={bruno:getFunil(rows,'bruno'),felipe:getFunil(rows,'felipe')};
+  const metTotal=METAS.bruno+METAS.felipe;
+  const metB=METAS.bruno,metF=METAS.felipe;
+  const metBruno=getMetricas(rows,'bruno'),metFelipe=getMetricas(rows,'felipe'),metAll=getMetricas(rows);
   
-  const metaBruno=METAS.bruno,metaFelipe=METAS.felipe;
-  const coberturaB=met.bruno.pipeline/metaBruno,coberturaF=met.felipe.pipeline/metaFelipe;
-  const coverageTotal=met.total.pipeline/(metaBruno+metaFelipe);
+  const ponderado=metAll.ponderado;
+  const forecast=Math.round(ponderado*1.2); // Estimar com 20% margem
+  const gap=metTotal-forecast;
+  const batemos=forecast>=metTotal?'SIM':'NÃO';
+  const status=batemos==='SIM'?'green':gap>-20000000?'amber':'red';
   
-  const statusB=coberturaB>=4?'healthy':coberturaB>=2?'warning':'critical';
-  const statusF=coberturaF>=4?'healthy':coberturaF>=2?'warning':'critical';
+  const concentracao=getConcentracao(rows);
+  const aging=getAging(rows);
+  const oppsC=getOppsCriticas(rows);
+  const cobB=metBruno.pipeline/metB,cobF=metFelipe.pipeline/metF;
   
   let html=`
-  <div class="g4">
-    <div class="kpi t">
-      <div class="kpi-l">Pipeline Total</div>
-      <div class="kpi-v t">${fK(met.total.pipeline)}</div>
-      <div class="kpi-s">Todos os vendedores</div>
+  <!-- BLOCO 1: RESPOSTA EXECUTIVA -->
+  <div class="sec">🎯 Vamos Bater a Meta?</div>
+  <div class="g3">
+    <div class="kpi ${status}">
+      <div class="kpi-l">Resposta</div>
+      <div class="kpi-v" style="font-size:3rem;color:${status==='green'?'var(--green)':status==='amber'?'var(--amber)':'var(--red)'}">
+        ${batemos}
+      </div>
+      <div class="kpi-s">Forecast: ${fK(forecast)} vs Meta: ${fK(metTotal)}</div>
     </div>
-    <div class="kpi b">
-      <div class="kpi-l">Pipeline Ponderado</div>
-      <div class="kpi-v b">${fK(met.total.ponderado)}</div>
-      <div class="kpi-s">Prob. média: ${(met.total.ponderado/met.total.pipeline*100||0).toFixed(0)}%</div>
+    <div class="kpi">
+      <div class="kpi-l">Gap Realista</div>
+      <div class="kpi-v" style="color:${gap>0?'var(--green)':'var(--red)'}">
+        ${gap>0?'+':''}${fK(gap)}
+      </div>
+      <div class="kpi-s">${gap>0?'ACIMA':'ABAIXO'} da meta</div>
     </div>
-    <div class="kpi g">
-      <div class="kpi-l">Meta Anual</div>
-      <div class="kpi-v g">${fK(metaBruno+metaFelipe)}</div>
-      <div class="kpi-s">Jan-Dez 2026</div>
-    </div>
-    <div class="kpi a">
-      <div class="kpi-l">Cobertura da Meta</div>
-      <div class="kpi-v a">${(coverageTotal*100).toFixed(0)}%</div>
-      <div class="kpi-s">${coverageTotal>=3?'✓ Saudável':'⚠ Verificar'}</div>
-    </div>
-  </div>
-
-  <div class="sec">Timeline de Fechamentos Esperados</div>
-  <div id="timeline-container"></div>
-
-  <div class="sec">Semáforo Comercial</div>
-  <div class="semaforo">
-    <div class="tl ${statusB}">
-      <div class="tl-icon">${statusB==='healthy'?'🟢':statusB==='warning'?'🟡':'🔴'}</div>
-      <div class="tl-label">Bruno Reis</div>
-      <div class="tl-desc">Cobertura: ${(coberturaB*100).toFixed(0)}%<br>${coberturaB>=4?'Pipeline saudável':coberturaB>=2?'Atenção necessária':'CRÍTICO'}</div>
-    </div>
-    <div class="tl ${statusF}">
-      <div class="tl-icon">${statusF==='healthy'?'🟢':statusF==='warning'?'🟡':'🔴'}</div>
-      <div class="tl-label">Felipe Hanke</div>
-      <div class="tl-desc">Cobertura: ${(coberturaF*100).toFixed(0)}%<br>${coberturaF>=4?'Pipeline saudável':coberturaF>=2?'Atenção necessária':'CRÍTICO'}</div>
-    </div>
-    <div class="tl">
-      <div class="tl-icon">📊</div>
-      <div class="tl-label">Equipe</div>
-      <div class="tl-desc">Cobertura total: ${(coverageTotal*100).toFixed(0)}%<br>${coverageTotal>=3?'✓ Acima da meta':coverageTotal>=2?'⚠ Próximo de meta':'✗ Abaixo da meta'}</div>
+    <div class="kpi">
+      <div class="kpi-l">Confiabilidade</div>
+      <div class="kpi-v" style="color:var(--${concentracao.pct>50?'red':concentracao.pct>30?'amber':'green'})">
+        ${(100-concentracao.pct).toFixed(0)}%
+      </div>
+      <div class="kpi-s">Diversificação (Top 5: ${concentracao.pct.toFixed(0)}%)</div>
     </div>
   </div>
 
-  <div class="sec">Meta por Vendedor</div>
-  <table class="tbl" style="margin-bottom:20px">
-    <tr>
-      <th>Vendedor</th>
-      <th class="num">Meta</th>
-      <th class="num">Pipeline</th>
-      <th class="num">Ponderado</th>
-      <th class="num">GAP</th>
-      <th class="num">Cobertura</th>
-    </tr>
-    <tr>
-      <td><strong>Bruno Reis</strong></td>
-      <td class="num">${fK(metaBruno)}</td>
-      <td class="num">${fK(met.bruno.pipeline)}</td>
-      <td class="num">${fK(met.bruno.ponderado)}</td>
-      <td class="num" style="color:${met.bruno.pipeline>=metaBruno?'var(--green)':'var(--red)'}">${fK(met.bruno.pipeline-metaBruno)}</td>
-      <td class="num" style="color:${coberturaB>=2?'var(--green)':'var(--amber)'}">${(coberturaB*100).toFixed(0)}%</td>
-    </tr>
-    <tr>
-      <td><strong>Felipe Hanke</strong></td>
-      <td class="num">${fK(metaFelipe)}</td>
-      <td class="num">${fK(met.felipe.pipeline)}</td>
-      <td class="num">${fK(met.felipe.ponderado)}</td>
-      <td class="num" style="color:${met.felipe.pipeline>=metaFelipe?'var(--green)':'var(--red)'}">${fK(met.felipe.pipeline-metaFelipe)}</td>
-      <td class="num" style="color:${coberturaF>=2?'var(--green)':'var(--amber)'}">${(coberturaF*100).toFixed(0)}%</td>
-    </tr>
-  </table>
-
-  <div class="g2">
-    <div class="card">
-      <div class="card-t">🎯 Win Rate</div>
-      <table class="tbl" style="font-size:.8rem">
-        <tr><td><strong>Bruno</strong></td><td class="num">${met.bruno.winrate.toFixed(0)}%</td></tr>
-        <tr><td><strong>Felipe</strong></td><td class="num">${met.felipe.winrate.toFixed(0)}%</td></tr>
-      </table>
-    </div>
-    <div class="card">
-      <div class="card-t">⏱️ Velocity (dias médios)</div>
-      <table class="tbl" style="font-size:.8rem">
-        <tr><td><strong>Bruno</strong></td><td class="num">${met.bruno.velocity.toFixed(0)}</td></tr>
-        <tr><td><strong>Felipe</strong></td><td class="num">${met.felipe.velocity.toFixed(0)}</td></tr>
-      </table>
-    </div>
+  <!-- BLOCO 2: VALOR EM RISCO -->
+  <div class="sec">⚠️ Valor em Risco</div>
+  <div class="card">
+    <table class="tbl">
+      <tr>
+        <th>Categoria</th>
+        <th class="num">Valor</th>
+        <th class="num">%</th>
+        <th>Risco</th>
+      </tr>
+      <tr>
+        <td><strong>Confiável (>60%)</strong></td>
+        <td class="num">${fK(metAll.ponderado)}</td>
+        <td class="num">${(metAll.ponderado/metAll.pipeline*100).toFixed(0)}%</td>
+        <td><span class="status ok">✓ OK</span></td>
+      </tr>
+      <tr>
+        <td><strong>Em Risco (20-60%)</strong></td>
+        <td class="num">${fK(rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0))}</td>
+        <td class="num">${((rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0)/metAll.pipeline)*100).toFixed(0)}%</td>
+        <td><span class="status warn">⚠️ Atenção</span></td>
+      </tr>
+      <tr>
+        <td><strong>Muito Risco (<20%)</strong></td>
+        <td class="num">${fK(rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0))}</td>
+        <td class="num">${((rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0)/metAll.pipeline)*100).toFixed(0)}%</td>
+        <td><span class="status critical">🔴 Crítico</span></td>
+      </tr>
+    </table>
   </div>
 
-  <div class="sec">Top 10 Projetos da Empresa</div>
-  <table class="tbl" style="margin-bottom:20px">
-    <tr>
-      <th style="width:50%">Cliente</th>
-      <th class="num">Valor</th>
-      <th style="text-align:center">Vendedor</th>
-    </tr>
+  <!-- BLOCO 3: OPORTUNIDADES CRÍTICAS -->
+  <div class="sec">🎯 5 Projetos que Definem o Resultado</div>
+  <div class="card">
+    <table class="tbl">
+      <tr>
+        <th>Cliente</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob</th>
+        <th>Dias</th>
+        <th>Status</th>
+      </tr>
   `;
-  const top10=rows.sort((a,b)=>b._val-a._val).slice(0,10);
-  top10.forEach(r=>{
+  oppsC.forEach(r=>{
+    const diasAtualizacao=r._dias_sem_atualizar;
+    const st=diasAtualizacao>50?'critical':diasAtualizacao>30?'warn':'ok';
     html+=`<tr>
-      <td><strong>${r.CUSTOMER||'?'}</strong></td>
+      <td><strong>${r.CUSTOMER}</strong><br><span style="color:var(--muted2);font-size:.8rem">${(r.VENDEDOR||'').split(' ')[0]}</span></td>
       <td class="num">${fK(r._val)}</td>
-      <td style="text-align:center;color:var(--muted2);font-size:.8rem">${(r.VENDEDOR||'').split(' ')[0]}</td>
+      <td class="num">${r._prob}%</td>
+      <td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">
+        ${diasAtualizacao}d
+      </td>
+      <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
     </tr>`;
   });
-  html+=`</table>`;
+  html+=`</table></div>
 
-  document.getElementById('diretoria-content').innerHTML=html;
-  
-  // Renderizar timeline após carregar o conteúdo
-  setTimeout(()=>renderTimeline(rows),50);
-}
+  <!-- BLOCO 4: AGING (RISCO DE EXPIRAÇÃO) -->
+  <div class="sec">📊 Pipeline Aging (Dias sem atualização)</div>
+  <div class="g2">
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Período</th><th class="num">Valor</th><th class="num">%</th></tr>
+        <tr><td>0-30 dias</td><td class="num">${fK(aging['0-30'])}</td><td class="num">✓</td></tr>
+        <tr><td>31-60 dias</td><td class="num">${fK(aging['31-60'])}</td><td class="num">⚠️</td></tr>
+        <tr><td>61-90 dias</td><td class="num">${fK(aging['61-90'])}</td><td class="num">🔴</td></tr>
+        <tr><td>90+ dias</td><td class="num">${fK(aging['90+'])}</td><td class="num">🔴</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-t">Status por Vendedor</div>
+      <table class="tbl">
+        <tr><th>Vendedor</th><th class="num">Pipeline</th><th class="num">Meta</th><th>Cobertura</th></tr>
+        <tr>
+          <td><strong>Bruno</strong></td>
+          <td class="num">${fK(metBruno.pipeline)}</td>
+          <td class="num">${fK(metB)}</td>
+          <td><span class="status ${cobB>=2?'ok':'warn'}">${(cobB*100).toFixed(0)}%</span></td>
+        </tr>
+        <tr>
+          <td><strong>Felipe</strong></td>
+          <td class="num">${fK(metFelipe.pipeline)}</td>
+          <td class="num">${fK(metF)}</td>
+          <td><span class="status ${cobF>=2?'ok':'critical'}">${(cobF*100).toFixed(0)}%</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
 
-function renderTimeline(rows){
-  const container=document.getElementById('timeline-container');
-  if(!container)return;
+  <!-- BLOCO 5: PLANO DE AÇÃO -->
+  <div class="sec">🔴 Ação Imediata Necessária</div>
+  <div class="card">
+  `;
   
-  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const byMes={};
+  const parados=rows.filter(r=>r._dias_sem_atualizar>25).sort((a,b)=>b._val-a._val);
+  if(parados.length>0){
+    html+=`<div class="alert"><div>🔴 <strong>Oportunidades paradas (>25d):</strong><br>`;
+    parados.slice(0,3).forEach(r=>{
+      html+=`${r.CUSTOMER} (${r._dias_sem_atualizar}d, ${fK(r._val)})<br>`;
+    });
+    html+=`</div></div>`;
+  }
   
-  rows.forEach(r=>{
-    if(!r._fechamento)return;
-    const mes=r._fechamento.getMonth();
-    if(!byMes[mes])byMes[mes]={bruno:0,felipe:0,total:0};
-    const val=r._val||0;
-    byMes[mes].total+=val;
-    if(r._vendor.includes('bruno'))byMes[mes].bruno+=val;
-    else if(r._vendor.includes('felipe'))byMes[mes].felipe+=val;
-  });
-
-  const mesArray=[];
-  const brunoArray=[];
-  const felipeArray=[];
+  if(cobF<1.5){
+    html+=`<div class="alert"><div>🔴 <strong>Felipe abaixo da meta:</strong> Pipeline R$${fK(metFelipe.pipeline)} vs Meta R$${fK(metF)}<br>Ação: Apoio/Intervenção comercial</div></div>`;
+  }
   
-  for(let i=0;i<12;i++){
-    const data=byMes[i];
-    if(data&&data.total>0){
-      mesArray.push(meses[i]);
-      brunoArray.push(data.bruno/1000000);
-      felipeArray.push(data.felipe/1000000);
-    }
+  if(concentracao.pct>50){
+    html+=`<div class="alert warn"><div>🟡 <strong>Pipeline concentrado (${concentracao.pct.toFixed(0)}% em top 5):</strong><br>Risco alta: Se 1 cai, cai tudo. Buscar novos deals.</div></div>`;
   }
 
-  let html=`
-  <div class="card">
-    <div class="card-t">📊 Fechamentos Esperados por Mês</div>
-    <div style="position:relative;height:360px;margin-top:24px">
-      <canvas id="timeline-chart"></canvas>
-    </div>
-    <div style="display:flex;gap:20px;font-size:.75rem;margin-top:16px;padding:12px;background:var(--s2);border-radius:6px;justify-content:center;flex-wrap:wrap">
-      <div><span style="display:inline-block;width:14px;height:14px;background:#3B82F6;border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Bruno</strong></div>
-      <div><span style="display:inline-block;width:14px;height:14px;background:#10B981;border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Felipe</strong></div>
-    </div>
-  </div>`;
+  html+=`</div>`;
 
-  container.innerHTML=html;
-  
-  // Renderizar gráfico
-  setTimeout(()=>{
-    const ctx=document.getElementById('timeline-chart');
-    if(!ctx)return;
-    
-    new Chart(ctx,{
-      type:'bar',
-      data:{
-        labels:mesArray,
-        datasets:[
-          {
-            label:'Bruno',
-            data:brunoArray,
-            backgroundColor:'#3B82F6',
-            borderColor:'#3B82F6',
-            borderWidth:0,
-            borderRadius:4,
-            barPercentage:0.8
-          },
-          {
-            label:'Felipe',
-            data:felipeArray,
-            backgroundColor:'#10B981',
-            borderColor:'#10B981',
-            borderWidth:0,
-            borderRadius:4,
-            barPercentage:0.8
-          }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{
-            position:'bottom',
-            labels:{
-              font:{size:12,family:"'Lato',sans-serif"},
-              color:'#6B7280',
-              padding:16,
-              usePointStyle:true,
-              boxWidth:10
-            }
-          },
-          tooltip:{
-            enabled:true,
-            backgroundColor:'rgba(0,0,0,.8)',
-            titleFont:{family:"'Plus Jakarta Sans',sans-serif",size:13,weight:'bold'},
-            bodyFont:{family:"'Lato',sans-serif",size:12},
-            callbacks:{
-              label:function(ctx){
-                return ctx.dataset.label+': R$ '+ctx.parsed.y.toFixed(1)+'M';
-              }
-            },
-            padding:12,
-            displayColors:true,
-            borderColor:'rgba(255,255,255,.2)',
-            borderWidth:1,
-            cornerRadius:6
-          }
-        },
-        scales:{
-          y:{
-            beginAtZero:true,
-            grace:'20%',
-            grid:{
-              color:'#E5E7EB',
-              drawBorder:false,
-              drawTicks:true
-            },
-            ticks:{
-              color:'#6B7280',
-              font:{size:11,family:"'Lato',sans-serif"},
-              callback:function(val){return 'R$ '+val+'M'}
-            }
-          },
-          x:{
-            grid:{
-              display:false,
-              drawBorder:false
-            },
-            ticks:{
-              color:'#1F2937',
-              font:{size:12,weight:'600',family:"'Plus Jakarta Sans',sans-serif"}
-            }
-          }
-        }
-      }
-    });
-  },100);
+  document.getElementById('diretoria-content').innerHTML=html;
 }
 
+// RENDER BRUNO
 function renderBruno(){
   const rows=DATA.base.filter(r=>r._vendor.includes('bruno'));
   const met=getMetricas(rows);
-  const funil=getFunil(rows);
-  const aging=getAging(rows);
-  const dep=getDependencia(rows);
-  const alertas=getAlertasVendedor(rows,'bruno');
-  
   const meta=METAS.bruno;
   const cobertura=met.pipeline/meta;
+  const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
+  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,5);
   
   let html=`
+  <!-- MEU NÚMERO -->
+  <div class="sec">📊 Meu Número</div>
   <div class="g4">
-    <div class="kpi t">
-      <div class="kpi-l">Meta</div>
-      <div class="kpi-v t">${fK(meta)}</div>
+    <div class="kpi blue">
+      <div class="kpi-l">Meta/Mês</div>
+      <div class="kpi-v">${fK(meta/12)}</div>
     </div>
-    <div class="kpi g">
+    <div class="kpi green">
       <div class="kpi-l">Realizado</div>
-      <div class="kpi-v g">${fK(met.fechados)}</div>
-      <div class="kpi-s">${met.ganhos} operações</div>
+      <div class="kpi-v">${fK(met.fechados)}</div>
     </div>
-    <div class="kpi b">
+    <div class="kpi blue">
       <div class="kpi-l">Pipeline</div>
-      <div class="kpi-v b">${fK(met.pipeline)}</div>
+      <div class="kpi-v">${fK(met.pipeline)}</div>
       <div class="kpi-s">Cobertura: ${(cobertura*100).toFixed(0)}%</div>
     </div>
-    <div class="kpi a">
-      <div class="kpi-l">Ponderado</div>
-      <div class="kpi-v a">${fK(met.ponderado)}</div>
-      <div class="kpi-s">Prob. média: ${(met.ponderado/met.pipeline*100||0).toFixed(0)}%</div>
+    <div class="kpi amber">
+      <div class="kpi-l">Gap</div>
+      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-meta)}</div>
     </div>
   </div>
 
-  ${alertas.length>0?`<div class="alert"><div class="alert-icon">⚠️</div><div><strong>O que fazer hoje:</strong><br>${alertas.slice(0,5).map(a=>
-    a.tipo==='sem-atualizacao'?`🔴 Atualizar ${a.cliente} (${a.dias} dias sem atualizar)`:
-    a.tipo==='vencimento'?`🟡 ${a.cliente} vence em ${a.dias} dias`:
-    `🟡 Definir próximo passo: ${a.cliente}`
-  ).join('<br>')}</div></div>`:''}
-
-  <div class="sec">Meu Funil</div>
-  <div class="g2">
-    <table class="tbl">
-      <tr><th>Estágio</th><th class="num">Qty</th><th class="num">Valor</th></tr>
-      <tr><td>Lead</td><td class="num">${funil.stages.Lead||0}</td><td class="num">${fK(funil.values.Lead)}</td></tr>
-      <tr><td>Proposta</td><td class="num">${funil.stages.Proposta||0}</td><td class="num">${fK(funil.values.Proposta)}</td></tr>
-      <tr><td>Negociação</td><td class="num">${funil.stages.Negociação||0}</td><td class="num">${fK(funil.values.Negociação)}</td></tr>
-      <tr><td>Ganhou</td><td class="num">${funil.stages.Ganhou||0}</td><td class="num">${fK(funil.values.Ganhou)}</td></tr>
-    </table>
-    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:18px">
-      <div style="color:var(--muted2);font-size:.8rem;margin-bottom:8px">INDICADORES</div>
-      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Win Rate</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--green);font-weight:700">${met.winrate.toFixed(0)}%</div></div>
-      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Velocity</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--blue);font-weight:700">${met.velocity.toFixed(0)}d</div></div>
-      <div><div style="color:var(--muted2);font-size:.75rem">Ticket Médio</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--amber);font-weight:700">${fK(met.ticket)}</div></div>
-    </div>
-  </div>
-
-  <div class="sec">Próximos Fechamentos (30 dias)</div>
-  <table class="tbl" style="margin-bottom:20px;font-size:.85rem">
-    <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  <!-- O QUE FAZER HOJE -->
+  <div class="sec">⚡ O Que Fazer Hoje?</div>
+  <div class="card">
   `;
-  rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30)
-    .sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento)
-    .slice(0,10)
-    .forEach(r=>{
-      html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${r._dias_ate_fechamento<=7?'var(--red)':'var(--amber)'}">${r._dias_ate_fechamento}</td></tr>`;
+  
+  if(oppsParadas.length>0){
+    html+=`<div class="alert"><strong>🔴 Urgente - Oportunidades paradas:</strong>`;
+    oppsParadas.slice(0,3).forEach(r=>{
+      html+=`<br>• ${r.CUSTOMER} (${r._dias_sem_atualizar} dias) - ${fK(r._val)}`;
     });
-  html+=`</table>`;
+    html+=`</div>`;
+  }
+  
+  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
+  if(oppsVencendo.length>0){
+    html+=`<div class="alert warn"><strong>⚠️ Próximos de fechar (30d):</strong>`;
+    oppsVencendo.slice(0,3).forEach(r=>{
+      html+=`<br>• ${r.CUSTOMER} em ${r._dias_ate_fechamento}d`;
+    });
+    html+=`</div>`;
+  }
+  
+  html+=`</div>
 
-  html+=`
-  <div class="sec">Qualidade do Pipeline</div>
-  <table class="tbl">
-    <tr><th>Indicador</th><th class="num">Meta</th><th class="num">Real</th></tr>
-    <tr><td>Próximo passo definido</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r['PROX PASSO']).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Atualizado últimos 7 dias</td><td class="num">90%</td><td class="num">${(rows.filter(r=>r._dias_sem_atualizar<=7).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Probabilidade preenchida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r.PROBABILIDADE).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Data fechamento válida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r._fechamento).length/rows.length*100||0).toFixed(0)}%</td></tr>
-  </table>
+  <!-- TOP 5 DEALS -->
+  <div class="sec">🎯 Top 5 Deals (Meu Foco)</div>
+  <div class="card">
+    <table class="tbl">
+      <tr>
+        <th>Cliente</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob</th>
+        <th>Vencimento</th>
+        <th>Status</th>
+      </tr>
   `;
+  oppsTop.forEach(r=>{
+    const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR','day':'2-digit','month':'2-digit'):'-';
+    const dias=r._dias_sem_atualizar;
+    const st=dias>30?'critical':dias>20?'warn':'ok';
+    html+=`<tr>
+      <td><strong>${r.CUSTOMER}</strong></td>
+      <td class="num">${fK(r._val)}</td>
+      <td class="num">${r._prob}%</td>
+      <td>${dataF}</td>
+      <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
+    </tr>`;
+  });
+  html+=`</table></div>`;
 
   document.getElementById('bruno-content').innerHTML=html;
 }
 
+// RENDER FELIPE
 function renderFelipe(){
   const rows=DATA.base.filter(r=>r._vendor.includes('felipe'));
   const met=getMetricas(rows);
-  const funil=getFunil(rows);
-  const aging=getAging(rows);
-  const dep=getDependencia(rows);
-  const alertas=getAlertasVendedor(rows,'felipe');
-  
   const meta=METAS.felipe;
   const cobertura=met.pipeline/meta;
+  const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
+  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,5);
   
   let html=`
+  <!-- MEU NÚMERO -->
+  <div class="sec">📊 Meu Número</div>
   <div class="g4">
-    <div class="kpi t">
-      <div class="kpi-l">Meta</div>
-      <div class="kpi-v t">${fK(meta)}</div>
+    <div class="kpi blue">
+      <div class="kpi-l">Meta/Mês</div>
+      <div class="kpi-v">${fK(meta/12)}</div>
     </div>
-    <div class="kpi g">
+    <div class="kpi green">
       <div class="kpi-l">Realizado</div>
-      <div class="kpi-v g">${fK(met.fechados)}</div>
-      <div class="kpi-s">${met.ganhos} operações</div>
+      <div class="kpi-v">${fK(met.fechados)}</div>
     </div>
-    <div class="kpi b">
+    <div class="kpi blue">
       <div class="kpi-l">Pipeline</div>
-      <div class="kpi-v b">${fK(met.pipeline)}</div>
+      <div class="kpi-v">${fK(met.pipeline)}</div>
       <div class="kpi-s">Cobertura: ${(cobertura*100).toFixed(0)}%</div>
     </div>
-    <div class="kpi a">
-      <div class="kpi-l">Ponderado</div>
-      <div class="kpi-v a">${fK(met.ponderado)}</div>
-      <div class="kpi-s">Prob. média: ${(met.ponderado/met.pipeline*100||0).toFixed(0)}%</div>
+    <div class="kpi ${cobertura<1.5?'red':'amber'}">
+      <div class="kpi-l">Gap</div>
+      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-meta)}</div>
     </div>
   </div>
 
-  ${alertas.length>0?`<div class="alert"><div class="alert-icon">⚠️</div><div><strong>O que fazer hoje:</strong><br>${alertas.slice(0,5).map(a=>
-    a.tipo==='sem-atualizacao'?`🔴 Atualizar ${a.cliente} (${a.dias} dias sem atualizar)`:
-    a.tipo==='vencimento'?`🟡 ${a.cliente} vence em ${a.dias} dias`:
-    `🟡 Definir próximo passo: ${a.cliente}`
-  ).join('<br>')}</div></div>`:''}
+  <!-- ALERTA CRÍTICO -->
+  ${cobertura<1.5?`<div class="alert"><strong>🔴 CRÍTICO: Abaixo da meta</strong><br>Pipeline: ${fK(met.pipeline)} vs Meta: ${fK(meta)}<br>Ação: Suporte diretoria + novos leads HOJE</div>`:''}
 
-  <div class="sec">Meu Funil</div>
-  <div class="g2">
-    <table class="tbl">
-      <tr><th>Estágio</th><th class="num">Qty</th><th class="num">Valor</th></tr>
-      <tr><td>Lead</td><td class="num">${funil.stages.Lead||0}</td><td class="num">${fK(funil.values.Lead)}</td></tr>
-      <tr><td>Proposta</td><td class="num">${funil.stages.Proposta||0}</td><td class="num">${fK(funil.values.Proposta)}</td></tr>
-      <tr><td>Negociação</td><td class="num">${funil.stages.Negociação||0}</td><td class="num">${fK(funil.values.Negociação)}</td></tr>
-      <tr><td>Ganhou</td><td class="num">${funil.stages.Ganhou||0}</td><td class="num">${fK(funil.values.Ganhou)}</td></tr>
-    </table>
-    <div style="background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:18px">
-      <div style="color:var(--muted2);font-size:.8rem;margin-bottom:8px">INDICADORES</div>
-      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Win Rate</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--green);font-weight:700">${met.winrate.toFixed(0)}%</div></div>
-      <div style="margin-bottom:12px"><div style="color:var(--muted2);font-size:.75rem">Velocity</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--blue);font-weight:700">${met.velocity.toFixed(0)}d</div></div>
-      <div><div style="color:var(--muted2);font-size:.75rem">Ticket Médio</div><div style="font-family:var(--fh);font-size:1.8rem;color:var(--amber);font-weight:700">${fK(met.ticket)}</div></div>
-    </div>
-  </div>
-
-  <div class="sec">Próximos Fechamentos (30 dias)</div>
-  <table class="tbl" style="margin-bottom:20px;font-size:.85rem">
-    <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  <!-- O QUE FAZER HOJE -->
+  <div class="sec">⚡ O Que Fazer Hoje?</div>
+  <div class="card">
   `;
-  rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30)
-    .sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento)
-    .slice(0,10)
-    .forEach(r=>{
-      html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${r._dias_ate_fechamento<=7?'var(--red)':'var(--amber)'}">${r._dias_ate_fechamento}</td></tr>`;
+  
+  if(oppsParadas.length>0){
+    html+=`<div class="alert"><strong>🔴 Urgente - Oportunidades paradas:</strong>`;
+    oppsParadas.slice(0,3).forEach(r=>{
+      html+=`<br>• ${r.CUSTOMER} (${r._dias_sem_atualizar} dias) - ${fK(r._val)}`;
     });
-  html+=`</table>`;
+    html+=`</div>`;
+  }
+  
+  html+=`<div class="alert warn"><strong>🟡 Ação:</strong> Buscar 2 novos leads hoje. Pipeline não cobre meta.</div>`;
+  
+  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
+  if(oppsVencendo.length>0){
+    html+=`<div class="alert ok"><strong>✓ Próximos de fechar:</strong>`;
+    oppsVencendo.slice(0,3).forEach(r=>{
+      html+=`<br>• ${r.CUSTOMER} em ${r._dias_ate_fechamento}d`;
+    });
+    html+=`</div>`;
+  }
+  
+  html+=`</div>
 
-  html+=`
-  <div class="sec">Qualidade do Pipeline</div>
-  <table class="tbl">
-    <tr><th>Indicador</th><th class="num">Meta</th><th class="num">Real</th></tr>
-    <tr><td>Próximo passo definido</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r['PROX PASSO']).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Atualizado últimos 7 dias</td><td class="num">90%</td><td class="num">${(rows.filter(r=>r._dias_sem_atualizar<=7).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Probabilidade preenchida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r.PROBABILIDADE).length/rows.length*100||0).toFixed(0)}%</td></tr>
-    <tr><td>Data fechamento válida</td><td class="num">100%</td><td class="num">${(rows.filter(r=>r._fechamento).length/rows.length*100||0).toFixed(0)}%</td></tr>
-  </table>
+  <!-- TOP 5 DEALS -->
+  <div class="sec">🎯 Top 5 Deals (Seu Foco)</div>
+  <div class="card">
+    <table class="tbl">
+      <tr>
+        <th>Cliente</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob</th>
+        <th>Vencimento</th>
+        <th>Status</th>
+      </tr>
   `;
+  oppsTop.forEach(r=>{
+    const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR'):'-';
+    const dias=r._dias_sem_atualizar;
+    const st=dias>30?'critical':dias>20?'warn':'ok';
+    html+=`<tr>
+      <td><strong>${r.CUSTOMER}</strong></td>
+      <td class="num">${fK(r._val)}</td>
+      <td class="num">${r._prob}%</td>
+      <td>${dataF}</td>
+      <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
+    </tr>`;
+  });
+  html+=`</table></div>`;
 
   document.getElementById('felipe-content').innerHTML=html;
 }
 
+// RENDER OPORTUNIDADES
 function renderOportunidades(){
   const rows=DATA.base.filter(r=>r.CUSTOMER);
   let html=`
   <div class="card">
     <div class="card-t">📋 Todas as Oportunidades</div>
-    <table class="tbl" style="font-size:.82rem">
+    <table class="tbl">
       <tr>
         <th>Cliente</th>
         <th>Vendedor</th>
-        <th>Estágio</th>
         <th class="num">Valor</th>
-        <th class="num">Prob.</th>
-        <th class="num">Atualizado</th>
+        <th class="num">Prob</th>
+        <th>Estágio</th>
+        <th>Atualizado</th>
       </tr>
   `;
   rows.forEach(r=>{
     html+=`<tr>
       <td><strong>${r.CUSTOMER}</strong></td>
-      <td style="color:var(--muted2)">${(r.VENDEDOR||'').split(' ')[0]}</td>
-      <td><span class="status ${(r.ESTAGIO||'Lead').toLowerCase().replace(/ã/g,'a')}">${r.ESTAGIO||'Lead'}</span></td>
+      <td style="font-size:.8rem;color:var(--muted)">${(r.VENDEDOR||'').split(' ')[0]}</td>
       <td class="num">${fK(r._val)}</td>
-      <td class="num">${r.PROBABILIDADE||'-'}%</td>
-      <td class="num" style="color:${r._dias_sem_atualizar>15?'var(--red)':'var(--green)'}">há ${r._dias_sem_atualizar}d</td>
+      <td class="num">${r._prob||'-'}%</td>
+      <td><span class="status ok">${r.ESTAGIO||'Lead'}</span></td>
+      <td class="num" style="color:${r._dias_sem_atualizar>30?'var(--red)':'var(--green)'}">há ${r._dias_sem_atualizar}d</td>
     </tr>`;
   });
   html+=`</table></div>`;
@@ -840,19 +619,6 @@ function switchTab(tab){
   event.target.classList.add('active');
 }
 
-function setPill(status,text){
-  const pill=document.getElementById('status-pill');
-  pill.className='pill '+{ok:'p-ok',err:'p-err'}[status];
-  pill.innerHTML=(status==='ok'?'✓ ':'✗ ')+text;
-}
-
-function updateDate(){
-  const d=new Date();
-  const next=getProxReuniao();
-  document.getElementById('date-pill').textContent='📅 '+d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' | Próx reunião: '+new Date(next).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
-}
-
-updateDate();
 loadData();
 </script>
 
