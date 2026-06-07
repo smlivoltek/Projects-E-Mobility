@@ -746,9 +746,15 @@ function renderGanhosChart(rows){
   const ctx=document.getElementById('chart-ganhos');
   if(!ctx||!window.Chart)return;
   
-  // Converter para milhões
-  const brunoMilhoes=ganhosBruno.map(v=>v/1000000);
-  const felipeMilhoes=ganhosFelipe.map(v=>v/1000000);
+  // 🔧 Função formatter - mostra valor real em reais
+  const formatarValor = (value) => {
+    if(value <= 0) return '';
+    return 'R$ ' + value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  };
+  
+  // Manter dados em REAIS (não converter para milhões)
+  const brunoReais=ganhosBruno;
+  const felipeReais=ganhosFelipe;
   
   new Chart(ctx,{
     type:'bar',
@@ -757,7 +763,7 @@ function renderGanhosChart(rows){
       datasets:[
         {
           label:'Bruno Reis',
-          data:brunoMilhoes,
+          data:brunoReais,
           backgroundColor:'#3B82F6',
           borderColor:'#3B82F6',
           borderWidth:1,
@@ -767,12 +773,12 @@ function renderGanhosChart(rows){
             font:{weight:'bold',size:11},
             anchor:'end',
             align:'top',
-            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+            formatter:(value)=>formatarValor(value)
           }
         },
         {
           label:'Felipe Hanke',
-          data:felipeMilhoes,
+          data:felipeReais,
           backgroundColor:'#10B981',
           borderColor:'#10B981',
           borderWidth:1,
@@ -782,7 +788,7 @@ function renderGanhosChart(rows){
             font:{weight:'bold',size:11},
             anchor:'end',
             align:'top',
-            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+            formatter:(value)=>formatarValor(value)
           }
         }
       ]
@@ -816,7 +822,7 @@ function renderGanhosChart(rows){
         y:{
           beginAtZero:true,
           stacked:false,
-          ticks:{callback:v=>'R$ '+v.toFixed(1)+'M'},
+          ticks:{callback:v=>'R$ '+(v/1000).toFixed(1)+'K'},
           grid:{drawBorder:false,color:'#F3F4F6'}
         }
       }
