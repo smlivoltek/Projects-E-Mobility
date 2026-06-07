@@ -258,6 +258,16 @@ function normalize(){
       r['TOTAL NET (R$)'] ||          // Sem espaços (coluna R)
       '0'
     );
+    
+    // 🔍 DEBUG: Mostrar valores de todas as colunas de valor
+    if(r.CUSTOMER && r.CUSTOMER.includes('TRANS')){
+      console.log('🔍 DEBUG SP TRANS - Colunas de Valor:');
+      console.log('  [TOTAL NET LVK (R$)]:', r['TOTAL NET LVK (R$)']);
+      console.log('  [ TOTAL NET LVK (R$) ]:', r[' TOTAL NET LVK (R$) ']);
+      console.log('  [TOTAL NET (R$)]:', r['TOTAL NET (R$)']);
+      console.log('  [ TOTAL NET (R$) ]:', r[' TOTAL NET (R$) ']);
+      console.log('  _val parseado:', r._val);
+    }
     r._prob=parseFloat(r.PROBABILIDADE||0);
     r._ponderado=r._val*(r._prob/100);
     r._vendor=(r.VENDEDOR||'').toLowerCase();
