@@ -405,7 +405,7 @@ function renderDiretoria(){
   </div>
 
   <div class="sec">Timeline de Fechamentos Esperados</div>
-  ${renderTimeline(rows)}
+  <div id="timeline-container"></div>
 
   <div class="sec">Semáforo Comercial</div>
   <div class="semaforo">
@@ -490,9 +490,15 @@ function renderDiretoria(){
   html+=`</table>`;
 
   document.getElementById('diretoria-content').innerHTML=html;
+  
+  // Renderizar timeline após carregar o conteúdo
+  setTimeout(()=>renderTimeline(rows),50);
 }
 
 function renderTimeline(rows){
+  const container=document.getElementById('timeline-container');
+  if(!container)return;
+  
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const byMes={};
   
@@ -506,7 +512,30 @@ function renderTimeline(rows){
     else if(r._vendor.includes('felipe'))byMes[mes].felipe+=val;
   });
 
-  let html='<div class="card"><table class="tbl" style="font-size:.85rem;margin-bottom:16px"><tr><th>Mês</th><th class="num">Bruno (R$)</th><th class="num">Felipe (R$)</th><th class="num">Total</th></tr>';
+  const mesArray=[];
+  const brunoArray=[];
+  const felipeArray=[];
+  
+  for(let i=0;i<12;i++){
+    const data=byMes[i];
+    if(data&&data.total>0){
+      mesArray.push(meses[i]);
+      brunoArray.push(data.bruno/1000000);
+      felipeArray.push(data.felipe/1000000);
+    }
+  }
+
+  let html=`
+  <div class="card">
+    <div class="card-t">📊 Fechamentos Esperados por Mês</div>
+    <table class="tbl" style="font-size:.85rem;margin-bottom:20px">
+      <tr>
+        <th>Mês</th>
+        <th class="num">Bruno (R$)</th>
+        <th class="num">Felipe (R$)</th>
+        <th class="num">Total</th>
+      </tr>
+  `;
   
   for(let i=0;i<12;i++){
     const data=byMes[i]||{bruno:0,felipe:0,total:0};
@@ -519,38 +548,101 @@ function renderTimeline(rows){
       </tr>`;
     }
   }
-  html+='</table>';
+  html+=`
+    </table>
+    <div style="position:relative;height:${Math.max(300,mesArray.length*40)}px;margin-top:24px">
+      <canvas id="timeline-chart"></canvas>
+    </div>
+    <div style="display:flex;gap:20px;font-size:.75rem;margin-top:16px;padding:12px;background:var(--s2);border-radius:6px;justify-content:center;flex-wrap:wrap">
+      <div><span style="display:inline-block;width:14px;height:14px;background:var(--blue);border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Bruno</strong></div>
+      <div><span style="display:inline-block;width:14px;height:14px;background:var(--green);border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Felipe</strong></div>
+    </div>
+  </div>`;
 
-  // Visual timeline
-  html+='<div style="margin-top:20px"><div style="font-size:.8rem;color:var(--muted2);margin-bottom:12px;font-weight:600">VISUALIZAÇÃO POR MÊS</div>';
+  container.innerHTML=html;
   
-  const maxVal=Math.max(...Object.values(byMes).map(m=>m.total),1);
-  
-  for(let i=0;i<12;i++){
-    const data=byMes[i]||{bruno:0,felipe:0,total:0};
-    if(data.total===0)continue;
+  // Renderizar gráfico
+  setTimeout(()=>{
+    const ctx=document.getElementById('timeline-chart');
+    if(!ctx)return;
     
-    const brunoWidth=(data.bruno/maxVal*100);
-    const felipeWidth=(data.felipe/maxVal*100);
-    
-    html+=`
-    <div style="margin-bottom:14px">
-      <div style="font-size:.75rem;font-weight:600;color:var(--text);margin-bottom:4px">${meses[i]} - ${fK(data.total)}</div>
-      <div style="display:flex;height:24px;background:var(--s2);border-radius:6px;overflow:hidden;border:1px solid var(--brd)">
-        <div style="width:${brunoWidth}%;background:var(--blue);transition:all .2s;display:flex;align-items:center;justify-content:center">
-          ${brunoWidth>15?`<span style="color:#fff;font-size:.65rem;font-weight:600">${fK(data.bruno)}</span>`:''}
-        </div>
-        <div style="width:${felipeWidth}%;background:var(--green);transition:all .2s;display:flex;align-items:center;justify-content:center">
-          ${felipeWidth>15?`<span style="color:#fff;font-size:.65rem;font-weight:600">${fK(data.felipe)}</span>`:''}
-        </div>
-      </div>
-    </div>`;
-  }
-  
-  html+='<div style="display:flex;gap:16px;margin-top:16px;font-size:.75rem"><div><span style="display:inline-block;width:12px;height:12px;background:var(--blue);border-radius:3px;margin-right:6px"></span>Bruno</div><div><span style="display:inline-block;width:12px;height:12px;background:var(--green);border-radius:3px;margin-right:6px"></span>Felipe</div></div>';
-  html+='</div></div>';
-  
-  return html;
+    new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:mesArray,
+        datasets:[
+          {
+            label:'Bruno',
+            data:brunoArray,
+            backgroundColor:'#3B82F6',
+            borderColor:'#3B82F6',
+            borderWidth:0
+          },
+          {
+            label:'Felipe',
+            data:felipeArray,
+            backgroundColor:'#10B981',
+            borderColor:'#10B981',
+            borderWidth:0
+          }
+        ]
+      },
+      options:{
+        indexAxis:'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{
+            position:'bottom',
+            labels:{
+              font:{size:12,family:"'Lato',sans-serif"},
+              color:'#6B7280',
+              padding:16,
+              usePointStyle:true
+            }
+          },
+          tooltip:{
+            backgroundColor:'rgba(0,0,0,.7)',
+            titleFont:{family:"'Plus Jakarta Sans',sans-serif",size:13,weight:'bold'},
+            bodyFont:{family:"'Lato',sans-serif",size:12},
+            callbacks:{
+              label:function(ctx){
+                return ctx.dataset.label+': R$ '+ctx.parsed.x.toFixed(1)+'M';
+              }
+            },
+            padding:10,
+            displayColors:true,
+            borderColor:'rgba(255,255,255,.2)',
+            borderWidth:1
+          }
+        },
+        scales:{
+          x:{
+            stacked:true,
+            grid:{
+              color:'#E5E7EB',
+              drawBorder:false
+            },
+            ticks:{
+              color:'#9CA3AF',
+              font:{size:11,family:"'Lato',sans-serif"},
+              callback:function(val){return 'R$ '+val+'M'}
+            }
+          },
+          y:{
+            stacked:true,
+            grid:{
+              display:false
+            },
+            ticks:{
+              color:'#1F2937',
+              font:{size:12,weight:'bold',family:"'Plus Jakarta Sans',sans-serif"}
+            }
+          }
+        }
+      }
+    });
+  },100);
 }
 
 function renderBruno(){
