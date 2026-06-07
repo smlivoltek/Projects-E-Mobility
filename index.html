@@ -100,6 +100,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="hdr-s">Executivo • Decisão Estratégica</div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span id="update-pill" class="pill p-ok">📅 Atualizado: --</span>
       <span class="pill p-warn">📅 Próx. reunião: 08/06</span>
       <span id="status-pill" class="pill p-ok">✓ Pronto</span>
     </div>
@@ -246,7 +247,7 @@ function renderDiretoria(){
   const metBruno=getMetricas(rows,'bruno'),metFelipe=getMetricas(rows,'felipe'),metAll=getMetricas(rows);
   
   const ponderado=metAll.ponderado;
-  const forecast=Math.round(ponderado*1.2); // Estimar com 20% margem
+  const forecast=Math.round(ponderado*1.2);
   const gap=metTotal-forecast;
   const batemos=forecast>=metTotal?'SIM':'NÃO';
   const status=batemos==='SIM'?'green':gap>-20000000?'amber':'red';
@@ -255,6 +256,10 @@ function renderDiretoria(){
   const aging=getAging(rows);
   const oppsC=getOppsCriticas(rows);
   const cobB=metBruno.pipeline/metB,cobF=metFelipe.pipeline/metF;
+  
+  // Data mais recente
+  const dataAtual=rows.reduce((max,r)=>!r._atualizacao?max:!max||r._atualizacao>max?r._atualizacao:max,null);
+  document.getElementById('update-pill').textContent='📅 Atualizado: '+(dataAtual?dataAtual.toLocaleDateString('pt-BR'):'--');
   
   let html=`
   <!-- BLOCO 1: RESPOSTA EXECUTIVA -->
@@ -283,97 +288,162 @@ function renderDiretoria(){
     </div>
   </div>
 
-  <!-- BLOCO 2: VALOR EM RISCO -->
-  <div class="sec">⚠️ Valor em Risco</div>
-  <div class="card">
-    <table class="tbl">
-      <tr>
-        <th>Categoria</th>
-        <th class="num">Valor</th>
-        <th class="num">%</th>
-        <th>Risco</th>
-      </tr>
-      <tr>
-        <td><strong>Confiável (>60%)</strong></td>
-        <td class="num">${fK(metAll.ponderado)}</td>
-        <td class="num">${(metAll.ponderado/metAll.pipeline*100).toFixed(0)}%</td>
-        <td><span class="status ok">✓ OK</span></td>
-      </tr>
-      <tr>
-        <td><strong>Em Risco (20-60%)</strong></td>
-        <td class="num">${fK(rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0))}</td>
-        <td class="num">${((rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0)/metAll.pipeline)*100).toFixed(0)}%</td>
-        <td><span class="status warn">⚠️ Atenção</span></td>
-      </tr>
-      <tr>
-        <td><strong>Muito Risco (<20%)</strong></td>
-        <td class="num">${fK(rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0))}</td>
-        <td class="num">${((rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0)/metAll.pipeline)*100).toFixed(0)}%</td>
-        <td><span class="status critical">🔴 Crítico</span></td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- BLOCO 3: OPORTUNIDADES CRÍTICAS -->
-  <div class="sec">🎯 5 Projetos que Definem o Resultado</div>
-  <div class="card">
-    <table class="tbl">
-      <tr>
-        <th>Cliente</th>
-        <th class="num">Valor</th>
-        <th class="num">Prob</th>
-        <th>Dias</th>
-        <th>Status</th>
-      </tr>
-  `;
-  oppsC.forEach(r=>{
-    const diasAtualizacao=r._dias_sem_atualizar;
-    const st=diasAtualizacao>50?'critical':diasAtualizacao>30?'warn':'ok';
-    html+=`<tr>
-      <td><strong>${r.CUSTOMER}</strong><br><span style="color:var(--muted2);font-size:.8rem">${(r.VENDEDOR||'').split(' ')[0]}</span></td>
-      <td class="num">${fK(r._val)}</td>
-      <td class="num">${r._prob}%</td>
-      <td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">
-        ${diasAtualizacao}d
-      </td>
-      <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
-    </tr>`;
-  });
-  html+=`</table></div>
-
-  <!-- BLOCO 4: AGING (RISCO DE EXPIRAÇÃO) -->
-  <div class="sec">📊 Pipeline Aging (Dias sem atualização)</div>
+  <!-- BLOCO 2: COMPARATIVO (2 SEMANAS ATRÁS) -->
+  <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
     <div class="card">
       <table class="tbl">
-        <tr><th>Período</th><th class="num">Valor</th><th class="num">%</th></tr>
-        <tr><td>0-30 dias</td><td class="num">${fK(aging['0-30'])}</td><td class="num">✓</td></tr>
-        <tr><td>31-60 dias</td><td class="num">${fK(aging['31-60'])}</td><td class="num">⚠️</td></tr>
-        <tr><td>61-90 dias</td><td class="num">${fK(aging['61-90'])}</td><td class="num">🔴</td></tr>
-        <tr><td>90+ dias</td><td class="num">${fK(aging['90+'])}</td><td class="num">🔴</td></tr>
-      </table>
-    </div>
-    <div class="card">
-      <div class="card-t">Status por Vendedor</div>
-      <table class="tbl">
-        <tr><th>Vendedor</th><th class="num">Pipeline</th><th class="num">Meta</th><th>Cobertura</th></tr>
+        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr>
+          <td><strong>Pipeline Total</strong></td>
+          <td class="num">${fK(metAll.pipeline)}</td>
+          <td class="num">--</td>
+        </tr>
         <tr>
           <td><strong>Bruno</strong></td>
           <td class="num">${fK(metBruno.pipeline)}</td>
-          <td class="num">${fK(metB)}</td>
-          <td><span class="status ${cobB>=2?'ok':'warn'}">${(cobB*100).toFixed(0)}%</span></td>
+          <td class="num">--</td>
         </tr>
         <tr>
           <td><strong>Felipe</strong></td>
           <td class="num">${fK(metFelipe.pipeline)}</td>
-          <td class="num">${fK(metF)}</td>
-          <td><span class="status ${cobF>=2?'ok':'critical'}">${(cobF*100).toFixed(0)}%</span></td>
+          <td class="num">--</td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
+        <tr>
+          <td><strong>Novos Clientes</strong></td>
+          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td><span class="status ok">Novos 2w</span></td>
+        </tr>
+        <tr>
+          <td><strong>Deals Fechados</strong></td>
+          <td class="num">${metAll.ganhos}</td>
+          <td><span class="status ok">WON</span></td>
+        </tr>
+        <tr>
+          <td><strong>Deals Perdidos</strong></td>
+          <td class="num">${metAll.perdidos}</td>
+          <td><span class="status critical">LOST</span></td>
         </tr>
       </table>
     </div>
   </div>
 
-  <!-- BLOCO 5: PLANO DE AÇÃO -->
+  <!-- BLOCO 3: VALOR EM RISCO (COM CLIENTES) -->
+  <div class="sec">⚠️ Valor em Risco (Detalhado)</div>
+  <div class="card">
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🟢 CONFIÁVEL (Prob > 60%)</strong></div>
+      <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:6px;padding:12px;margin-bottom:12px">
+        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(metAll.ponderado)}</div>
+  `;
+  rows.filter(r=>r._prob>=60).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  });
+  html+=`</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🟡 EM RISCO (Prob 20-60%)</strong></div>
+      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:6px;padding:12px;margin-bottom:12px">
+        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0))}</div>
+  `;
+  rows.filter(r=>r._prob>=20&&r._prob<60).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  });
+  html+=`</div>
+    </div>
+    <div>
+      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🔴 MUITO RISCO (Prob < 20%)</strong></div>
+      <div style="background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:12px">
+        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0))}</div>
+  `;
+  rows.filter(r=>r._prob<20).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  });
+  html+=`</div>
+    </div>
+  </div>
+
+  <!-- BLOCO 4: TOP 5 BRUNO + TOP 5 FELIPE -->
+  <div class="sec">🎯 Top 5 Projetos (Por Vendedor)</div>
+  <div class="g2">
+    <div class="card">
+      <div style="font-weight:600;color:var(--blue);margin-bottom:12px">Bruno Reis (R$${fK(metBruno.pipeline)})</div>
+      <table class="tbl">
+        <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  `;
+  rows.filter(r=>r._vendor.includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+    const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
+    html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
+  });
+  html+=`</table></div>
+    <div class="card">
+      <div style="font-weight:600;color:var(--green);margin-bottom:12px">Felipe Hanke (R$${fK(metFelipe.pipeline)})</div>
+      <table class="tbl">
+        <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
+  `;
+  rows.filter(r=>r._vendor.includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+    const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
+    html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
+  });
+  html+=`</table></div>
+  </div>
+
+  <!-- BLOCO 5: AGING DETALHADO -->
+  <div class="sec">📊 Pipeline Aging (Análise Detalhada)</div>
+  <div class="card">
+    <table class="tbl">
+      <tr>
+        <th>Período</th>
+        <th class="num">Valor</th>
+        <th class="num">%</th>
+        <th style="width:50%">Clientes Principais</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td><strong>0-30 dias</strong></td>
+        <td class="num">${fK(aging['0-30'])}</td>
+        <td class="num">${((aging['0-30']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
+        <td style="font-size:.8rem;color:var(--muted)">
+          ${rows.filter(r=>r._dias_sem_atualizar<=30).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')}
+        </td>
+        <td><span class="status ok">✓ OK</span></td>
+      </tr>
+      <tr>
+        <td><strong>31-60 dias</strong></td>
+        <td class="num">${fK(aging['31-60'])}</td>
+        <td class="num">${((aging['31-60']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
+        <td style="font-size:.8rem;color:var(--muted)">
+          ${rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+        </td>
+        <td><span class="status warn">⚠️ Atenção</span></td>
+      </tr>
+      <tr>
+        <td><strong>61-90 dias</strong></td>
+        <td class="num">${fK(aging['61-90'])}</td>
+        <td class="num">${((aging['61-90']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
+        <td style="font-size:.8rem;color:var(--muted)">
+          ${rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+        </td>
+        <td><span class="status warn">🔴 Crítico</span></td>
+      </tr>
+      <tr>
+        <td><strong>90+ dias</strong></td>
+        <td class="num">${fK(aging['90+'])}</td>
+        <td class="num">${((aging['90+']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
+        <td style="font-size:.8rem;color:var(--muted)">
+          ${rows.filter(r=>r._dias_sem_atualizar>90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+        </td>
+        <td><span class="status critical">🔴 REVISAR</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- BLOCO 6: PLANO DE AÇÃO -->
   <div class="sec">🔴 Ação Imediata Necessária</div>
   <div class="card">
   `;
@@ -382,7 +452,7 @@ function renderDiretoria(){
   if(parados.length>0){
     html+=`<div class="alert"><div>🔴 <strong>Oportunidades paradas (>25d):</strong><br>`;
     parados.slice(0,3).forEach(r=>{
-      html+=`${r.CUSTOMER} (${r._dias_sem_atualizar}d, ${fK(r._val)})<br>`;
+      html+=`${r.CUSTOMER} (${r._dias_sem_atualizar}d, ${fK(r._val)}) - ${(r.VENDEDOR||'').split(' ')[0]}<br>`;
     });
     html+=`</div></div>`;
   }
@@ -392,7 +462,7 @@ function renderDiretoria(){
   }
   
   if(concentracao.pct>50){
-    html+=`<div class="alert warn"><div>🟡 <strong>Pipeline concentrado (${concentracao.pct.toFixed(0)}% em top 5):</strong><br>Risco alta: Se 1 cai, cai tudo. Buscar novos deals.</div></div>`;
+    html+=`<div class="alert warn"><div>🟡 <strong>Pipeline concentrado (${concentracao.pct.toFixed(0)}% em top 5):</strong><br>Risco: Se 1 cai, tudo cai. Buscar novos deals.</div></div>`;
   }
 
   html+=`</div>`;
@@ -581,7 +651,15 @@ function renderOportunidades(){
   let html=`
   <div class="card">
     <div class="card-t">📋 Todas as Oportunidades</div>
-    <table class="tbl">
+    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" id="filter-cliente" placeholder="Buscar cliente..." style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem;width:200px">
+      <select id="filter-vendedor" style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem">
+        <option value="">Todos vendedores</option>
+        <option value="bruno">Bruno</option>
+        <option value="felipe">Felipe</option>
+      </select>
+    </div>
+    <table class="tbl" id="opp-table">
       <tr>
         <th>Cliente</th>
         <th>Vendedor</th>
@@ -592,7 +670,7 @@ function renderOportunidades(){
       </tr>
   `;
   rows.forEach(r=>{
-    html+=`<tr>
+    html+=`<tr class="opp-row" data-cliente="${r.CUSTOMER.toLowerCase()}" data-vendedor="${(r.VENDEDOR||'').toLowerCase()}">
       <td><strong>${r.CUSTOMER}</strong></td>
       <td style="font-size:.8rem;color:var(--muted)">${(r.VENDEDOR||'').split(' ')[0]}</td>
       <td class="num">${fK(r._val)}</td>
@@ -603,6 +681,20 @@ function renderOportunidades(){
   });
   html+=`</table></div>`;
   document.getElementById('oportunidades-content').innerHTML=html;
+  
+  // Adicionar listeners dos filtros
+  document.getElementById('filter-cliente').addEventListener('keyup',filterOpps);
+  document.getElementById('filter-vendedor').addEventListener('change',filterOpps);
+}
+
+function filterOpps(){
+  const cliente=document.getElementById('filter-cliente').value.toLowerCase();
+  const vendedor=document.getElementById('filter-vendedor').value.toLowerCase();
+  document.querySelectorAll('.opp-row').forEach(row=>{
+    const matchCliente=!cliente||row.dataset.cliente.includes(cliente);
+    const matchVendedor=!vendedor||row.dataset.vendedor.includes(vendedor);
+    row.style.display=matchCliente&&matchVendedor?'':'none';
+  });
 }
 
 function renderAll(){
