@@ -680,7 +680,7 @@ function renderGanhosChart(rows){
     const mes=r._fechamento.getMonth();
     const ano=r._fechamento.getFullYear();
     if(ano===anoAtual){
-      const valor=(r._ponderado||0);
+      const valor=(r._val||0); // 🔧 CORRIGIDO: Usar _val (valor real) e não _ponderado
       if(r._vendor.includes('bruno')){
         ganhosBruno[mes]+=valor;
       } else if(r._vendor.includes('felipe')){
