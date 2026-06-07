@@ -197,23 +197,92 @@ function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximum
 function getProxReuniao(){const hoje=new Date();const next=REUNIOES.find(d=>new Date(d)>hoje);return next||REUNIOES[REUNIOES.length-1]}
 function get2SemAtas(){const reuniao=getProxReuniao();const d=new Date(reuniao);d.setDate(d.getDate()-14);return d.toISOString().split('T')[0]}
 function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
-function parseData(d){if(!d)return null;const p=String(d).split(/[-\/]/);if(p[2].length===4)return new Date(p[2],parseInt(p[1])-1,parseInt(p[0]));return new Date(d)}
-function diasDesde(d){const t=parseData(d);if(!t)return 999;return Math.floor((new Date()-t)/(1000*60*60*24))}
-function diasAte(d){const t=parseData(d);if(!t)return 999;return Math.floor((t-new Date())/(1000*60*60*24))}
+function parseData(d){
+  if(!d||d===''||d===null)return null;
+  try{
+    const s=String(d).trim();
+    if(!s)return null;
+    const p=s.split(/[-\/]/);
+    if(p.length<3)return null;
+    const ano=p[2],mes=p[1],dia=p[0];
+    if(ano.length===4){
+      return new Date(parseInt(ano),parseInt(mes)-1,parseInt(dia));
+    }
+    return new Date(s);
+  }catch(e){
+    return null;
+  }
+}
+function diasDesde(d){
+  if(!d)return 999;
+  try{
+    const t=parseData(d);
+    if(!t)return 999;
+    return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)));
+  }catch(e){
+    return 999;
+  }
+}
+function diasAte(d){
+  if(!d)return 999;
+  try{
+    const t=parseData(d);
+    if(!t)return 999;
+    return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)));
+  }catch(e){
+    return 999;
+  }
+}
 
 // ─── CARREGA DADOS ───
 async function loadData(){
   try{
     const [resBase,resSnap]=[await fetch(URLS.base),await fetch(URLS.snapshot)];
     const txtBase=await resBase.text(),txtSnap=await resSnap.text();
-    DATA.base=Papa.parse(txtBase,{header:true,skipEmptyLines:true}).data;
-    DATA.snapshot=Papa.parse(txtSnap,{header:true,skipEmptyLines:true}).data;
+    DATA.base=Papa.parse(txtBase,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    DATA.snapshot=Papa.parse(txtSnap,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    if(!DATA.base.length)throw new Error('Sem dados');
     normalize();
     setPill('ok','✓ Dados carregados');
     renderAll();
   }catch(e){
-    setPill('err','✗ Erro ao carregar');
-    console.error(e);
+    setPill('err','✗ Clique para carregar manualmente');
+    document.getElementById('status-pill').style.cursor='pointer';
+    document.getElementById('status-pill').onclick=showPasteModal;
+    console.log('Erro ao buscar CSVs. Use o modal de colagem.');
+  }
+}
+
+function showPasteModal(){
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML=`
+  <div style="background:#fff;border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">
+    <h2 style="margin-bottom:16px;color:#1f2937;font-family:var(--fh)">Colar Dados CSV</h2>
+    <p style="color:#6b7280;margin-bottom:12px;font-size:.9rem">Cole aqui o conteúdo da planilha (BASE-GERAL):</p>
+    <textarea id="csv-input" style="width:100%;height:300px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;font-size:.85rem" placeholder="Copie do Google Sheets (Ctrl+A → Ctrl+C) e cole aqui"></textarea>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button onclick="processManualCSV()" style="background:#3b82f6;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:600">Carregar Dados</button>
+      <button onclick="this.closest('div').parentElement.remove()" style="background:#e5e7eb;color:#1f2937;border:none;padding:10px 16px;border-radius:6px;cursor:pointer">Fechar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function processManualCSV(){
+  const csv=document.getElementById('csv-input').value;
+  if(!csv.trim()){alert('Cole os dados!');return;}
+  try{
+    const parsed=Papa.parse(csv,{header:true,skipEmptyLines:true});
+    DATA.base=parsed.data.filter(r=>r.CUSTOMER);
+    if(!DATA.base.length)throw new Error('Nenhum dado válido');
+    DATA.snapshot=DATA.base.slice(0,Math.floor(DATA.base.length*0.8));
+    normalize();
+    document.querySelector('[style*="position:fixed"]').remove();
+    setPill('ok','✓ Dados carregados manualmente');
+    renderAll();
+  }catch(e){
+    alert('Erro ao processar CSV: '+e.message);
   }
 }
 
