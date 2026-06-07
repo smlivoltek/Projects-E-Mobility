@@ -672,9 +672,9 @@ function renderGanhosChart(rows){
   const anoAtual=agora.getFullYear();
   
   rows.forEach(r=>{
-    // Filtrar apenas pedidos com STATUS = "Ganhou" ou "Ganho"
+    // Filtrar apenas pedidos com STATUS = "Ganhou", "Ganho", etc (mais robusto)
     const status=(r.STATUS||'').toLowerCase().trim();
-    if(status!=='ganhou'&&status!=='ganho')return;
+    if(!status.includes('ganh'))return; // Captura: Ganhou, Ganho, GANHO, ganho, etc
     
     if(!r._fechamento)return;
     const mes=r._fechamento.getMonth();
@@ -826,6 +826,51 @@ function renderBruno(){
   
   html+=`</div>
 
+  <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->
+  <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
+  <div class="g2">
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr>
+          <td><strong>Pipeline</strong></td>
+          <td class="num">${fK(met.pipeline)}</td>
+          <td class="num">--</td>
+        </tr>
+        <tr>
+          <td><strong>Deals Fechados</strong></td>
+          <td class="num">${met.ganhos}</td>
+          <td class="num">--</td>
+        </tr>
+        <tr>
+          <td><strong>Deals Perdidos</strong></td>
+          <td class="num">${met.perdidos}</td>
+          <td class="num">--</td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
+        <tr>
+          <td><strong>Novos Clientes</strong></td>
+          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td><span class="status ok">Novos 2w</span></td>
+        </tr>
+        <tr>
+          <td><strong>Cobertura Meta</strong></td>
+          <td class="num">${(cobertura*100).toFixed(0)}%</td>
+          <td><span class="status ${cobertura>=1?'ok':'critical'}">${cobertura>=1?'OK':'CRÍTICO'}</span></td>
+        </tr>
+        <tr>
+          <td><strong>Opps Paradas</strong></td>
+          <td class="num">${oppsParadas.length}</td>
+          <td><span class="status warn">Atenção</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
   <!-- TOP 10 DEALS -->
   <div class="sec">🎯 Top 10 Deals (Meu Foco)</div>
   <div class="card">
@@ -882,53 +927,6 @@ function renderBruno(){
     </tr>`;
   });
   html+=`</table></div>`;
-
-  // Adicionar COMPARATIVO
-  html+=`
-  <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
-  <div class="g2">
-    <div class="card">
-      <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
-        <tr>
-          <td><strong>Pipeline</strong></td>
-          <td class="num">${fK(met.pipeline)}</td>
-          <td class="num">--</td>
-        </tr>
-        <tr>
-          <td><strong>Deals Fechados</strong></td>
-          <td class="num">${met.ganhos}</td>
-          <td class="num">--</td>
-        </tr>
-        <tr>
-          <td><strong>Deals Perdidos</strong></td>
-          <td class="num">${met.perdidos}</td>
-          <td class="num">--</td>
-        </tr>
-      </table>
-    </div>
-    <div class="card">
-      <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
-        <tr>
-          <td><strong>Novos Clientes</strong></td>
-          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
-          <td><span class="status ok">Novos 2w</span></td>
-        </tr>
-        <tr>
-          <td><strong>Cobertura Meta</strong></td>
-          <td class="num">${(cobertura*100).toFixed(0)}%</td>
-          <td><span class="status ${cobertura>=1?'ok':'critical'}">${cobertura>=1?'OK':'CRÍTICO'}</span></td>
-        </tr>
-        <tr>
-          <td><strong>Opps Paradas</strong></td>
-          <td class="num">${oppsParadas.length}</td>
-          <td><span class="status warn">Atenção</span></td>
-        </tr>
-      </table>
-    </div>
-  </div>
-  `;
 
   document.getElementById('bruno-content').innerHTML=html;
   document.getElementById('filter-cliente-bruno').addEventListener('keyup',()=>filterClientesBruno());
@@ -1006,6 +1004,51 @@ function renderFelipe(){
   
   html+=`</div>
 
+  <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->
+  <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
+  <div class="g2">
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr>
+          <td><strong>Pipeline</strong></td>
+          <td class="num">${fK(met.pipeline)}</td>
+          <td class="num">--</td>
+        </tr>
+        <tr>
+          <td><strong>Deals Fechados</strong></td>
+          <td class="num">${met.ganhos}</td>
+          <td class="num">--</td>
+        </tr>
+        <tr>
+          <td><strong>Deals Perdidos</strong></td>
+          <td class="num">${met.perdidos}</td>
+          <td class="num">--</td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
+        <tr>
+          <td><strong>Novos Clientes</strong></td>
+          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td><span class="status ok">Novos 2w</span></td>
+        </tr>
+        <tr>
+          <td><strong>Cobertura Meta</strong></td>
+          <td class="num">${(cobertura*100).toFixed(0)}%</td>
+          <td><span class="status ${cobertura>=1?'ok':'critical'}">${cobertura>=1?'OK':'CRÍTICO'}</span></td>
+        </tr>
+        <tr>
+          <td><strong>Opps Paradas</strong></td>
+          <td class="num">${oppsParadas.length}</td>
+          <td><span class="status warn">Atenção</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
   <!-- TOP 10 DEALS -->
   <div class="sec">🎯 Top 10 Deals (Seu Foco)</div>
   <div class="card">
@@ -1062,53 +1105,6 @@ function renderFelipe(){
     </tr>`;
   });
   html+=`</table></div>`;
-
-  // Adicionar COMPARATIVO
-  html+=`
-  <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
-  <div class="g2">
-    <div class="card">
-      <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
-        <tr>
-          <td><strong>Pipeline</strong></td>
-          <td class="num">${fK(met.pipeline)}</td>
-          <td class="num">--</td>
-        </tr>
-        <tr>
-          <td><strong>Deals Fechados</strong></td>
-          <td class="num">${met.ganhos}</td>
-          <td class="num">--</td>
-        </tr>
-        <tr>
-          <td><strong>Deals Perdidos</strong></td>
-          <td class="num">${met.perdidos}</td>
-          <td class="num">--</td>
-        </tr>
-      </table>
-    </div>
-    <div class="card">
-      <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
-        <tr>
-          <td><strong>Novos Clientes</strong></td>
-          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
-          <td><span class="status ok">Novos 2w</span></td>
-        </tr>
-        <tr>
-          <td><strong>Cobertura Meta</strong></td>
-          <td class="num">${(cobertura*100).toFixed(0)}%</td>
-          <td><span class="status ${cobertura>=1?'ok':'critical'}">${cobertura>=1?'OK':'CRÍTICO'}</span></td>
-        </tr>
-        <tr>
-          <td><strong>Opps Paradas</strong></td>
-          <td class="num">${oppsParadas.length}</td>
-          <td><span class="status warn">Atenção</span></td>
-        </tr>
-      </table>
-    </div>
-  </div>
-  `;
 
   document.getElementById('felipe-content').innerHTML=html;
   document.getElementById('filter-cliente-felipe').addEventListener('keyup',()=>filterClientesFelipe());
