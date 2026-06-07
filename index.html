@@ -720,15 +720,19 @@ function renderGanhosChart(rows){
     if(!status.includes('ganh'))return;
     
     if(!r._dataGanho){
-      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO vazia ou inválida`);
+      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO não parseada!`);
       return;
     }
     
     debugCount++;
     const mes=r._dataGanho.getMonth();
     const ano=r._dataGanho.getFullYear();
+    
+    console.log(`✅ ${r.CUSTOMER}: _val=${r._val} | Mês=${mes} | Ano=${ano} | AnoAtual=${anoAtual}`);
+    
     if(ano===anoAtual){
       const valor=(r._val||0);
+      console.log(`   → Adicionando R$ ${valor} ao mês ${mes}`);
       if(r._vendor.includes('bruno')){
         ganhosBruno[mes]+=valor;
       } else if(r._vendor.includes('felipe')){
