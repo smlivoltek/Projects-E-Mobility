@@ -351,6 +351,13 @@ function renderDiretoria(){
   <div class="card">
     <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
   </div>
+
+  <!-- BLOCO 2C: GRÁFICO DE PEDIDOS GANHOS (MÊS A MÊS) -->
+  <div class="sec">📦 Pedidos Ganhos (Mês a Mês)</div>
+  <div class="card">
+    <canvas id="chart-ganhos" style="max-height:300px;margin-bottom:20px"></canvas>
+  </div>
+
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
     <div class="card">
@@ -541,8 +548,11 @@ function renderDiretoria(){
 
   document.getElementById('diretoria-content').innerHTML=html;
   
-  // Renderizar gráfico de fechamentos
-  setTimeout(()=>renderFechamentosChart(rows),100);
+  // Renderizar gráficos
+  setTimeout(()=>{
+    renderFechamentosChart(rows);
+    renderGanhosChart(rows);
+  },100);
 }
 
 // Registrar plugin de data labels do Chart.js
@@ -578,6 +588,113 @@ function renderFechamentosChart(rows){
   // Converter para milhões
   const brunoMilhoes=fechamentosBruno.map(v=>v/1000000);
   const felipeMilhoes=fechamentosFelipe.map(v=>v/1000000);
+  
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:meses,
+      datasets:[
+        {
+          label:'Bruno Reis',
+          data:brunoMilhoes,
+          backgroundColor:'#3B82F6',
+          borderColor:'#3B82F6',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:11},
+            anchor:'end',
+            align:'top',
+            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+          }
+        },
+        {
+          label:'Felipe Hanke',
+          data:felipeMilhoes,
+          backgroundColor:'#10B981',
+          borderColor:'#10B981',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:11},
+            anchor:'end',
+            align:'top',
+            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+          }
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      indexAxis:'x',
+      plugins:{
+        legend:{
+          display:true,
+          position:'top',
+          align:'end',
+          labels:{
+            font:{weight:600,size:13},
+            padding:20,
+            usePointStyle:true,
+            pointStyle:'circle',
+            boxWidth:12
+          }
+        },
+        datalabels:{
+          display:true
+        }
+      },
+      scales:{
+        x:{
+          stacked:false,
+          grid:{display:false}
+        },
+        y:{
+          beginAtZero:true,
+          stacked:false,
+          ticks:{callback:v=>'R$ '+v.toFixed(1)+'M'},
+          grid:{drawBorder:false,color:'#F3F4F6'}
+        }
+      }
+    }
+  });
+}
+
+function renderGanhosChart(rows){
+  // Calcular pedidos ganhos por mês POR VENDEDOR
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const ganhosBruno=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const ganhosFelipe=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const agora=new Date();
+  const anoAtual=agora.getFullYear();
+  
+  rows.forEach(r=>{
+    // Filtrar apenas pedidos com STATUS = "Ganhou" ou "Ganho"
+    const status=(r.STATUS||'').toLowerCase().trim();
+    if(status!=='ganhou'&&status!=='ganho')return;
+    
+    if(!r._fechamento)return;
+    const mes=r._fechamento.getMonth();
+    const ano=r._fechamento.getFullYear();
+    if(ano===anoAtual){
+      const valor=(r._ponderado||0);
+      if(r._vendor.includes('bruno')){
+        ganhosBruno[mes]+=valor;
+      } else if(r._vendor.includes('felipe')){
+        ganhosFelipe[mes]+=valor;
+      }
+    }
+  });
+  
+  const ctx=document.getElementById('chart-ganhos');
+  if(!ctx||!window.Chart)return;
+  
+  // Converter para milhões
+  const brunoMilhoes=ganhosBruno.map(v=>v/1000000);
+  const felipeMilhoes=ganhosFelipe.map(v=>v/1000000);
   
   new Chart(ctx,{
     type:'bar',
