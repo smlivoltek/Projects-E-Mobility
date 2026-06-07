@@ -469,7 +469,7 @@ function renderBruno(){
       </tr>
   `;
   oppsTop.forEach(r=>{
-    const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR','day':'2-digit','month':'2-digit'):'-';
+    const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'-';
     const dias=r._dias_sem_atualizar;
     const st=dias>30?'critical':dias>20?'warn':'ok';
     html+=`<tr>
