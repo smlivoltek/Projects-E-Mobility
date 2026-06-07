@@ -6,6 +6,7 @@
 <title>E-Mobility CRM | Executivo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -544,10 +545,16 @@ function renderDiretoria(){
   setTimeout(()=>renderFechamentosChart(rows),100);
 }
 
+// Registrar plugin de data labels do Chart.js
+if(typeof ChartDataLabels!=='undefined'){
+  Chart.register(ChartDataLabels);
+}
+
 function renderFechamentosChart(rows){
-  // Calcular fechamentos esperados por mês
+  // Calcular fechamentos esperados por mês POR VENDEDOR
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const fechamentos=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const fechamentosBruno=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const fechamentosFelipe=[0,0,0,0,0,0,0,0,0,0,0,0];
   const agora=new Date();
   const anoAtual=agora.getFullYear();
   
@@ -556,35 +563,88 @@ function renderFechamentosChart(rows){
     const mes=r._fechamento.getMonth();
     const ano=r._fechamento.getFullYear();
     if(ano===anoAtual){
-      fechamentos[mes]+=(r._ponderado||0);
+      const valor=(r._ponderado||0);
+      if(r._vendor.includes('bruno')){
+        fechamentosBruno[mes]+=valor;
+      } else if(r._vendor.includes('felipe')){
+        fechamentosFelipe[mes]+=valor;
+      }
     }
   });
   
   const ctx=document.getElementById('chart-fechamentos');
   if(!ctx||!window.Chart)return;
   
+  // Converter para milhões
+  const brunoMilhoes=fechamentosBruno.map(v=>v/1000000);
+  const felipeMilhoes=fechamentosFelipe.map(v=>v/1000000);
+  
   new Chart(ctx,{
     type:'bar',
     data:{
       labels:meses,
-      datasets:[{
-        label:'Previsão (Ponderado)',
-        data:fechamentos.map(v=>v/1000000),
-        backgroundColor:'#3B82F6',
-        borderColor:'#3B82F6',
-        borderWidth:1
-      }]
+      datasets:[
+        {
+          label:'Bruno Reis',
+          data:brunoMilhoes,
+          backgroundColor:'#3B82F6',
+          borderColor:'#3B82F6',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:11},
+            anchor:'end',
+            align:'top',
+            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+          }
+        },
+        {
+          label:'Felipe Hanke',
+          data:felipeMilhoes,
+          backgroundColor:'#10B981',
+          borderColor:'#10B981',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:11},
+            anchor:'end',
+            align:'top',
+            formatter:(value)=>value>0?'R$ '+value.toFixed(1)+'M':''
+          }
+        }
+      ]
     },
     options:{
       responsive:true,
       maintainAspectRatio:true,
+      indexAxis:'x',
       plugins:{
-        legend:{display:false}
+        legend:{
+          display:true,
+          position:'top',
+          labels:{
+            font:{weight:600,size:13},
+            padding:15,
+            usePointStyle:true,
+            pointStyle:'circle'
+          }
+        },
+        datalabels:{
+          display:true
+        }
       },
       scales:{
+        x:{
+          stacked:false,
+          grid:{display:false}
+        },
         y:{
           beginAtZero:true,
-          ticks:{callback:v=>'R$ '+v.toFixed(1)+'M'}
+          stacked:false,
+          ticks:{callback:v=>'R$ '+v.toFixed(1)+'M'},
+          grid:{drawBorder:false,color:'#F3F4F6'}
         }
       }
     }
