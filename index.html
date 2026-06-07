@@ -404,6 +404,9 @@ function renderDiretoria(){
     </div>
   </div>
 
+  <div class="sec">Timeline de Fechamentos Esperados</div>
+  ${renderTimeline(rows)}
+
   <div class="sec">Semáforo Comercial</div>
   <div class="semaforo">
     <div class="tl ${statusB}">
@@ -487,6 +490,67 @@ function renderDiretoria(){
   html+=`</table>`;
 
   document.getElementById('diretoria-content').innerHTML=html;
+}
+
+function renderTimeline(rows){
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const byMes={};
+  
+  rows.forEach(r=>{
+    if(!r._fechamento)return;
+    const mes=r._fechamento.getMonth();
+    if(!byMes[mes])byMes[mes]={bruno:0,felipe:0,total:0};
+    const val=r._val||0;
+    byMes[mes].total+=val;
+    if(r._vendor.includes('bruno'))byMes[mes].bruno+=val;
+    else if(r._vendor.includes('felipe'))byMes[mes].felipe+=val;
+  });
+
+  let html='<div class="card"><table class="tbl" style="font-size:.85rem;margin-bottom:16px"><tr><th>Mês</th><th class="num">Bruno (R$)</th><th class="num">Felipe (R$)</th><th class="num">Total</th></tr>';
+  
+  for(let i=0;i<12;i++){
+    const data=byMes[i]||{bruno:0,felipe:0,total:0};
+    if(data.total>0){
+      html+=`<tr>
+        <td><strong>${meses[i]}</strong></td>
+        <td class="num" style="color:var(--blue)">${fK(data.bruno)}</td>
+        <td class="num" style="color:var(--green)">${fK(data.felipe)}</td>
+        <td class="num" style="font-weight:600">${fK(data.total)}</td>
+      </tr>`;
+    }
+  }
+  html+='</table>';
+
+  // Visual timeline
+  html+='<div style="margin-top:20px"><div style="font-size:.8rem;color:var(--muted2);margin-bottom:12px;font-weight:600">VISUALIZAÇÃO POR MÊS</div>';
+  
+  const maxVal=Math.max(...Object.values(byMes).map(m=>m.total),1);
+  
+  for(let i=0;i<12;i++){
+    const data=byMes[i]||{bruno:0,felipe:0,total:0};
+    if(data.total===0)continue;
+    
+    const brunoWidth=(data.bruno/maxVal*100);
+    const felipeWidth=(data.felipe/maxVal*100);
+    
+    html+=`
+    <div style="margin-bottom:14px">
+      <div style="font-size:.75rem;font-weight:600;color:var(--text);margin-bottom:4px">${meses[i]} - ${fK(data.total)}</div>
+      <div style="display:flex;height:24px;background:var(--s2);border-radius:6px;overflow:hidden;border:1px solid var(--brd)">
+        <div style="width:${brunoWidth}%;background:var(--blue);transition:all .2s;display:flex;align-items:center;justify-content:center">
+          ${brunoWidth>15?`<span style="color:#fff;font-size:.65rem;font-weight:600">${fK(data.bruno)}</span>`:''}
+        </div>
+        <div style="width:${felipeWidth}%;background:var(--green);transition:all .2s;display:flex;align-items:center;justify-content:center">
+          ${felipeWidth>15?`<span style="color:#fff;font-size:.65rem;font-weight:600">${fK(data.felipe)}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  html+='<div style="display:flex;gap:16px;margin-top:16px;font-size:.75rem"><div><span style="display:inline-block;width:12px;height:12px;background:var(--blue);border-radius:3px;margin-right:6px"></span>Bruno</div><div><span style="display:inline-block;width:12px;height:12px;background:var(--green);border-radius:3px;margin-right:6px"></span>Felipe</div></div>';
+  html+='</div></div>';
+  
+  return html;
 }
 
 function renderBruno(){
