@@ -138,8 +138,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 const METAS = {bruno: 50000000, felipe: 12000000};
 const SHEET_ID = '2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf';
 const URLS = {
-  base: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1937499442`,
-  snapshot: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=202441246`
+  base: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=1937499442&single=true&output=csv`,
+  snapshot: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=202441246&single=true&output=csv`
 };
 
 let DATA = {base: [], snapshot: []};
@@ -156,10 +156,9 @@ function diasAte(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;r
 async function loadData(){
   try{
     console.log('Tentando carregar dados...');
-    const res=await fetch(URLS.base);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    
+    const res=await fetch(URLS.base, {method:'GET', mode:'no-cors'});
     const txt=await res.text();
+    
     if(!txt || txt.length<100)throw new Error('Dados vazios');
     
     DATA.base=Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
