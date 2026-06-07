@@ -544,8 +544,6 @@ function renderTimeline(rows){
     const ctx=document.getElementById('timeline-chart');
     if(!ctx)return;
     
-    Chart.register(ChartDataLabels);
-    
     new Chart(ctx,{
       type:'bar',
       data:{
@@ -558,7 +556,14 @@ function renderTimeline(rows){
             borderColor:'#3B82F6',
             borderWidth:0,
             borderRadius:4,
-            barPercentage:0.8
+            barPercentage:0.8,
+            datalabels:{
+              anchor:'end',
+              align:'top',
+              font:{weight:'bold',size:11},
+              color:'#1F2937',
+              formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
+            }
           },
           {
             label:'Felipe',
@@ -567,7 +572,14 @@ function renderTimeline(rows){
             borderColor:'#10B981',
             borderWidth:0,
             borderRadius:4,
-            barPercentage:0.8
+            barPercentage:0.8,
+            datalabels:{
+              anchor:'end',
+              align:'top',
+              font:{weight:'bold',size:11},
+              color:'#1F2937',
+              formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
+            }
           }
         ]
       },
@@ -576,11 +588,12 @@ function renderTimeline(rows){
         maintainAspectRatio:false,
         plugins:{
           datalabels:{
+            display:true,
             anchor:'end',
             align:'top',
-            font:{size:11,weight:'bold',family:"'Plus Jakarta Sans',sans-serif"},
+            font:{weight:'bold',size:11,family:"'Plus Jakarta Sans',sans-serif"},
             color:'#1F2937',
-            formatter:function(val){return 'R$ '+val.toFixed(1)+'M'}
+            formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
           },
           legend:{
             position:'bottom',
@@ -593,6 +606,7 @@ function renderTimeline(rows){
             }
           },
           tooltip:{
+            enabled:true,
             backgroundColor:'rgba(0,0,0,.8)',
             titleFont:{family:"'Plus Jakarta Sans',sans-serif",size:13,weight:'bold'},
             bodyFont:{family:"'Lato',sans-serif",size:12},
@@ -611,6 +625,7 @@ function renderTimeline(rows){
         scales:{
           y:{
             beginAtZero:true,
+            grace:'15%',
             grid:{
               color:'#E5E7EB',
               drawBorder:false,
@@ -619,8 +634,7 @@ function renderTimeline(rows){
             ticks:{
               color:'#6B7280',
               font:{size:11,family:"'Lato',sans-serif"},
-              callback:function(val){return 'R$ '+val+'M'},
-              stepSize:Math.max(...brunoArray.concat(felipeArray))/5||10
+              callback:function(val){return 'R$ '+val+'M'}
             }
           },
           x:{
@@ -634,7 +648,8 @@ function renderTimeline(rows){
             }
           }
         }
-      }
+      },
+      plugins:[ChartDataLabels]
     });
   },100);
 }
