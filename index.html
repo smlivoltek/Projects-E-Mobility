@@ -316,7 +316,11 @@ function renderDiretoria(){
     </div>
   </div>
 
-  <!-- BLOCO 2: COMPARATIVO (2 SEMANAS ATRÁS) -->
+  <!-- BLOCO 2B: GRÁFICO DE FECHAMENTOS ESPERADOS (MÊS A MÊS) -->
+  <div class="sec">📈 Previsão de Fechamentos (Mês a Mês)</div>
+  <div class="card">
+    <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
+  </div>
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
     <div class="card">
@@ -506,6 +510,56 @@ function renderDiretoria(){
   html+=`</div>`;
 
   document.getElementById('diretoria-content').innerHTML=html;
+  
+  // Renderizar gráfico de fechamentos
+  setTimeout(()=>renderFechamentosChart(rows),100);
+}
+
+function renderFechamentosChart(rows){
+  // Calcular fechamentos esperados por mês
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const fechamentos=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const agora=new Date();
+  const anoAtual=agora.getFullYear();
+  
+  rows.forEach(r=>{
+    if(!r._fechamento)return;
+    const mes=r._fechamento.getMonth();
+    const ano=r._fechamento.getFullYear();
+    if(ano===anoAtual){
+      fechamentos[mes]+=(r._ponderado||0);
+    }
+  });
+  
+  const ctx=document.getElementById('chart-fechamentos');
+  if(!ctx||!window.Chart)return;
+  
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:meses,
+      datasets:[{
+        label:'Previsão (Ponderado)',
+        data:fechamentos.map(v=>v/1000000),
+        backgroundColor:'#3B82F6',
+        borderColor:'#3B82F6',
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false}
+      },
+      scales:{
+        y:{
+          beginAtZero:true,
+          ticks:{callback:v=>'R$ '+v.toFixed(1)+'M'}
+        }
+      }
+    }
+  });
 }
 
 // RENDER BRUNO
@@ -513,7 +567,6 @@ function renderBruno(){
   const rows=DATA.base.filter(r=>r._vendor.includes('bruno'));
   const met=getMetricas(rows);
   const metaAnual=METAS.bruno;
-  const metaMensal=metaAnual/12;
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
@@ -523,8 +576,8 @@ function renderBruno(){
   <div class="sec">📊 Meu Número</div>
   <div class="g4">
     <div class="kpi blue">
-      <div class="kpi-l">Meta/Mês</div>
-      <div class="kpi-v">${fK(metaMensal)}</div>
+      <div class="kpi-l">Meta Anual</div>
+      <div class="kpi-v">${fK(metaAnual)}</div>
     </div>
     <div class="kpi green">
       <div class="kpi-l">Realizado</div>
@@ -589,9 +642,52 @@ function renderBruno(){
       <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
     </tr>`;
   });
-  html+=`</table></div>`;
+  html+=`</table></div>
+
+  <!-- TODOS OS CLIENTES (FILTRO) -->
+  <div class="sec">📋 Todos os Clientes (Filtrados por Probabilidade)</div>
+  <div class="card">
+    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" id="filter-cliente-bruno" placeholder="Buscar cliente..." style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem;width:200px">
+      <select id="filter-prob-bruno" style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem">
+        <option value="">Todas probabilidades</option>
+        <option value="90">Acima 90%</option>
+        <option value="75">Acima 75%</option>
+        <option value="50">Acima 50%</option>
+        <option value="0">Todas</option>
+      </select>
+    </div>
+    <table class="tbl" id="cliente-table-bruno">
+      <tr>
+        <th>Cliente</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob %</th>
+        <th>Estágio</th>
+      </tr>
+  `;
+  rows.sort((a,b)=>b._prob-a._prob).forEach(r=>{
+    html+=`<tr class="cliente-row-bruno" data-cliente="${r.CUSTOMER.toLowerCase()}" data-prob="${r._prob||0}">
+      <td><strong>${r.CUSTOMER}</strong></td>
+      <td class="num">${fK(r._val)}</td>
+      <td class="num" style="color:${r._prob>=75?'var(--green)':r._prob>=50?'var(--amber)':'var(--red)'}">${r._prob||0}%</td>
+      <td>${r.ESTAGIO||'Lead'}</td>
+    </tr>`;
+  });
+  html+=`</table></div>`;`;
 
   document.getElementById('bruno-content').innerHTML=html;
+  document.getElementById('filter-cliente-bruno').addEventListener('keyup',()=>filterClientesBruno());
+  document.getElementById('filter-prob-bruno').addEventListener('change',()=>filterClientesBruno());
+}
+
+function filterClientesBruno(){
+  const cliente=document.getElementById('filter-cliente-bruno').value.toLowerCase();
+  const prob=parseInt(document.getElementById('filter-prob-bruno').value)||0;
+  document.querySelectorAll('.cliente-row-bruno').forEach(row=>{
+    const matchCliente=!cliente||row.dataset.cliente.includes(cliente);
+    const matchProb=!prob||parseInt(row.dataset.prob)>=prob;
+    row.style.display=matchCliente&&matchProb?'':'none';
+  });
 }
 
 // RENDER FELIPE
@@ -599,7 +695,6 @@ function renderFelipe(){
   const rows=DATA.base.filter(r=>r._vendor.includes('felipe'));
   const met=getMetricas(rows);
   const metaAnual=METAS.felipe;
-  const metaMensal=metaAnual/12;
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
@@ -609,8 +704,8 @@ function renderFelipe(){
   <div class="sec">📊 Meu Número</div>
   <div class="g4">
     <div class="kpi blue">
-      <div class="kpi-l">Meta/Mês</div>
-      <div class="kpi-v">${fK(metaMensal)}</div>
+      <div class="kpi-l">Meta Anual</div>
+      <div class="kpi-v">${fK(metaAnual)}</div>
     </div>
     <div class="kpi green">
       <div class="kpi-l">Realizado</div>
@@ -680,9 +775,52 @@ function renderFelipe(){
       <td><span class="status ${st}">${st==='critical'?'🔴 Parado':st==='warn'?'🟡 Atenção':'✓ OK'}</span></td>
     </tr>`;
   });
-  html+=`</table></div>`;
+  html+=`</table></div>
+
+  <!-- TODOS OS CLIENTES (FILTRO) -->
+  <div class="sec">📋 Todos os Clientes (Filtrados por Probabilidade)</div>
+  <div class="card">
+    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <input type="text" id="filter-cliente-felipe" placeholder="Buscar cliente..." style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem;width:200px">
+      <select id="filter-prob-felipe" style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem">
+        <option value="">Todas probabilidades</option>
+        <option value="90">Acima 90%</option>
+        <option value="75">Acima 75%</option>
+        <option value="50">Acima 50%</option>
+        <option value="0">Todas</option>
+      </select>
+    </div>
+    <table class="tbl" id="cliente-table-felipe">
+      <tr>
+        <th>Cliente</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob %</th>
+        <th>Estágio</th>
+      </tr>
+  `;
+  rows.sort((a,b)=>b._prob-a._prob).forEach(r=>{
+    html+=`<tr class="cliente-row-felipe" data-cliente="${r.CUSTOMER.toLowerCase()}" data-prob="${r._prob||0}">
+      <td><strong>${r.CUSTOMER}</strong></td>
+      <td class="num">${fK(r._val)}</td>
+      <td class="num" style="color:${r._prob>=75?'var(--green)':r._prob>=50?'var(--amber)':'var(--red)'}">${r._prob||0}%</td>
+      <td>${r.ESTAGIO||'Lead'}</td>
+    </tr>`;
+  });
+  html+=`</table></div>`;`;
 
   document.getElementById('felipe-content').innerHTML=html;
+  document.getElementById('filter-cliente-felipe').addEventListener('keyup',()=>filterClientesFelipe());
+  document.getElementById('filter-prob-felipe').addEventListener('change',()=>filterClientesFelipe());
+}
+
+function filterClientesFelipe(){
+  const cliente=document.getElementById('filter-cliente-felipe').value.toLowerCase();
+  const prob=parseInt(document.getElementById('filter-prob-felipe').value)||0;
+  document.querySelectorAll('.cliente-row-felipe').forEach(row=>{
+    const matchCliente=!cliente||row.dataset.cliente.includes(cliente);
+    const matchProb=!prob||parseInt(row.dataset.prob)>=prob;
+    row.style.display=matchCliente&&matchProb?'':'none';
+  });
 }
 
 // RENDER OPORTUNIDADES
