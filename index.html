@@ -324,25 +324,25 @@ function renderDiretoria(){
   <div class="sec">🎯 Vamos Bater a Meta?</div>
   <div class="g3">
     <div class="kpi ${status}">
-      <div class="kpi-l">Resposta</div>
+      <div class="kpi-l">Resposta Executiva</div>
       <div class="kpi-v" style="font-size:3rem;color:${status==='green'?'var(--green)':status==='amber'?'var(--amber)':'var(--red)'}">
         ${batemos}
       </div>
-      <div class="kpi-s">Forecast: ${fK(forecast)} vs Meta: ${fK(metTotal)}</div>
+      <div class="kpi-s">Forecast ${fK(forecast)} vs Meta ${fK(metTotal)}</div>
     </div>
     <div class="kpi">
       <div class="kpi-l">Gap Realista</div>
       <div class="kpi-v" style="color:${gap>0?'var(--green)':'var(--red)'}">
         ${gap>0?'+':''}${fK(gap)}
       </div>
-      <div class="kpi-s">${gap>0?'ACIMA':'ABAIXO'} da meta</div>
+      <div class="kpi-s">${gap>0?'✅ ACIMA':'❌ ABAIXO'} da meta</div>
     </div>
     <div class="kpi">
       <div class="kpi-l">Confiabilidade</div>
-      <div class="kpi-v" style="color:var(--${concentracao.pct>50?'red':concentracao.pct>30?'amber':'green'})">
-        ${(100-concentracao.pct).toFixed(0)}%
+      <div class="kpi-v" style="color:var(--${concentracao.pct>60?'red':concentracao.pct>40?'amber':'green'})">
+        ${concentracao.pct.toFixed(0)}%
       </div>
-      <div class="kpi-s">Diversificação (Top 5: ${concentracao.pct.toFixed(0)}%)</div>
+      <div class="kpi-s">${concentracao.pct>60?'🔴 ALTA concentração':concentracao.pct>40?'🟡 MÉDIA concentração':'🟢 BAIXA concentração'} (Top 5)</div>
     </div>
   </div>
 
@@ -624,11 +624,13 @@ function renderFechamentosChart(rows){
         legend:{
           display:true,
           position:'top',
+          align:'end',
           labels:{
             font:{weight:600,size:13},
-            padding:15,
+            padding:20,
             usePointStyle:true,
-            pointStyle:'circle'
+            pointStyle:'circle',
+            boxWidth:12
           }
         },
         datalabels:{
