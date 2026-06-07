@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 # Google Sheets export URLs (usam formato CSV público)
-SHEET_ID = "2PACX-1vTrkAsblLjOQi2CMC8pxjoGRyLHnxYoB5TV5nMTA3fUjdB_ehsudQGUaUnlACpcN6kRDfyVE19_ghnf"
+SHEET_ID = "1p5UOVF1Yt5MsovaVppEL-erOfu9GU6Yu0EA1Jj207fY"
 
 # IDs das abas (gid)
 ABAS = {
@@ -19,8 +19,7 @@ ABAS = {
 }
 
 def criar_url_csv(aba_id):
-    """Cria URL de export CSV do Google Sheets"""
-    return f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/pub?gid={aba_id}&single=true&output=csv"
+    return f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={aba_id}"
 
 def baixar_csv(url, arquivo_saida):
     """Baixa CSV do Google Sheets e salva localmente"""
