@@ -361,40 +361,42 @@ function renderDiretoria(){
     </div>
   </div>
 
-  <!-- BLOCO 3: VALOR EM RISCO (COM CLIENTES) -->
+  <!-- BLOCO 3: VALOR EM RISCO (COM CLIENTES DETALHADO) -->
   <div class="sec">⚠️ Valor em Risco (Detalhado)</div>
   <div class="card">
-    <div style="margin-bottom:16px">
-      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🟢 CONFIÁVEL (Prob > 60%)</strong></div>
-      <div style="background:var(--green-bg);border:1px solid var(--green);border-radius:6px;padding:12px;margin-bottom:12px">
-        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(metAll.ponderado)}</div>
+    <table class="tbl">
+      <tr>
+        <th>Categoria</th>
+        <th>Cliente</th>
+        <th>Vendedor</th>
+        <th class="num">Valor</th>
+        <th class="num">Prob</th>
+        <th>Status</th>
+      </tr>
   `;
-  rows.filter(r=>r._prob>=60).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
-    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  
+  // CONFIÁVEL (>60%)
+  const conf=rows.filter(r=>r._prob>=60).sort((a,b)=>b._val-a._val);
+  conf.slice(0,5).forEach((r,i)=>{
+    html+=`<tr><td>${i===0?'🟢<strong>Confiável (>60%)</strong>':''}${i===0?'<br>'+fK(conf.reduce((s,x)=>s+x._val,0)):''}`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status ok">✓</span></td></tr>`;
   });
-  html+=`</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🟡 EM RISCO (Prob 20-60%)</strong></div>
-      <div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:6px;padding:12px;margin-bottom:12px">
-        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(rows.filter(r=>r._prob>=20&&r._prob<60).reduce((s,r)=>s+r._val,0))}</div>
-  `;
-  rows.filter(r=>r._prob>=20&&r._prob<60).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
-    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  
+  // EM RISCO (20-60%)
+  const risco=rows.filter(r=>r._prob>=20&&r._prob<60).sort((a,b)=>b._val-a._val);
+  risco.slice(0,5).forEach((r,i)=>{
+    html+=`<tr><td>${i===0?'🟡<strong>Em Risco (20-60%)</strong>':''}${i===0?'<br>'+fK(risco.reduce((s,x)=>s+x._val,0)):''}`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status warn">⚠️</span></td></tr>`;
   });
-  html+=`</div>
-    </div>
-    <div>
-      <div style="font-size:.9rem;color:var(--text);margin-bottom:8px"><strong>🔴 MUITO RISCO (Prob < 20%)</strong></div>
-      <div style="background:var(--red-bg);border:1px solid var(--red);border-radius:6px;padding:12px">
-        <div style="font-weight:600;color:var(--text);margin-bottom:8px">${fK(rows.filter(r=>r._prob<20).reduce((s,r)=>s+r._val,0))}</div>
-  `;
-  rows.filter(r=>r._prob<20).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
-    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:4px">• ${r.CUSTOMER} (${fK(r._val)})</div>`;
+  
+  // MUITO RISCO (<20%)
+  const alto=rows.filter(r=>r._prob<20).sort((a,b)=>b._val-a._val);
+  alto.slice(0,5).forEach((r,i)=>{
+    html+=`<tr><td>${i===0?'🔴<strong>Muito Risco (<20%)</strong>':''}${i===0?'<br>'+fK(alto.reduce((s,x)=>s+x._val,0)):''}`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status critical">🔴</span></td></tr>`;
   });
-  html+=`</div>
-    </div>
-  </div>
+  
+  html+=`</table></div>
 
   <!-- BLOCO 4: TOP 5 BRUNO + TOP 5 FELIPE -->
   <div class="sec">🎯 Top 5 Projetos (Por Vendedor)</div>
@@ -429,45 +431,53 @@ function renderDiretoria(){
         <th>Período</th>
         <th class="num">Valor</th>
         <th class="num">%</th>
-        <th style="width:50%">Clientes Principais</th>
+        <th>Clientes Principais</th>
         <th>Status</th>
       </tr>
-      <tr>
-        <td><strong>0-30 dias</strong></td>
-        <td class="num">${fK(aging['0-30'])}</td>
-        <td class="num">${((aging['0-30']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
-        <td style="font-size:.8rem;color:var(--muted)">
-          ${rows.filter(r=>r._dias_sem_atualizar<=30).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')}
-        </td>
-        <td><span class="status ok">✓ OK</span></td>
-      </tr>
-      <tr>
-        <td><strong>31-60 dias</strong></td>
-        <td class="num">${fK(aging['31-60'])}</td>
-        <td class="num">${((aging['31-60']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
-        <td style="font-size:.8rem;color:var(--muted)">
-          ${rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
-        </td>
-        <td><span class="status warn">⚠️ Atenção</span></td>
-      </tr>
-      <tr>
-        <td><strong>61-90 dias</strong></td>
-        <td class="num">${fK(aging['61-90'])}</td>
-        <td class="num">${((aging['61-90']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
-        <td style="font-size:.8rem;color:var(--muted)">
-          ${rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
-        </td>
-        <td><span class="status warn">🔴 Crítico</span></td>
-      </tr>
-      <tr>
-        <td><strong>90+ dias</strong></td>
-        <td class="num">${fK(aging['90+'])}</td>
-        <td class="num">${((aging['90+']/(metAll.pipeline||1))*100).toFixed(0)}%</td>
-        <td style="font-size:.8rem;color:var(--muted)">
-          ${rows.filter(r=>r._dias_sem_atualizar>90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
-        </td>
-        <td><span class="status critical">🔴 REVISAR</span></td>
-      </tr>
+  `;
+  
+  const aging0_30=rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).reduce((s,r)=>s+r._val,0);
+  const aging31_60=rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce((s,r)=>s+r._val,0);
+  const aging61_90=rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce((s,r)=>s+r._val,0);
+  const aging90=rows.filter(r=>r._dias_sem_atualizar>90).reduce((s,r)=>s+r._val,0);
+  const totalAging=aging0_30+aging31_60+aging61_90+aging90;
+  
+  html+=`<tr>
+    <td><strong>0-30 dias</strong></td>
+    <td class="num">${fK(aging0_30)}</td>
+    <td class="num">${totalAging>0?((aging0_30/totalAging)*100).toFixed(0):'0'}%</td>
+    <td style="font-size:.8rem;color:var(--muted)">
+      ${rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+    </td>
+    <td><span class="status ok">✓ OK</span></td>
+  </tr>
+  <tr>
+    <td><strong>31-60 dias</strong></td>
+    <td class="num">${fK(aging31_60)}</td>
+    <td class="num">${totalAging>0?((aging31_60/totalAging)*100).toFixed(0):'0'}%</td>
+    <td style="font-size:.8rem;color:var(--muted)">
+      ${rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+    </td>
+    <td><span class="status warn">⚠️ Atenção</span></td>
+  </tr>
+  <tr>
+    <td><strong>61-90 dias</strong></td>
+    <td class="num">${fK(aging61_90)}</td>
+    <td class="num">${totalAging>0?((aging61_90/totalAging)*100).toFixed(0):'0'}%</td>
+    <td style="font-size:.8rem;color:var(--muted)">
+      ${rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+    </td>
+    <td><span class="status warn">🔴 Crítico</span></td>
+  </tr>
+  <tr>
+    <td><strong>90+ dias</strong></td>
+    <td class="num">${fK(aging90)}</td>
+    <td class="num">${totalAging>0?((aging90/totalAging)*100).toFixed(0):'0'}%</td>
+    <td style="font-size:.8rem;color:var(--muted)">
+      ${rows.filter(r=>r._dias_sem_atualizar>90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+    </td>
+    <td><span class="status critical">🔴 REVISAR</span></td>
+  </tr>
     </table>
   </div>
 
@@ -502,10 +512,11 @@ function renderDiretoria(){
 function renderBruno(){
   const rows=DATA.base.filter(r=>r._vendor.includes('bruno'));
   const met=getMetricas(rows);
-  const meta=METAS.bruno;
-  const cobertura=met.pipeline/meta;
+  const metaAnual=METAS.bruno;
+  const metaMensal=metaAnual/12;
+  const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
-  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,5);
+  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
   
   let html=`
   <!-- MEU NÚMERO -->
@@ -513,7 +524,7 @@ function renderBruno(){
   <div class="g4">
     <div class="kpi blue">
       <div class="kpi-l">Meta/Mês</div>
-      <div class="kpi-v">${fK(meta/12)}</div>
+      <div class="kpi-v">${fK(metaMensal)}</div>
     </div>
     <div class="kpi green">
       <div class="kpi-l">Realizado</div>
@@ -526,7 +537,7 @@ function renderBruno(){
     </div>
     <div class="kpi amber">
       <div class="kpi-l">Gap</div>
-      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-meta)}</div>
+      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-metaAnual)}</div>
     </div>
   </div>
 
@@ -554,8 +565,8 @@ function renderBruno(){
   
   html+=`</div>
 
-  <!-- TOP 5 DEALS -->
-  <div class="sec">🎯 Top 5 Deals (Meu Foco)</div>
+  <!-- TOP 10 DEALS -->
+  <div class="sec">🎯 Top 10 Deals (Meu Foco)</div>
   <div class="card">
     <table class="tbl">
       <tr>
@@ -566,7 +577,7 @@ function renderBruno(){
         <th>Status</th>
       </tr>
   `;
-  oppsTop.forEach(r=>{
+  oppsTop.slice(0,10).forEach(r=>{
     const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'-';
     const dias=r._dias_sem_atualizar;
     const st=dias>30?'critical':dias>20?'warn':'ok';
@@ -587,10 +598,11 @@ function renderBruno(){
 function renderFelipe(){
   const rows=DATA.base.filter(r=>r._vendor.includes('felipe'));
   const met=getMetricas(rows);
-  const meta=METAS.felipe;
-  const cobertura=met.pipeline/meta;
+  const metaAnual=METAS.felipe;
+  const metaMensal=metaAnual/12;
+  const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
-  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,5);
+  const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
   
   let html=`
   <!-- MEU NÚMERO -->
@@ -598,7 +610,7 @@ function renderFelipe(){
   <div class="g4">
     <div class="kpi blue">
       <div class="kpi-l">Meta/Mês</div>
-      <div class="kpi-v">${fK(meta/12)}</div>
+      <div class="kpi-v">${fK(metaMensal)}</div>
     </div>
     <div class="kpi green">
       <div class="kpi-l">Realizado</div>
@@ -611,13 +623,13 @@ function renderFelipe(){
     </div>
     <div class="kpi ${cobertura<1.5?'red':'amber'}">
       <div class="kpi-l">Gap</div>
-      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-meta)}</div>
+      <div class="kpi-v" style="color:${cobertura>=2?'var(--green)':'var(--red)'}">${fK(met.pipeline-metaAnual)}</div>
     </div>
   </div>
 
   <!-- ALERTA CRÍTICO -->
-  ${cobertura<1.5?`<div class="alert"><strong>🔴 CRÍTICO: Abaixo da meta</strong><br>Pipeline: ${fK(met.pipeline)} vs Meta: ${fK(meta)}<br>Ação: Suporte diretoria + novos leads HOJE</div>`:''}
-
+  ${cobertura<1.5?`<div class="alert"><strong>🔴 CRÍTICO: Abaixo da meta</strong><br>Pipeline: ${fK(met.pipeline)} vs Meta: ${fK(metaAnual)}<br>Ação: Suporte diretoria + novos leads HOJE</div>`:''}
+  
   <!-- O QUE FAZER HOJE -->
   <div class="sec">⚡ O Que Fazer Hoje?</div>
   <div class="card">
@@ -644,8 +656,8 @@ function renderFelipe(){
   
   html+=`</div>
 
-  <!-- TOP 5 DEALS -->
-  <div class="sec">🎯 Top 5 Deals (Seu Foco)</div>
+  <!-- TOP 10 DEALS -->
+  <div class="sec">🎯 Top 10 Deals (Seu Foco)</div>
   <div class="card">
     <table class="tbl">
       <tr>
@@ -656,7 +668,7 @@ function renderFelipe(){
         <th>Status</th>
       </tr>
   `;
-  oppsTop.forEach(r=>{
+  oppsTop.slice(0,10).forEach(r=>{
     const dataF=r._fechamento?r._fechamento.toLocaleDateString('pt-BR'):'-';
     const dias=r._dias_sem_atualizar;
     const st=dias>30?'critical':dias>20?'warn':'ok';
