@@ -1,4 +1,3 @@
-```python
 #!/usr/bin/env python3
 """
 Script para atualizar dados do Google Sheets automaticamente
