@@ -1,1 +1,62 @@
+```yaml
+name: 📊 Atualizar Dados Google Sheets
+
+on:
+  # Roda a cada 6 horas (4x por dia)
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # Roda manualmente (botão no GitHub)
+  workflow_dispatch:
+  
+  # Roda quando há push no main
+  push:
+    branches:
+      - main
+    paths:
+      - 'atualizar_dados_auto.py'
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Clonar repositório
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: 📊 Baixar dados do Google Sheets
+        run: python3 atualizar_dados_auto.py
+      
+      - name: 📝 Verificar mudanças
+        id: verify
+        run: |
+          if git diff --quiet base-geral.csv snapshot.csv; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 🚀 Fazer commit e push
+        if: steps.verify.outputs.changed == 'true'
+        run: |
+          git config --local user.email "bot@github.com"
+          git config --local user.name "GitHub Bot"
+          git add base-geral.csv snapshot.csv
+          git commit -m "🔄 Dados atualizados automaticamente - $(date '+%Y-%m-%d %H:%M')"
+          git push
+      
+      - name: ✅ Sucesso - Dados atualizados
+        if: steps.verify.outputs.changed == 'true'
+        run: echo "📊 Dados atualizados com sucesso em $(date '+%Y-%m-%d %H:%M:%S')"
+      
+      - name: ℹ️ Sem mudanças
+        if: steps.verify.outputs.changed == 'false'
+        run: echo "ℹ️ Nenhuma mudança nos dados"
 
