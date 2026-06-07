@@ -381,13 +381,13 @@ function renderDiretoria(){
   <!-- BLOCO 2B: GRÁFICO DE FECHAMENTOS ESPERADOS (MÊS A MÊS) -->
   <div class="sec">📈 Previsão de Fechamentos (Mês a Mês)</div>
   <div class="card">
-    <canvas id="chart-fechamentos" style="max-height:500px;margin-bottom:20px"></canvas>
+    <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
   </div>
 
   <!-- BLOCO 2C: GRÁFICO DE PEDIDOS GANHOS (MÊS A MÊS) -->
   <div class="sec">📦 Pedidos Ganhos (Mês a Mês)</div>
   <div class="card">
-    <canvas id="chart-ganhos" style="max-height:500px;margin-bottom:20px"></canvas>
+    <canvas id="chart-ganhos" style="max-height:300px;margin-bottom:20px"></canvas>
   </div>
 
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
@@ -635,8 +635,8 @@ function renderFechamentosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:13},
-            offset:8,
+            font:{weight:'bold',size:11},
+            offset:4,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -651,8 +651,8 @@ function renderFechamentosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:13},
-            offset:8,
+            font:{weight:'bold',size:11},
+            offset:4,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -776,8 +776,8 @@ function renderGanhosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:13},
-            offset:8,
+            font:{weight:'bold',size:11},
+            offset:4,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -792,8 +792,8 @@ function renderGanhosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:13},
-            offset:8,
+            font:{weight:'bold',size:11},
+            offset:4,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
