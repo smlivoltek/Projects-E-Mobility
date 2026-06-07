@@ -257,6 +257,7 @@ function normalize(){
     r._vendor=(r.VENDEDOR||'').toLowerCase();
     r._fechamento=parseData(r['DATA DE FECHAMENTO']||'');
     r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    r._dataGanho=parseData(r['DATA DE GANHO']||''); // 🆕 Coluna AF
     r._dias_sem_atualizar=diasDesde(r._atualizacao);
     r._dias_ate_fechamento=diasAte(r._fechamento);
   });
@@ -672,15 +673,18 @@ function renderGanhosChart(rows){
   const anoAtual=agora.getFullYear();
   
   rows.forEach(r=>{
-    // Filtrar apenas pedidos com STATUS = "Ganhou", "Ganho", etc (mais robusto)
+    // 🔧 Filtrar APENAS quando:
+    // 1. STATUS = "Ganho" ou "Ganhou"
+    // 2. DATA DE GANHO preenchida (coluna AF)
     const status=(r.STATUS||'').toLowerCase().trim();
-    if(!status.includes('ganh'))return; // Captura: Ganhou, Ganho, GANHO, ganho, etc
+    if(!status.includes('ganh'))return; // STATUS deve incluir "ganh"
     
-    if(!r._fechamento)return;
-    const mes=r._fechamento.getMonth();
-    const ano=r._fechamento.getFullYear();
+    if(!r._dataGanho)return; // DATA DE GANHO deve estar preenchida
+    
+    const mes=r._dataGanho.getMonth();
+    const ano=r._dataGanho.getFullYear();
     if(ano===anoAtual){
-      const valor=(r._val||0); // 🔧 CORRIGIDO: Usar _val (valor real) e não _ponderado
+      const valor=(r._val||0);
       if(r._vendor.includes('bruno')){
         ganhosBruno[mes]+=valor;
       } else if(r._vendor.includes('felipe')){
