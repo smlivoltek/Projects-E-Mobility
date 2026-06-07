@@ -257,7 +257,16 @@ function normalize(){
     r._vendor=(r.VENDEDOR||'').toLowerCase();
     r._fechamento=parseData(r['DATA DE FECHAMENTO']||'');
     r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
-    r._dataGanho=parseData(r['DATA DE GANHO']||''); // 🆕 Coluna AF
+    
+    // 🔧 Procurar DATA DE GANHO com diferentes variações de nome
+    let dataGanho = r['DATA DE GANHO'] || 
+                    r['Data de Ganho'] || 
+                    r['DATA_DE_GANHO'] ||
+                    r['Data_de_Ganho'] ||
+                    r['data de ganho'] ||
+                    '';
+    r._dataGanho=parseData(dataGanho);
+    
     r._dias_sem_atualizar=diasDesde(r._atualizacao);
     r._dias_ate_fechamento=diasAte(r._fechamento);
   });
@@ -672,15 +681,35 @@ function renderGanhosChart(rows){
   const agora=new Date();
   const anoAtual=agora.getFullYear();
   
+  let debugCount=0;
+  let debugFiltrados=[];
+  
   rows.forEach(r=>{
     // 🔧 Filtrar APENAS quando:
     // 1. STATUS = "Ganho" ou "Ganhou"
     // 2. DATA DE GANHO preenchida (coluna AF)
     const status=(r.STATUS||'').toLowerCase().trim();
+    
+    // DEBUG
+    if(status.includes('ganh')){
+      debugFiltrados.push({
+        customer: r.CUSTOMER,
+        status: r.STATUS,
+        dataGanho: r['DATA DE GANHO'],
+        dataGanhoParseada: r._dataGanho,
+        vendor: r._vendor,
+        valor: r._val
+      });
+    }
+    
     if(!status.includes('ganh'))return; // STATUS deve incluir "ganh"
     
-    if(!r._dataGanho)return; // DATA DE GANHO deve estar preenchida
+    if(!r._dataGanho){
+      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO vazia (${r['DATA DE GANHO']})`);
+      return;
+    }
     
+    debugCount++;
     const mes=r._dataGanho.getMonth();
     const ano=r._dataGanho.getFullYear();
     if(ano===anoAtual){
@@ -692,6 +721,10 @@ function renderGanhosChart(rows){
       }
     }
   });
+  
+  console.log('🔍 DEBUG GANHOS:');
+  console.log('Registros com STATUS=Ganho:', debugFiltrados);
+  console.log('Registros processados:', debugCount);
   
   const ctx=document.getElementById('chart-ganhos');
   if(!ctx||!window.Chart)return;
