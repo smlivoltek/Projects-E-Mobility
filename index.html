@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>E-Mobility CRM Dashboard | Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -528,34 +528,12 @@ function renderTimeline(rows){
   let html=`
   <div class="card">
     <div class="card-t">📊 Fechamentos Esperados por Mês</div>
-    <table class="tbl" style="font-size:.85rem;margin-bottom:20px">
-      <tr>
-        <th>Mês</th>
-        <th class="num">Bruno (R$)</th>
-        <th class="num">Felipe (R$)</th>
-        <th class="num">Total</th>
-      </tr>
-  `;
-  
-  for(let i=0;i<12;i++){
-    const data=byMes[i]||{bruno:0,felipe:0,total:0};
-    if(data.total>0){
-      html+=`<tr>
-        <td><strong>${meses[i]}</strong></td>
-        <td class="num" style="color:var(--blue)">${fK(data.bruno)}</td>
-        <td class="num" style="color:var(--green)">${fK(data.felipe)}</td>
-        <td class="num" style="font-weight:600">${fK(data.total)}</td>
-      </tr>`;
-    }
-  }
-  html+=`
-    </table>
-    <div style="position:relative;height:340px;margin-top:24px">
+    <div style="position:relative;height:360px;margin-top:24px">
       <canvas id="timeline-chart"></canvas>
     </div>
     <div style="display:flex;gap:20px;font-size:.75rem;margin-top:16px;padding:12px;background:var(--s2);border-radius:6px;justify-content:center;flex-wrap:wrap">
-      <div><span style="display:inline-block;width:14px;height:14px;background:var(--blue);border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Bruno</strong></div>
-      <div><span style="display:inline-block;width:14px;height:14px;background:var(--green);border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Felipe</strong></div>
+      <div><span style="display:inline-block;width:14px;height:14px;background:#3B82F6;border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Bruno</strong></div>
+      <div><span style="display:inline-block;width:14px;height:14px;background:#10B981;border-radius:3px;margin-right:6px;vertical-align:middle"></span><strong>Felipe</strong></div>
     </div>
   </div>`;
 
@@ -565,6 +543,8 @@ function renderTimeline(rows){
   setTimeout(()=>{
     const ctx=document.getElementById('timeline-chart');
     if(!ctx)return;
+    
+    Chart.register(ChartDataLabels);
     
     new Chart(ctx,{
       type:'bar',
@@ -595,6 +575,13 @@ function renderTimeline(rows){
         responsive:true,
         maintainAspectRatio:false,
         plugins:{
+          datalabels:{
+            anchor:'end',
+            align:'top',
+            font:{size:11,weight:'bold',family:"'Plus Jakarta Sans',sans-serif"},
+            color:'#1F2937',
+            formatter:function(val){return 'R$ '+val.toFixed(1)+'M'}
+          },
           legend:{
             position:'bottom',
             labels:{
