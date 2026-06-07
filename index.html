@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>E-Mobility CRM Dashboard | Livoltek</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=IBM+Plex+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -556,14 +556,7 @@ function renderTimeline(rows){
             borderColor:'#3B82F6',
             borderWidth:0,
             borderRadius:4,
-            barPercentage:0.8,
-            datalabels:{
-              anchor:'end',
-              align:'top',
-              font:{weight:'bold',size:11},
-              color:'#1F2937',
-              formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
-            }
+            barPercentage:0.8
           },
           {
             label:'Felipe',
@@ -572,14 +565,7 @@ function renderTimeline(rows){
             borderColor:'#10B981',
             borderWidth:0,
             borderRadius:4,
-            barPercentage:0.8,
-            datalabels:{
-              anchor:'end',
-              align:'top',
-              font:{weight:'bold',size:11},
-              color:'#1F2937',
-              formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
-            }
+            barPercentage:0.8
           }
         ]
       },
@@ -587,14 +573,6 @@ function renderTimeline(rows){
         responsive:true,
         maintainAspectRatio:false,
         plugins:{
-          datalabels:{
-            display:true,
-            anchor:'end',
-            align:'top',
-            font:{weight:'bold',size:11,family:"'Plus Jakarta Sans',sans-serif"},
-            color:'#1F2937',
-            formatter:function(val){return val>0?'R$ '+val.toFixed(1)+'M':''}
-          },
           legend:{
             position:'bottom',
             labels:{
@@ -625,7 +603,7 @@ function renderTimeline(rows){
         scales:{
           y:{
             beginAtZero:true,
-            grace:'15%',
+            grace:'20%',
             grid:{
               color:'#E5E7EB',
               drawBorder:false,
@@ -648,8 +626,7 @@ function renderTimeline(rows){
             }
           }
         }
-      },
-      plugins:[ChartDataLabels]
+      }
     });
   },100);
 }
