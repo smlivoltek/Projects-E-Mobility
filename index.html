@@ -381,13 +381,13 @@ function renderDiretoria(){
   <!-- BLOCO 2B: GRÁFICO DE FECHAMENTOS ESPERADOS (MÊS A MÊS) -->
   <div class="sec">📈 Previsão de Fechamentos (Mês a Mês)</div>
   <div class="card">
-    <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
+    <canvas id="chart-fechamentos" style="max-height:500px;margin-bottom:20px"></canvas>
   </div>
 
   <!-- BLOCO 2C: GRÁFICO DE PEDIDOS GANHOS (MÊS A MÊS) -->
   <div class="sec">📦 Pedidos Ganhos (Mês a Mês)</div>
   <div class="card">
-    <canvas id="chart-ganhos" style="max-height:300px;margin-bottom:20px"></canvas>
+    <canvas id="chart-ganhos" style="max-height:500px;margin-bottom:20px"></canvas>
   </div>
 
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
@@ -635,7 +635,8 @@ function renderFechamentosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:11},
+            font:{weight:'bold',size:13},
+            offset:8,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -650,7 +651,8 @@ function renderFechamentosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:11},
+            font:{weight:'bold',size:13},
+            offset:8,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -682,11 +684,15 @@ function renderFechamentosChart(rows){
       scales:{
         x:{
           stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
           grid:{display:false}
         },
         y:{
           beginAtZero:true,
           stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
           ticks:{callback:v=>'R$ '+(v/1000).toFixed(1)+'K'},
           grid:{drawBorder:false,color:'#F3F4F6'}
         }
@@ -770,7 +776,8 @@ function renderGanhosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:11},
+            font:{weight:'bold',size:13},
+            offset:8,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -785,7 +792,8 @@ function renderGanhosChart(rows){
           borderRadius:4,
           datalabels:{
             color:'#1F2937',
-            font:{weight:'bold',size:11},
+            font:{weight:'bold',size:13},
+            offset:8,
             anchor:'end',
             align:'top',
             formatter:(value)=>formatarValor(value)
@@ -817,11 +825,15 @@ function renderGanhosChart(rows){
       scales:{
         x:{
           stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
           grid:{display:false}
         },
         y:{
           beginAtZero:true,
           stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
           ticks:{callback:v=>'R$ '+(v/1000).toFixed(1)+'K'},
           grid:{drawBorder:false,color:'#F3F4F6'}
         }
