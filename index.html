@@ -145,7 +145,7 @@ const URLS = {
   snapshotRemote: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/pub?gid=202441246&single=true&output=csv`
 };
 
-let DATA = {base: [], snapshot: []};
+let DATA = {base: [], snapshot: [], snapshotByOpportunity: {}};
 
 // UTILIDADES
 function fK(n){if(!n)return'R$ 0,00';return formatarValor(n)}
@@ -186,6 +186,27 @@ async function loadData(){
     
     DATA.base = Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
     if(DATA.base.length===0)throw new Error('Sem registros válidos');
+    
+    // 🔄 CARREGAR SNAPSHOT
+    console.log('Carregando snapshot...');
+    let snapshotTxt;
+    try{
+      const res = await fetch(URLS.snapshot, {method:'GET'});
+      if(!res.ok)throw new Error('Arquivo local snapshot não encontrado');
+      snapshotTxt = await res.text();
+    }catch(e){
+      console.warn('Snapshot local falhou, tentando URL remota:', e.message);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(URLS.snapshotRemote, {signal: controller.signal});
+      clearTimeout(timeoutId);
+      snapshotTxt = await res.text();
+    }
+    
+    if(snapshotTxt && snapshotTxt.length > 100){
+      DATA.snapshot = Papa.parse(snapshotTxt, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+      console.log('Snapshot carregado:', DATA.snapshot.length, 'registros');
+    }
     
     normalize();
     renderAll();
@@ -292,6 +313,65 @@ function normalize(){
     r._dias_sem_atualizar=diasDesde(r._atualizacao);
     r._dias_ate_fechamento=diasAte(r._fechamento);
   });
+  
+  // 🔄 Processar SNAPSHOT para extrair última/penúltima atualização por oportunidade
+  processSnapshotData();
+}
+
+// 🔄 Processar SNAPSHOT
+function processSnapshotData(){
+  if(!DATA.snapshot || DATA.snapshot.length === 0) {
+    console.log('⚠️ Snapshot vazio ou não carregado');
+    return;
+  }
+  
+  // Agrupar por ID_OPORTUNIDADE
+  const byOpportunity = {};
+  
+  DATA.snapshot.forEach(r => {
+    const oppId = r['ID_OPORTUNIDADE'] || r['ID da oportunidade'] || '';
+    if(!oppId) return;
+    
+    // Processar valores
+    r._val = parseBRL(
+      r[' TOTAL NET LVK (R$) '] ||
+      r['TOTAL NET LVK (R$)'] ||
+      r[' TOTAL NET (R$) '] ||
+      r['TOTAL NET (R$)'] ||
+      '0'
+    );
+    
+    r._vendor = (r['VENDEDOR'] || '').toLowerCase();
+    r._atualizacao = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || '');
+    r._status = (r['STATUS'] || '').trim();
+    
+    // Agrupar
+    if(!byOpportunity[oppId]) {
+      byOpportunity[oppId] = [];
+    }
+    byOpportunity[oppId].push(r);
+  });
+  
+  // Para cada oportunidade, ordenar por data e pegar última + penúltima
+  DATA.snapshotByOpportunity = {};
+  
+  Object.keys(byOpportunity).forEach(oppId => {
+    const records = byOpportunity[oppId];
+    
+    // Ordenar por data descrescente
+    records.sort((a, b) => {
+      const dateA = a._atualizacao || new Date(0);
+      const dateB = b._atualizacao || new Date(0);
+      return dateB - dateA;
+    });
+    
+    DATA.snapshotByOpportunity[oppId] = {
+      latest: records[0],
+      previous: records[1] || null
+    };
+  });
+  
+  console.log('✅ Snapshot processado:', Object.keys(DATA.snapshotByOpportunity).length, 'oportunidades únicas');
 }
 
 // MÉTRICAS
@@ -708,63 +788,46 @@ function renderFechamentosChart(rows){
 }
 
 function renderGanhosChart(rows){
-  // Calcular pedidos ganhos por mês POR VENDEDOR
+  // Usar SNAPSHOT para dados completos com histórico
+  const snapshotRows = DATA.snapshot || [];
+  
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const ganhosBruno=[0,0,0,0,0,0,0,0,0,0,0,0];
   const ganhosFelipe=[0,0,0,0,0,0,0,0,0,0,0,0];
   const agora=new Date();
   const anoAtual=agora.getFullYear();
   
-  // 🔍 DEBUG: Mostrar todos os STATUS únicos no arquivo
-  const statusUnicos=new Set();
-  rows.forEach(r=>{
-    const status=(r.STATUS||'').trim();
-    if(status) statusUnicos.add(`"${status}"`);
-  });
-  console.log('📋 TODOS OS STATUS NO ARQUIVO:', Array.from(statusUnicos).join(', '));
-  
-  // 🔍 DEBUG: Mostrar linhas com STATUS que contem "ganh"
-  const statusGanho=rows.filter(r=>(r.STATUS||'').toLowerCase().includes('ganh'));
-  console.log('📊 REGISTROS COM STATUS CONTENDO "GANH":', statusGanho.length);
-  statusGanho.forEach(r=>{
-    console.log(`  - ${r.CUSTOMER}: STATUS="${r.STATUS}" | DATA DE GANHO="${r['DATA DE GANHO']}" | PARSEADA=${r._dataGanho}`);
-  });
-  
-  let debugCount=0;
-  
-  rows.forEach(r=>{
+  snapshotRows.forEach(r=>{
     const status=(r.STATUS||'').toLowerCase().trim();
-    
     if(!status.includes('ganh'))return;
     
-    if(!r._dataGanho){
-      console.log(`❌ ${r.CUSTOMER}: DATA DE GANHO não parseada!`);
-      return;
-    }
+    const dataAtualiz = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || '');
+    if(!dataAtualiz) return;
     
-    debugCount++;
-    const mes=r._dataGanho.getMonth();
-    const ano=r._dataGanho.getFullYear();
+    const mes = dataAtualiz.getMonth();
+    const ano = dataAtualiz.getFullYear();
     
-    console.log(`✅ ${r.CUSTOMER}: _val=${r._val} | Mês=${mes} | Ano=${ano} | AnoAtual=${anoAtual}`);
+    const valor = parseBRL(
+      r[' TOTAL NET LVK (R$) '] ||
+      r['TOTAL NET LVK (R$)'] ||
+      r[' TOTAL NET (R$) '] ||
+      r['TOTAL NET (R$)'] ||
+      '0'
+    );
     
-    if(ano===anoAtual){
-      const valor=(r._val||0);
-      console.log(`   → Adicionando R$ ${valor} ao mês ${mes}`);
-      if(r._vendor.includes('bruno')){
-        ganhosBruno[mes]+=valor;
-      } else if(r._vendor.includes('felipe')){
-        ganhosFelipe[mes]+=valor;
+    if(ano === anoAtual){
+      const vendor = (r.VENDEDOR || '').toLowerCase();
+      if(vendor.includes('bruno')){
+        ganhosBruno[mes] += valor;
+      } else if(vendor.includes('felipe')){
+        ganhosFelipe[mes] += valor;
       }
     }
   });
   
-  console.log('✅ Registros processados:', debugCount);
-  
   const ctx=document.getElementById('chart-ganhos');
   if(!ctx||!window.Chart)return;
   
-  // Manter dados em REAIS (não converter para milhões)
   const brunoReais=ganhosBruno;
   const felipeReais=ganhosFelipe;
   
@@ -849,31 +912,39 @@ function renderGanhosChart(rows){
 }
 
 function renderPerdidosChart(rows){
-  // Calcular pedidos perdidos por mês POR VENDEDOR
+  // Usar SNAPSHOT para dados completos com histórico
+  const snapshotRows = DATA.snapshot || [];
+  
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const perdidosBruno=[0,0,0,0,0,0,0,0,0,0,0,0];
   const perdidosFelipe=[0,0,0,0,0,0,0,0,0,0,0,0];
   const agora=new Date();
   const anoAtual=agora.getFullYear();
   
-  rows.forEach(r=>{
+  snapshotRows.forEach(r=>{
     const status=(r.STATUS||'').toLowerCase().trim();
-    
     if(!status.includes('perd'))return;
     
-    if(!r._dataGanho){
-      return;
-    }
+    const dataAtualiz = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || '');
+    if(!dataAtualiz) return;
     
-    const mes=r._dataGanho.getMonth();
-    const ano=r._dataGanho.getFullYear();
+    const mes = dataAtualiz.getMonth();
+    const ano = dataAtualiz.getFullYear();
     
-    if(ano===anoAtual){
-      const valor=(r._val||0);
-      if(r._vendor.includes('bruno')){
-        perdidosBruno[mes]+=valor;
-      } else if(r._vendor.includes('felipe')){
-        perdidosFelipe[mes]+=valor;
+    const valor = parseBRL(
+      r[' TOTAL NET LVK (R$) '] ||
+      r['TOTAL NET LVK (R$)'] ||
+      r[' TOTAL NET (R$) '] ||
+      r['TOTAL NET (R$)'] ||
+      '0'
+    );
+    
+    if(ano === anoAtual){
+      const vendor = (r.VENDEDOR || '').toLowerCase();
+      if(vendor.includes('bruno')){
+        perdidosBruno[mes] += valor;
+      } else if(vendor.includes('felipe')){
+        perdidosFelipe[mes] += valor;
       }
     }
   });
@@ -1318,10 +1389,11 @@ function filterClientesFelipe(){
 
 // RENDER OPORTUNIDADES
 function renderOportunidades(){
-  const rows=DATA.base.filter(r=>r.CUSTOMER);
+  // Filtrar apenas oportunidades que NÃO estão Ganho ou Perdido
+  const rows=DATA.base.filter(r=>r.CUSTOMER && !['ganhou','perdida'].includes((r.STATUS||'').toLowerCase()));
   let html=`
   <div class="card">
-    <div class="card-t">📋 Todas as Oportunidades</div>
+    <div class="card-t">📋 Todas as Oportunidades (Ativas)</div>
     <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
       <input type="text" id="filter-cliente" placeholder="Buscar cliente..." style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem;width:200px">
       <select id="filter-vendedor" style="padding:8px;border:1px solid var(--brd);border-radius:6px;font-size:.85rem">
