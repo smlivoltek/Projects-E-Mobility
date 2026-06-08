@@ -390,6 +390,11 @@ function renderDiretoria(){
     <canvas id="chart-ganhos" style="max-height:300px;margin-bottom:20px"></canvas>
   </div>
 
+  <div style="background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;border:1px solid #E5E7EB">
+    <h3 style="color:#111;font-size:14px;font-weight:600;margin-bottom:15px">🔴 PEDIDOS PERDIDOS (MÊS A MÊS)</h3>
+    <canvas id="chart-perdidos" style="max-height:300px;margin-bottom:20px"></canvas>
+  </div>
+
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
     <div class="card">
@@ -584,6 +589,7 @@ function renderDiretoria(){
   setTimeout(()=>{
     renderFechamentosChart(rows);
     renderGanhosChart(rows);
+    renderPerdidosChart(rows);
   },100);
 }
 
@@ -796,6 +802,123 @@ function renderGanhosChart(rows){
             offset:2,
             anchor:'end',
             align:'top',
+            formatter:(value)=>formatarValor(value)
+          }
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      indexAxis:'x',
+      plugins:{
+        legend:{
+          display:true,
+          position:'top',
+          align:'end',
+          labels:{
+            font:{weight:600,size:13},
+            padding:20,
+            usePointStyle:true,
+            pointStyle:'circle',
+            boxWidth:12
+          }
+        },
+        datalabels:{
+          display:true
+        }
+      },
+      scales:{
+        x:{
+          stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
+          grid:{display:false}
+        },
+        y:{
+          beginAtZero:true,
+          stacked:false,
+          categoryPercentage:0.7,
+          barPercentage:0.8,
+          ticks:{callback:v=>'R$ '+(v/1000).toFixed(1)+'K'},
+          grid:{drawBorder:false,color:'#F3F4F6'}
+        }
+      }
+    }
+  });
+}
+
+function renderPerdidosChart(rows){
+  // Calcular pedidos perdidos por mês POR VENDEDOR
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const perdidosBruno=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const perdidosFelipe=[0,0,0,0,0,0,0,0,0,0,0,0];
+  const agora=new Date();
+  const anoAtual=agora.getFullYear();
+  
+  rows.forEach(r=>{
+    const status=(r.STATUS||'').toLowerCase().trim();
+    
+    if(!status.includes('perd'))return;
+    
+    if(!r._dataGanho){
+      return;
+    }
+    
+    const mes=r._dataGanho.getMonth();
+    const ano=r._dataGanho.getFullYear();
+    
+    if(ano===anoAtual){
+      const valor=(r._val||0);
+      if(r._vendor.includes('bruno')){
+        perdidosBruno[mes]+=valor;
+      } else if(r._vendor.includes('felipe')){
+        perdidosFelipe[mes]+=valor;
+      }
+    }
+  });
+  
+  // Manter dados em REAIS (não converter para milhões)
+  const brunoReais=perdidosBruno;
+  const felipeReais=perdidosFelipe;
+  
+  const ctx=document.getElementById('chart-perdidos');
+  if(!ctx||!window.Chart)return;
+  
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:meses,
+      datasets:[
+        {
+          label:'Bruno Reis',
+          data:brunoReais,
+          backgroundColor:'#3B82F6',
+          borderColor:'#3B82F6',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:9},
+            anchor:'end',
+            align:'top',
+            offset:2,
+            formatter:(value)=>formatarValor(value)
+          }
+        },
+        {
+          label:'Felipe Hanke',
+          data:felipeReais,
+          backgroundColor:'#10B981',
+          borderColor:'#10B981',
+          borderWidth:1,
+          borderRadius:4,
+          datalabels:{
+            color:'#1F2937',
+            font:{weight:'bold',size:9},
+            anchor:'end',
+            align:'top',
+            offset:2,
             formatter:(value)=>formatarValor(value)
           }
         }
