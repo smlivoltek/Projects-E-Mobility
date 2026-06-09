@@ -409,6 +409,113 @@ function getOppsCriticas(rows){
   return rows.filter(r=>r._val>0).sort((a,b)=>b._val-a._val).slice(0,5);
 }
 
+// 🔄 CALCULAR COMPARATIVO COM SNAPSHOT (ÚLTIMA VS PENÚLTIMA ATUALIZAÇÃO)
+function getComparativoSnapshot(vendor){
+  const oppsByVendor = Object.values(DATA.snapshotByOpportunity);
+  
+  // Filtrar por vendedor se especificado
+  const filtered = vendor ? 
+    oppsByVendor.filter(opp => {
+      const latestVendor = (opp.latest?.VENDEDOR || '').toLowerCase();
+      return latestVendor.includes(vendor.toLowerCase());
+    }) : 
+    oppsByVendor;
+  
+  // Calcular para AGORA (latest)
+  const agora = {
+    pipeline: 0,
+    ganhos: 0,
+    ganhos_valor: 0,
+    perdidos: 0,
+    perdidos_valor: 0,
+    clientes_novos: 0
+  };
+  
+  // Calcular para ANTERIOR (previous)
+  const anterior = {
+    pipeline: 0,
+    ganhos: 0,
+    ganhos_valor: 0,
+    perdidos: 0,
+    perdidos_valor: 0
+  };
+  
+  filtered.forEach(opp => {
+    const latest = opp.latest;
+    const previous = opp.previous;
+    
+    if(!latest) return;
+    
+    // AGORA (Latest)
+    const valorLatest = parseBRL(
+      latest[' TOTAL NET LVK (R$) '] ||
+      latest['TOTAL NET LVK (R$)'] ||
+      latest[' TOTAL NET (R$) '] ||
+      latest['TOTAL NET (R$)'] ||
+      '0'
+    );
+    
+    const statusLatest = (latest.STATUS || '').toLowerCase().trim();
+    
+    if(!statusLatest.includes('ganh') && !statusLatest.includes('perd')) {
+      agora.pipeline += valorLatest;
+    }
+    
+    if(statusLatest.includes('ganh')) {
+      agora.ganhos += 1;
+      agora.ganhos_valor += valorLatest;
+    }
+    
+    if(statusLatest.includes('perd')) {
+      agora.perdidos += 1;
+      agora.perdidos_valor += valorLatest;
+    }
+    
+    // Cliente novo? (sem penúltima atualização)
+    if(!previous) {
+      agora.clientes_novos += 1;
+    }
+    
+    // ANTERIOR (Previous)
+    if(previous) {
+      const valorPrevious = parseBRL(
+        previous[' TOTAL NET LVK (R$) '] ||
+        previous['TOTAL NET LVK (R$)'] ||
+        previous[' TOTAL NET (R$) '] ||
+        previous['TOTAL NET (R$)'] ||
+        '0'
+      );
+      
+      const statusPrevious = (previous.STATUS || '').toLowerCase().trim();
+      
+      if(!statusPrevious.includes('ganh') && !statusPrevious.includes('perd')) {
+        anterior.pipeline += valorPrevious;
+      }
+      
+      if(statusPrevious.includes('ganh')) {
+        anterior.ganhos += 1;
+        anterior.ganhos_valor += valorPrevious;
+      }
+      
+      if(statusPrevious.includes('perd')) {
+        anterior.perdidos += 1;
+        anterior.perdidos_valor += valorPrevious;
+      }
+    }
+  });
+  
+  // Calcular variações
+  return {
+    agora,
+    anterior,
+    deltas: {
+      pipeline: agora.pipeline - anterior.pipeline,
+      ganhos: agora.ganhos - anterior.ganhos,
+      perdidos: agora.perdidos - anterior.perdidos
+    }
+  };
+}
+
 // RENDER DIRETORIA
 function renderDiretoria(){
   const rows=DATA.base;
@@ -1045,6 +1152,9 @@ function renderBruno(){
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
   
+  // 🔄 Calcular comparativo usando snapshot
+  const comp = getComparativoSnapshot('bruno');
+  
   let html=`
   <!-- MEU NÚMERO -->
   <div class="sec">📊 Meu Número</div>
@@ -1092,7 +1202,9 @@ function renderBruno(){
   
   html+=`</div>
 
-  <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->
+  <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->`;
+  const comp = getComparativoSnapshot("bruno");
+  html += `
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
     <div class="card">
@@ -1100,18 +1212,18 @@ function renderBruno(){
         <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline</strong></td>
-          <td class="num">${fK(met.pipeline)}</td>
-          <td class="num">--</td>
+          <td class="num">${fK(comp.agora.pipeline)}</td>
+          <td class="num" style="color:${comp.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${comp.deltas.pipeline>=0?'+':''}${fK(comp.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Deals Fechados</strong></td>
-          <td class="num">${met.ganhos}</td>
-          <td class="num">--</td>
+          <td class="num">${comp.agora.ganhos}</td>
+          <td class="num" style="color:${comp.deltas.ganhos>=0?'var(--green)':'var(--red)'}">${comp.deltas.ganhos>=0?'+':''} ${comp.deltas.ganhos}</td>
         </tr>
         <tr>
           <td><strong>Deals Perdidos</strong></td>
-          <td class="num">${met.perdidos}</td>
-          <td class="num">--</td>
+          <td class="num">${comp.agora.perdidos}</td>
+          <td class="num" style="color:${comp.deltas.perdidos<=0?'var(--green)':'var(--red)'}">${comp.deltas.perdidos>=0?'+':''} ${comp.deltas.perdidos}</td>
         </tr>
       </table>
     </div>
@@ -1218,6 +1330,9 @@ function renderFelipe(){
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
   
+  // 🔄 Calcular comparativo usando snapshot
+  const comp = getComparativoSnapshot('felipe');
+  
   let html=`
   <!-- MEU NÚMERO -->
   <div class="sec">📊 Meu Número</div>
@@ -1278,18 +1393,18 @@ function renderFelipe(){
         <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline</strong></td>
-          <td class="num">${fK(met.pipeline)}</td>
-          <td class="num">--</td>
+          <td class="num">${fK(comp.agora.pipeline)}</td>
+          <td class="num" style="color:${comp.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${comp.deltas.pipeline>=0?'+':''}${fK(comp.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Deals Fechados</strong></td>
-          <td class="num">${met.ganhos}</td>
-          <td class="num">--</td>
+          <td class="num">${comp.agora.ganhos}</td>
+          <td class="num" style="color:${comp.deltas.ganhos>=0?'var(--green)':'var(--red)'}">${comp.deltas.ganhos>=0?'+':''} ${comp.deltas.ganhos}</td>
         </tr>
         <tr>
           <td><strong>Deals Perdidos</strong></td>
-          <td class="num">${met.perdidos}</td>
-          <td class="num">--</td>
+          <td class="num">${comp.agora.perdidos}</td>
+          <td class="num" style="color:${comp.deltas.perdidos<=0?'var(--green)':'var(--red)'}">${comp.deltas.perdidos>=0?'+':''} ${comp.deltas.perdidos}</td>
         </tr>
       </table>
     </div>
@@ -1298,7 +1413,7 @@ function renderFelipe(){
         <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
         <tr>
           <td><strong>Novos Clientes</strong></td>
-          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td class="num">${comp.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
         <tr>
