@@ -317,8 +317,28 @@ function normalize(){
                     '';
     r._dataGanho=parseData(dataGanho);
     
+    // 🔧 Procurar DATA DE FECHAMENTO ESPERADO com diferentes variações
+    let dataFechamento = r['DATA FECHAMENTO ESPERADO'] ||
+                        r['Data Fechamento Esperado'] ||
+                        r['DATA_FECHAMENTO_ESPERADO'] ||
+                        r['Data_Fechamento_Esperado'] ||
+                        r['data fechamento esperado'] ||
+                        '';
+    r._fechamento=parseData(dataFechamento);
+    
     r._dias_sem_atualizar=diasDesde(r._atualizacao);
     r._dias_ate_fechamento=diasAte(r._fechamento);
+    
+    // 🔧 Inicializar probabilidade
+    r._prob = parseFloat(
+      r['PROBABILIDADE'] ||
+      r['Probabilidade'] ||
+      r['PROBABILITY'] ||
+      '0'
+    ) || 0;
+    
+    // 🔧 Calcular valor ponderado (valor * probabilidade / 100)
+    r._ponderado = (r._val * r._prob) / 100;
     
     // 🔍 DEBUG: Se dias = 999, mostrar para investigar
     if(r.CUSTOMER && (r.CUSTOMER.includes('TRANS') || r.CUSTOMER.includes('SAMBAIBA'))) {
