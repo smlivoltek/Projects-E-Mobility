@@ -297,20 +297,6 @@ function normalize(){
       '0'
     );
     
-    // 🔍 DEBUG: Mostrar valores de todas as colunas de valor
-    if(r.CUSTOMER && r.CUSTOMER.includes('TRANS')){
-      console.log('🔍 DEBUG SP TRANS - Colunas de Valor:');
-      console.log('  [TOTAL NET LVK (R$)]:', r['TOTAL NET LVK (R$)']);
-      console.log('  [ TOTAL NET LVK (R$) ]:', r[' TOTAL NET LVK (R$) ']);
-      console.log('  [TOTAL NET (R$)]:', r['TOTAL NET (R$)']);
-      console.log('  [ TOTAL NET (R$) ]:', r[' TOTAL NET (R$) ']);
-      console.log('  _val parseado:', r._val);
-    }
-    r._prob=parseFloat(r.PROBABILIDADE||0);
-    r._ponderado=r._val*(r._prob/100);
-    r._vendor=(r.VENDEDOR||'').toLowerCase();
-    r._fechamento=parseData(r['DATA DE FECHAMENTO']||'');
-    
     // 🔧 Procurar DATA DA ULTIMA ATUALIZAÇÃO com diferentes variações
     let dataAtua = r['DATA DA ULTIMA ATUALIZAÇÃO'] || 
                    r[' DATA DA ULTIMA ATUALIZAÇÃO '] ||
@@ -318,7 +304,18 @@ function normalize(){
                    r['DATA_DA_ULTIMA_ATUALIZACAO'] ||
                    r['data da ultima atualização'] ||
                    '';
+    
+    // 🔍 DEBUG: Mostrar o valor RAW da data para clientes específicos
+    if(r.CUSTOMER && (r.CUSTOMER.includes('TRANS') || r.CUSTOMER.includes('SAMBAIBA'))) {
+      console.log(`🔍 ${r.CUSTOMER}: RAW dataAtua="${dataAtua}"`);
+    }
+    
     r._atualizacao=parseData(dataAtua);
+    
+    // 🔍 DEBUG: Mostrar se o parse funcionou
+    if(r.CUSTOMER && (r.CUSTOMER.includes('TRANS') || r.CUSTOMER.includes('SAMBAIBA'))) {
+      console.log(`   → parseData resultado: ${r._atualizacao}`);
+    }
     
     // 🔧 Procurar DATA DE GANHO com diferentes variações de nome
     let dataGanho = r['DATA DE GANHO'] || 
