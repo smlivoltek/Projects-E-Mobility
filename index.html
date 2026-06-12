@@ -429,7 +429,7 @@ function getOppsCriticas(rows){
 function getComparativoSnapshot(vendor){
   const oppsByVendor = Object.values(DATA.snapshotByOpportunity || {});
   
-  // Filtrar por vendedor se especificado
+  // Filtrar por vendedor
   const filtered = vendor ? 
     oppsByVendor.filter(opp => {
       const latestVendor = (opp.latest?.VENDEDOR || '').toLowerCase();
@@ -437,90 +437,81 @@ function getComparativoSnapshot(vendor){
     }) : 
     oppsByVendor;
   
-  // Calcular para AGORA (latest)
-  const agora = {
-    pipeline: 0,
-    ganhos: 0,
-    ganhos_valor: 0,
-    perdidos: 0,
-    perdidos_valor: 0,
-    clientes_novos: 0
-  };
+  console.log(`🔄 getComparativoSnapshot(${vendor}): ${filtered.length} oportunidades`);
   
-  // Calcular para ANTERIOR (previous)
-  const anterior = {
-    pipeline: 0,
-    ganhos: 0,
-    ganhos_valor: 0,
-    perdidos: 0,
-    perdidos_valor: 0
-  };
+  const agora = { pipeline: 0, ganhos: 0, perdidos: 0, clientes_novos: 0 };
+  const anterior = { pipeline: 0, ganhos: 0, perdidos: 0 };
   
-  filtered.forEach(opp => {
+  filtered.forEach((opp, idx) => {
     const latest = opp.latest;
     const previous = opp.previous;
     
     if(!latest) return;
     
-    // AGORA (Latest)
-    const valorLatest = parseBRL(
-      latest[' TOTAL NET LVK (R$) '] ||
-      latest['TOTAL NET LVK (R$)'] ||
-      latest[' TOTAL NET (R$) '] ||
-      latest['TOTAL NET (R$)'] ||
-      '0'
-    );
+    const customer = latest.CUSTOMER || latest['CUSTOMER'] || 'Unknown';
+    
+    // Pegar valor da última atualização - TENTA VÁRIOS NOMES DE COLUNA
+    let valorRaw = latest[' TOTAL NET LVK (R$) '] || 
+                   latest['TOTAL NET LVK (R$)'] ||
+                   latest[' TOTAL NET (R$) '] ||
+                   latest['TOTAL NET (R$)'] ||
+                   '0';
+    
+    const valorLatest = parseBRL(valorRaw);
     
     const statusLatest = (latest.STATUS || '').toLowerCase().trim();
     
-    if(!statusLatest.includes('ganh') && !statusLatest.includes('perd')) {
+    // DEBUG dos primeiros 3 registros
+    if(idx < 3) {
+      console.log(`   [${idx+1}] ${customer}: RAW="${valorRaw}" → PARSED=${valorLatest} R$ | STATUS="${statusLatest}"`);
+    }
+    
+    // ✅ AGORA (Latest)
+    if(statusLatest.includes('ganh')) {
+      agora.ganhos += 1;
+    } else if(statusLatest.includes('perd')) {
+      agora.perdidos += 1;
+    } else {
+      // Pipeline = tudo que NÃO é ganho ou perdido
       agora.pipeline += valorLatest;
     }
     
-    if(statusLatest.includes('ganh')) {
-      agora.ganhos += 1;
-      agora.ganhos_valor += valorLatest;
-    }
-    
-    if(statusLatest.includes('perd')) {
-      agora.perdidos += 1;
-      agora.perdidos_valor += valorLatest;
-    }
-    
-    // Cliente novo? (sem penúltima atualização)
+    // Cliente novo?
     if(!previous) {
       agora.clientes_novos += 1;
     }
     
-    // ANTERIOR (Previous)
+    // 📊 ANTERIOR (Previous)
     if(previous) {
       const valorPrevious = parseBRL(
         previous[' TOTAL NET LVK (R$) '] ||
         previous['TOTAL NET LVK (R$)'] ||
-        previous[' TOTAL NET (R$) '] ||
-        previous['TOTAL NET (R$)'] ||
         '0'
       );
       
       const statusPrevious = (previous.STATUS || '').toLowerCase().trim();
       
-      if(!statusPrevious.includes('ganh') && !statusPrevious.includes('perd')) {
+      if(statusPrevious.includes('ganh')) {
+        anterior.ganhos += 1;
+      } else if(statusPrevious.includes('perd')) {
+        anterior.perdidos += 1;
+      } else {
         anterior.pipeline += valorPrevious;
       }
       
-      if(statusPrevious.includes('ganh')) {
-        anterior.ganhos += 1;
-        anterior.ganhos_valor += valorPrevious;
-      }
-      
-      if(statusPrevious.includes('perd')) {
-        anterior.perdidos += 1;
-        anterior.perdidos_valor += valorPrevious;
+      if(idx < 3) {
+        console.log(`  📌 ${customer}: ANTERIOR=${fK(valorPrevious)} → AGORA=${fK(valorLatest)}`);
       }
     }
   });
   
-  // Calcular variações
+  console.log('═'.repeat(60));
+  console.log(`📊 RESULTADO FINAL para "${vendor}":`);
+  console.log(`   AGORA - Pipeline: ${fK(agora.pipeline)} | Ganhos: ${agora.ganhos} | Perdidos: ${agora.perdidos}`);
+  console.log(`   ANTERIOR - Pipeline: ${fK(anterior.pipeline)} | Ganhos: ${anterior.ganhos} | Perdidos: ${anterior.perdidos}`);
+  console.log(`   DELTA - Pipeline: ${fK(agora.pipeline - anterior.pipeline)} | Ganhos: ${agora.ganhos - anterior.ganhos} | Perdidos: ${agora.perdidos - anterior.perdidos}`);
+  console.log('═'.repeat(60));
+  
   return {
     agora,
     anterior,
