@@ -164,69 +164,59 @@ function diasAte(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;r
 // LOAD DATA
 async function loadData(){
   try{
-    console.log('Tentando carregar dados...');
+    console.log('🔄 Carregando dados do repositório local...');
     
-    // Tentar carregar arquivo local PRIMEIRO
-    let txt;
-    try{
-      const res = await fetch(URLS.base, {method:'GET'});
-      if(!res.ok)throw new Error('Arquivo local não encontrado');
-      txt = await res.text();
-    }catch(e){
-      console.warn('Arquivo local falhou, tentando URL remota:', e.message);
-      // Fallback para URL remota do Google Sheets
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(URLS.baseRemote, {signal: controller.signal});
-      clearTimeout(timeoutId);
-      txt = await res.text();
+    // Tentar carregar arquivo BASE-GERAL
+    console.log('📋 Carregando base-geral.csv...');
+    const resBase = await fetch(URLS.base, {method:'GET'});
+    if(!resBase.ok) {
+      throw new Error(`Base-Geral não encontrado (${resBase.status}). Verifique se o arquivo está no repositório.`);
+    }
+    const txtBase = await resBase.text();
+    console.log('✅ base-geral.csv carregado:', txtBase.length, 'bytes');
+    
+    if(!txtBase || txtBase.length<100) {
+      throw new Error('Base-Geral vazio ou inválido');
     }
     
-    if(!txt || txt.length<100)throw new Error('Dados vazios');
+    DATA.base = Papa.parse(txtBase, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    console.log('📊 Base-Geral parseado:', DATA.base.length, 'registros');
     
-    DATA.base = Papa.parse(txt,{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    if(DATA.base.length===0)throw new Error('Sem registros válidos');
-    
-    // 🔄 CARREGAR SNAPSHOT
-    console.log('🔄 Tentando carregar snapshot...');
-    let snapshotTxt;
-    try{
-      const res = await fetch(URLS.snapshot, {method:'GET'});
-      if(!res.ok)throw new Error('Arquivo local snapshot não encontrado');
-      snapshotTxt = await res.text();
-      console.log('✅ Snapshot local carregado:', snapshotTxt.length, 'bytes');
-    }catch(e){
-      console.warn('⚠️ Snapshot local falhou:', e.message);
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      try {
-        const res = await fetch(URLS.snapshotRemote, {signal: controller.signal});
-        clearTimeout(timeoutId);
-        snapshotTxt = await res.text();
-        console.log('✅ Snapshot remoto carregado:', snapshotTxt.length, 'bytes');
-      } catch(e2) {
-        console.error('❌ Snapshot remoto falhou:', e2.message);
-        snapshotTxt = null;
-      }
+    if(DATA.base.length === 0) {
+      throw new Error('Nenhum registro válido na Base-Geral');
     }
     
-    if(snapshotTxt && snapshotTxt.length > 100){
-      DATA.snapshot = Papa.parse(snapshotTxt, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-      console.log('📊 Snapshot parseado:', DATA.snapshot.length, 'registros');
-      console.log('🔍 Primeiros registros:', DATA.snapshot.slice(0,2));
-    } else {
-      console.error('❌ Snapshot não carregado ou vazio!');
+    // Tentar carregar SNAPSHOT
+    console.log('📋 Carregando snapshot.csv...');
+    const resSnapshot = await fetch(URLS.snapshot, {method:'GET'});
+    if(!resSnapshot.ok) {
+      console.warn('⚠️ Snapshot não encontrado (arquivo opcional)');
       DATA.snapshot = [];
+    } else {
+      const txtSnapshot = await resSnapshot.text();
+      console.log('✅ snapshot.csv carregado:', txtSnapshot.length, 'bytes');
+      
+      if(txtSnapshot && txtSnapshot.length > 100) {
+        DATA.snapshot = Papa.parse(txtSnapshot, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+        console.log('📊 Snapshot parseado:', DATA.snapshot.length, 'registros');
+      } else {
+        console.warn('⚠️ Snapshot vazio ou muito pequeno');
+        DATA.snapshot = [];
+      }
     }
     
     normalize();
     renderAll();
     updateStatus('✓ Dados carregados: '+DATA.base.length+' oportunidades',true);
   }catch(e){
-    console.error('Erro ao carregar:',e.message);
-    updateStatus('⚠️ Clique aqui para carregar dados manualmente',false);
-    // Mostrar modal automaticamente após 2s
-    setTimeout(showPasteModal, 2000);
+    console.error('❌ Erro ao carregar:', e.message);
+    const errMsg = `⚠️ ${e.message}. Você precisa fazer upload dos arquivos CSV para o repositório GitHub!`;
+    updateStatus(errMsg, false);
+    
+    // Mostrar modal APENAS se os arquivos não forem encontrados
+    setTimeout(() => {
+      alert(`❌ ERRO DE CARREGAMENTO\n\n${e.message}\n\n✅ SOLUÇÃO:\n1. Baixe os CSVs do Google Sheets\n2. Suba-os para: https://github.com/smlivoltek/Projects-E-Mobility\n3. Hard Refresh: Ctrl+F5`);
+    }, 1000);
   }
 }
 
