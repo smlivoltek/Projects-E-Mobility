@@ -310,7 +310,15 @@ function normalize(){
     r._ponderado=r._val*(r._prob/100);
     r._vendor=(r.VENDEDOR||'').toLowerCase();
     r._fechamento=parseData(r['DATA DE FECHAMENTO']||'');
-    r._atualizacao=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    
+    // 🔧 Procurar DATA DA ULTIMA ATUALIZAÇÃO com diferentes variações
+    let dataAtua = r['DATA DA ULTIMA ATUALIZAÇÃO'] || 
+                   r[' DATA DA ULTIMA ATUALIZAÇÃO '] ||
+                   r['Data da Última Atualização'] ||
+                   r['DATA_DA_ULTIMA_ATUALIZACAO'] ||
+                   r['data da ultima atualização'] ||
+                   '';
+    r._atualizacao=parseData(dataAtua);
     
     // 🔧 Procurar DATA DE GANHO com diferentes variações de nome
     let dataGanho = r['DATA DE GANHO'] || 
@@ -323,6 +331,11 @@ function normalize(){
     
     r._dias_sem_atualizar=diasDesde(r._atualizacao);
     r._dias_ate_fechamento=diasAte(r._fechamento);
+    
+    // 🔍 DEBUG: Se dias = 999, mostrar para investigar
+    if(r.CUSTOMER && (r.CUSTOMER.includes('TRANS') || r.CUSTOMER.includes('SAMBAIBA'))) {
+      console.log(`🔍 ${r.CUSTOMER}: _atualizacao=${r._atualizacao}, _dias_sem_atualizar=${r._dias_sem_atualizar}`);
+    }
   });
   
   // 🔄 Processar SNAPSHOT para extrair última/penúltima atualização por oportunidade
@@ -750,14 +763,14 @@ function renderDiretoria(){
       <tr><th>Cliente</th><th class="num">Valor</th><th>Status</th><th>Vendedor</th><th class="num">Dias</th></tr>
   `;
   const statusAguardando = ['Aguardando Pricing', 'Aguardando Engenharia', 'Aguardando Interno', 'Aguardando cliente'];
-  const oppsAguardando = rows.filter(r => statusAguardando.some(status => r.ESTAGIO?.includes(status) || r.STATUS?.includes(status)))
+  const oppsAguardando = rows.filter(r => statusAguardando.some(status => r.STATUS?.includes(status)))
     .sort((a, b) => b._val - a._val);
   
   if(oppsAguardando.length === 0) {
     html+=`<tr><td colspan="5" style="text-align:center;color:#999;padding:20px">Nenhuma oportunidade aguardando</td></tr>`;
   } else {
     oppsAguardando.forEach(r => {
-      const statusLabel = r.ESTAGIO || r.STATUS || 'Unknown';
+      const statusLabel = r.STATUS || 'Unknown';
       const statusColor = statusLabel.includes('Pricing') ? '#f59e0b' : statusLabel.includes('Engenharia') ? '#3b82f6' : statusLabel.includes('Interno') ? '#8b5cf6' : '#6b7280';
       const vendor = (r.VENDEDOR || '').split(' ')[0];
       const stColor = r._dias_sem_atualizar > 30 ? 'var(--red)' : r._dias_sem_atualizar > 20 ? 'var(--amber)' : 'var(--green)';
