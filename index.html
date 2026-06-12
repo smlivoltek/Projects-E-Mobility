@@ -411,11 +411,7 @@ function getOppsCriticas(rows){
 
 // 🔄 CALCULAR COMPARATIVO COM SNAPSHOT (ÚLTIMA VS PENÚLTIMA ATUALIZAÇÃO)
 function getComparativoSnapshot(vendor){
-  console.log('🔄 getComparativoSnapshot chamado com vendor:', vendor);
-  console.log('📊 DATA.snapshotByOpportunity:', Object.keys(DATA.snapshotByOpportunity || {}).length, 'oportunidades');
-  
   const oppsByVendor = Object.values(DATA.snapshotByOpportunity || {});
-  console.log('📋 Total de oportunidades:', oppsByVendor.length);
   
   // Filtrar por vendedor se especificado
   const filtered = vendor ? 
@@ -424,8 +420,6 @@ function getComparativoSnapshot(vendor){
       return latestVendor.includes(vendor.toLowerCase());
     }) : 
     oppsByVendor;
-  
-  console.log(`✅ Oportunidades de ${vendor}:`, filtered.length);
   
   // Calcular para AGORA (latest)
   const agora = {
@@ -510,10 +504,8 @@ function getComparativoSnapshot(vendor){
     }
   });
   
-  console.log(`📊 Resultado para ${vendor}:`, {agora, anterior});
-  
   // Calcular variações
-  const resultado = {
+  return {
     agora,
     anterior,
     deltas: {
@@ -522,10 +514,6 @@ function getComparativoSnapshot(vendor){
       perdidos: agora.perdidos - anterior.perdidos
     }
   };
-  
-  console.log(`📈 Deltas para ${vendor}:`, resultado.deltas);
-  
-  return resultado;
 }
 
 // RENDER DIRETORIA
