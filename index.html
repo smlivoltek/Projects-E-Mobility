@@ -207,6 +207,7 @@ async function loadData(){
     updateStatus('✓ Dados carregados: '+DATA.base.length+' oportunidades',true);
   }catch(e){
     console.error('❌ Erro ao carregar:', e.message);
+    console.error('Stack:', e.stack);
     const errMsg = `⚠️ ${e.message}. Você precisa fazer upload dos arquivos CSV para o repositório GitHub!`;
     updateStatus(errMsg, false);
     
@@ -432,7 +433,7 @@ function getComparativoSnapshot(vendor){
   // Filtrar por vendedor
   const filtered = vendor ? 
     oppsByVendor.filter(opp => {
-      const latestVendor = (opp.latest?.VENDEDOR || '').toLowerCase();
+      const latestVendor = (opp.latest?.VENDEDOR || '').toLowerCase().trim();
       return latestVendor.includes(vendor.toLowerCase());
     }) : 
     oppsByVendor;
@@ -1659,10 +1660,27 @@ function filterOpps(){
 }
 
 function renderAll(){
-  renderDiretoria();
-  renderBruno();
-  renderFelipe();
-  renderOportunidades();
+  try {
+    console.log('🎨 renderDiretoria()');
+    renderDiretoria();
+    console.log('✅ renderDiretoria OK');
+    
+    console.log('🎨 renderBruno()');
+    renderBruno();
+    console.log('✅ renderBruno OK');
+    
+    console.log('🎨 renderFelipe()');
+    renderFelipe();
+    console.log('✅ renderFelipe OK');
+    
+    console.log('🎨 renderOportunidades()');
+    renderOportunidades();
+    console.log('✅ renderOportunidades OK');
+  } catch(err) {
+    console.error('❌ ERRO EM renderAll:', err.message);
+    console.error('Stack:', err.stack);
+    throw err;
+  }
 }
 
 function switchTab(tab){
