@@ -597,6 +597,27 @@ function renderDiretoria(){
   <div class="sec">📈 Previsão de Fechamentos (Mês a Mês)</div>
   <div class="card">
     <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #E5E7EB">
+      <div style="font-size:0.85rem;font-weight:600;color:#666;margin-bottom:12px">📋 Próximos 90 dias:</div>
+      ${(() => {
+        const proximos90 = rows.filter(r => {
+          if(!r._fechamento) return false;
+          const diasAte = (r._fechamento - new Date()) / (1000*60*60*24);
+          return diasAte > 0 && diasAte <= 90;
+        }).sort((a,b) => a._fechamento - b._fechamento);
+        
+        if(proximos90.length === 0) return '<div style="color:#999;font-size:0.85rem">Nenhuma oportunidade prevista</div>';
+        
+        return proximos90.slice(0, 10).map((r, i) => {
+          const dataF = r._fechamento.toLocaleDateString('pt-BR');
+          const vendor = (r.VENDEDOR || '').split(' ')[0];
+          return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:0.8rem">
+            <span><strong>${r.CUSTOMER}</strong> (${vendor})</span>
+            <span style="color:#666">${dataF} - ${fK(r._ponderado)}</span>
+          </div>`;
+        }).join('');
+      })()}
+    </div>
   </div>
 
   <!-- BLOCO 2C: GRÁFICO DE PEDIDOS GANHOS (MÊS A MÊS) -->
@@ -698,14 +719,14 @@ function renderDiretoria(){
   html+=`</table></div>
 
   <!-- BLOCO 4: TOP 5 BRUNO + TOP 5 FELIPE -->
-  <div class="sec">🎯 Top 5 Projetos (Por Vendedor)</div>
+  <div class="sec">🎯 Top 10 Oportunidades (Por Vendedor)</div>
   <div class="g2">
     <div class="card">
       <div style="font-weight:600;color:var(--blue);margin-bottom:12px">Bruno Reis (R$${fK(metBruno.pipeline)})</div>
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>r._vendor.includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+  rows.filter(r=>r._vendor.includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
@@ -715,11 +736,41 @@ function renderDiretoria(){
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>r._vendor.includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,5).forEach(r=>{
+  rows.filter(r=>r._vendor.includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
   html+=`</table></div>
+  </div>
+
+  <!-- NOVO CARD: AGUARDANDO (PRICING, ENGENHARIA, INTERNO) -->
+  <div class="sec">⏳ Aguardando (Pricing, Engenharia, Interno)</div>
+  <div class="card">
+    <table class="tbl">
+      <tr><th>Cliente</th><th class="num">Valor</th><th>Status</th><th>Vendedor</th><th class="num">Dias</th></tr>
+  `;
+  const statusAguardando = ['Aguardando Pricing', 'Aguardando Engenharia', 'Aguardando Interno', 'Aguardando cliente'];
+  const oppsAguardando = rows.filter(r => statusAguardando.some(status => r.ESTAGIO?.includes(status) || r.STATUS?.includes(status)))
+    .sort((a, b) => b._val - a._val);
+  
+  if(oppsAguardando.length === 0) {
+    html+=`<tr><td colspan="5" style="text-align:center;color:#999;padding:20px">Nenhuma oportunidade aguardando</td></tr>`;
+  } else {
+    oppsAguardando.forEach(r => {
+      const statusLabel = r.ESTAGIO || r.STATUS || 'Unknown';
+      const statusColor = statusLabel.includes('Pricing') ? '#f59e0b' : statusLabel.includes('Engenharia') ? '#3b82f6' : statusLabel.includes('Interno') ? '#8b5cf6' : '#6b7280';
+      const vendor = (r.VENDEDOR || '').split(' ')[0];
+      const stColor = r._dias_sem_atualizar > 30 ? 'var(--red)' : r._dias_sem_atualizar > 20 ? 'var(--amber)' : 'var(--green)';
+      html+=`<tr>
+        <td><strong>${r.CUSTOMER}</strong></td>
+        <td class="num">${fK(r._val)}</td>
+        <td><span class="status" style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor};">${statusLabel.replace('Aguardando ', '')}</span></td>
+        <td>${vendor}</td>
+        <td class="num" style="color:${stColor}">${r._dias_sem_atualizar}d</td>
+      </tr>`;
+    });
+  }
+  html+=`</table>
   </div>
 
   <!-- BLOCO 5: AGING DETALHADO -->
