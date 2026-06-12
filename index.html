@@ -284,6 +284,9 @@ function normalize(){
       '0'
     );
     
+    // 🔧 Inicializar _vendor
+    r._vendor = (r['VENDEDOR'] || '').toLowerCase().trim();
+    
     // 🔧 Procurar DATA DA ULTIMA ATUALIZAÇÃO com diferentes variações
     let dataAtua = r['DATA DA ULTIMA ATUALIZAÇÃO'] || 
                    r[' DATA DA ULTIMA ATUALIZAÇÃO '] ||
@@ -389,7 +392,7 @@ function processSnapshotData(){
 
 // MÉTRICAS
 function getMetricas(rows,vendor){
-  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
   const pipeline=filtered.reduce((s,r)=>s+r._val,0);
   const ponderado=filtered.reduce((s,r)=>s+r._ponderado,0);
   const ganhos=filtered.filter(r=>r.STATUS==='Ganhou').length;
@@ -399,7 +402,7 @@ function getMetricas(rows,vendor){
 }
 
 function getConcentracao(rows,vendor){
-  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
   const byClient={};
   filtered.forEach(r=>{const c=r.CUSTOMER||'Unknown';byClient[c]=(byClient[c]||0)+r._val});
   const sorted=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
@@ -409,7 +412,7 @@ function getConcentracao(rows,vendor){
 }
 
 function getAging(rows,vendor){
-  const filtered=vendor?rows.filter(r=>r._vendor.includes(vendor)):rows;
+  const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
   return{
     '0-30':filtered.filter(r=>r._dias_sem_atualizar<=30).reduce((s,r)=>s+r._val,0),
     '31-60':filtered.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce((s,r)=>s+r._val,0),
@@ -696,21 +699,21 @@ function renderDiretoria(){
   const conf=rows.filter(r=>r._prob>=60).sort((a,b)=>b._val-a._val);
   conf.slice(0,5).forEach((r,i)=>{
     html+=`<tr><td>${i===0?'🟢<strong>Confiável (>60%)</strong>':''}${i===0?'<br>'+fK(conf.reduce((s,x)=>s+x._val,0)):''}`;
-    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status ok">✓</span></td></tr>`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status ok">✓</span></td></tr>`;
   });
   
   // EM RISCO (20-60%)
   const risco=rows.filter(r=>r._prob>=20&&r._prob<60).sort((a,b)=>b._val-a._val);
   risco.slice(0,5).forEach((r,i)=>{
     html+=`<tr><td>${i===0?'🟡<strong>Em Risco (20-60%)</strong>':''}${i===0?'<br>'+fK(risco.reduce((s,x)=>s+x._val,0)):''}`;
-    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status warn">⚠️</span></td></tr>`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status warn">⚠️</span></td></tr>`;
   });
   
   // MUITO RISCO (<20%)
   const alto=rows.filter(r=>r._prob<20).sort((a,b)=>b._val-a._val);
   alto.slice(0,5).forEach((r,i)=>{
     html+=`<tr><td>${i===0?'🔴<strong>Muito Risco (<20%)</strong>':''}${i===0?'<br>'+fK(alto.reduce((s,x)=>s+x._val,0)):''}`;
-    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${r._vendor.includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status critical">🔴</span></td></tr>`;
+    html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status critical">🔴</span></td></tr>`;
   });
   
   html+=`</table></div>
@@ -723,7 +726,7 @@ function renderDiretoria(){
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>r._vendor.includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
+  rows.filter(r=>(r._vendor||'').includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
@@ -733,7 +736,7 @@ function renderDiretoria(){
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>r._vendor.includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
+  rows.filter(r=>(r._vendor||'').includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
@@ -881,9 +884,9 @@ function renderFechamentosChart(rows){
     const ano=r._fechamento.getFullYear();
     if(ano===anoAtual){
       const valor=(r._ponderado||0);
-      if(r._vendor.includes('bruno')){
+      if((r._vendor||'').includes('bruno')){
         fechamentosBruno[mes]+=valor;
-      } else if(r._vendor.includes('felipe')){
+      } else if((r._vendor||'').includes('felipe')){
         fechamentosFelipe[mes]+=valor;
       }
     }
@@ -1227,7 +1230,7 @@ function renderPerdidosChart(rows){
 
 // RENDER BRUNO
 function renderBruno(){
-  const rows=DATA.base.filter(r=>r._vendor.includes('bruno'));
+  const rows=DATA.base.filter(r=>(r._vendor||'').includes('bruno'));
   const met=getMetricas(rows);
   const metaAnual=METAS.bruno;
   const cobertura=met.pipeline/metaAnual;
@@ -1413,7 +1416,7 @@ function filterClientesBruno(){
 
 // RENDER FELIPE
 function renderFelipe(){
-  const rows=DATA.base.filter(r=>r._vendor.includes('felipe'));
+  const rows=DATA.base.filter(r=>(r._vendor||'').includes('felipe'));
   const met=getMetricas(rows);
   const metaAnual=METAS.felipe;
   const cobertura=met.pipeline/metaAnual;
