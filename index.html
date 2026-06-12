@@ -548,6 +548,10 @@ function renderDiretoria(){
   const batemos=forecast>=metTotal?'SIM':'NÃO';
   const status=batemos==='SIM'?'green':gap>-20000000?'amber':'red';
   
+  // 📊 Cobertura de Meta (pipeline real / meta)
+  const coberturaTotal = metAll.pipeline / metTotal;
+  const statusCobertura = coberturaTotal >= 1 ? 'green' : coberturaTotal >= 0.75 ? 'amber' : 'red';
+  
   const concentracao=getConcentracao(rows);
   const aging=getAging(rows);
   const oppsC=getOppsCriticas(rows);
@@ -573,19 +577,19 @@ function renderDiretoria(){
       </div>
       <div class="kpi-s">Forecast ${fK(forecast)} vs Meta ${fK(metTotal)}</div>
     </div>
-    <div class="kpi">
-      <div class="kpi-l">Gap Realista</div>
-      <div class="kpi-v" style="color:${gap>0?'var(--green)':'var(--red)'}">
-        ${gap>0?'+':''}${fK(gap)}
+    <div class="kpi ${statusCobertura}">
+      <div class="kpi-l">Cobertura de Meta</div>
+      <div class="kpi-v" style="color:var(--${statusCobertura==='green'?'green':statusCobertura==='amber'?'amber':'red'});font-size:2.5rem">
+        ${(coberturaTotal*100).toFixed(0)}%
       </div>
-      <div class="kpi-s">${gap>0?'✅ ACIMA':'❌ ABAIXO'} da meta</div>
+      <div class="kpi-s">${fK(metAll.pipeline)} / ${fK(metTotal)}</div>
     </div>
     <div class="kpi">
-      <div class="kpi-l">Confiabilidade</div>
-      <div class="kpi-v" style="color:var(--${concentracao.pct>60?'red':concentracao.pct>40?'amber':'green'})">
+      <div class="kpi-l">Concentração Top 5</div>
+      <div class="kpi-v" style="color:var(--${concentracao.pct>60?'red':concentracao.pct>40?'amber':'green'});font-size:2.5rem">
         ${concentracao.pct.toFixed(0)}%
       </div>
-      <div class="kpi-s">${concentracao.pct>60?'🔴 ALTA concentração':concentracao.pct>40?'🟡 MÉDIA concentração':'🟢 BAIXA concentração'} (Top 5)</div>
+      <div class="kpi-s">${concentracao.pct>60?'🔴 RISCO Alto':concentracao.pct>40?'🟡 RISCO Médio':'🟢 Saudável'}</div>
     </div>
   </div>
 
