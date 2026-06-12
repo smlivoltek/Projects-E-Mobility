@@ -188,24 +188,35 @@ async function loadData(){
     if(DATA.base.length===0)throw new Error('Sem registros válidos');
     
     // 🔄 CARREGAR SNAPSHOT
-    console.log('Carregando snapshot...');
+    console.log('🔄 Tentando carregar snapshot...');
     let snapshotTxt;
     try{
       const res = await fetch(URLS.snapshot, {method:'GET'});
       if(!res.ok)throw new Error('Arquivo local snapshot não encontrado');
       snapshotTxt = await res.text();
+      console.log('✅ Snapshot local carregado:', snapshotTxt.length, 'bytes');
     }catch(e){
-      console.warn('Snapshot local falhou, tentando URL remota:', e.message);
+      console.warn('⚠️ Snapshot local falhou:', e.message);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(URLS.snapshotRemote, {signal: controller.signal});
-      clearTimeout(timeoutId);
-      snapshotTxt = await res.text();
+      try {
+        const res = await fetch(URLS.snapshotRemote, {signal: controller.signal});
+        clearTimeout(timeoutId);
+        snapshotTxt = await res.text();
+        console.log('✅ Snapshot remoto carregado:', snapshotTxt.length, 'bytes');
+      } catch(e2) {
+        console.error('❌ Snapshot remoto falhou:', e2.message);
+        snapshotTxt = null;
+      }
     }
     
     if(snapshotTxt && snapshotTxt.length > 100){
       DATA.snapshot = Papa.parse(snapshotTxt, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-      console.log('Snapshot carregado:', DATA.snapshot.length, 'registros');
+      console.log('📊 Snapshot parseado:', DATA.snapshot.length, 'registros');
+      console.log('🔍 Primeiros registros:', DATA.snapshot.slice(0,2));
+    } else {
+      console.error('❌ Snapshot não carregado ou vazio!');
+      DATA.snapshot = [];
     }
     
     normalize();
@@ -325,6 +336,8 @@ function processSnapshotData(){
     return;
   }
   
+  console.log('📊 Processando snapshot com', DATA.snapshot.length, 'registros');
+  
   // Agrupar por ID_OPORTUNIDADE
   const byOpportunity = {};
   
@@ -352,6 +365,8 @@ function processSnapshotData(){
     byOpportunity[oppId].push(r);
   });
   
+  console.log('✅ Agrupadas', Object.keys(byOpportunity).length, 'oportunidades únicas');
+  
   // Para cada oportunidade, ordenar por data e pegar última + penúltima
   DATA.snapshotByOpportunity = {};
   
@@ -371,7 +386,8 @@ function processSnapshotData(){
     };
   });
   
-  console.log('✅ Snapshot processado:', Object.keys(DATA.snapshotByOpportunity).length, 'oportunidades únicas');
+  console.log('✅ Snapshot processado:', Object.keys(DATA.snapshotByOpportunity).length, 'oportunidades com histórico');
+  console.log('📋 Amostra:', Object.entries(DATA.snapshotByOpportunity).slice(0, 2));
 }
 
 // MÉTRICAS
