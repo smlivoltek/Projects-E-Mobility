@@ -439,7 +439,7 @@ function getComparativoSnapshot(vendor){
   
   console.log(`🔄 getComparativoSnapshot(${vendor}): ${filtered.length} oportunidades`);
   
-  const agora = { pipeline: 0, ganhos: 0, perdidos: 0, clientes_novos: 0 };
+  const agora = { pipeline: 0, ganhos: 0, perdidos: 0, clientes_novos: 0, ganhos_list: [], perdidos_list: [], clientes_novos_list: [] };
   const anterior = { pipeline: 0, ganhos: 0, perdidos: 0 };
   
   filtered.forEach((opp, idx) => {
@@ -469,8 +469,10 @@ function getComparativoSnapshot(vendor){
     // ✅ AGORA (Latest)
     if(statusLatest.includes('ganh')) {
       agora.ganhos += 1;
+      agora.ganhos_list.push(customer);
     } else if(statusLatest.includes('perd')) {
       agora.perdidos += 1;
+      agora.perdidos_list.push(customer);
     } else {
       // Pipeline = tudo que NÃO é ganho ou perdido
       agora.pipeline += valorLatest;
@@ -479,6 +481,7 @@ function getComparativoSnapshot(vendor){
     // Cliente novo?
     if(!previous) {
       agora.clientes_novos += 1;
+      agora.clientes_novos_list.push(customer);
     }
     
     // 📊 ANTERIOR (Previous)
@@ -627,16 +630,19 @@ function renderDiretoria(){
           <td class="num">${compAll.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
+        ${compAll.agora.clientes_novos_list.length > 0 ? `<tr style="background:#f9fafb"><td colspan="3" style="font-size:0.85rem;color:#666;padding:8px">📌 ${compAll.agora.clientes_novos_list.join(', ')}</td></tr>` : ''}
         <tr>
           <td><strong>Deals Fechados</strong></td>
           <td class="num">${compAll.agora.ganhos}</td>
           <td><span class="status ok">WON</span></td>
         </tr>
+        ${compAll.agora.ganhos_list.length > 0 ? `<tr style="background:#f0fdf4"><td colspan="3" style="font-size:0.85rem;color:#166534;padding:8px">✅ ${compAll.agora.ganhos_list.join(', ')}</td></tr>` : ''}
         <tr>
           <td><strong>Deals Perdidos</strong></td>
           <td class="num">${compAll.agora.perdidos}</td>
           <td><span class="status critical">LOST</span></td>
         </tr>
+        ${compAll.agora.perdidos_list.length > 0 ? `<tr style="background:#fef2f2"><td colspan="3" style="font-size:0.85rem;color:#991b1b;padding:8px">❌ ${compAll.agora.perdidos_list.join(', ')}</td></tr>` : ''}
       </table>
     </div>
   </div>
@@ -1251,6 +1257,7 @@ function renderBruno(){
           <td class="num">${comp.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
+        ${comp.agora.clientes_novos_list.length > 0 ? `<tr style="background:#f9fafb"><td colspan="3" style="font-size:0.85rem;color:#666;padding:8px">📌 ${comp.agora.clientes_novos_list.join(", ")}</td></tr>` : ""}
         <tr>
           <td><strong>Cobertura Meta</strong></td>
           <td class="num">${(cobertura*100).toFixed(0)}%</td>
@@ -1435,6 +1442,7 @@ function renderFelipe(){
           <td class="num">${comp.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
+        ${comp.agora.clientes_novos_list.length > 0 ? `<tr style="background:#f9fafb"><td colspan="3" style="font-size:0.85rem;color:#666;padding:8px">📌 ${comp.agora.clientes_novos_list.join(", ")}</td></tr>` : ""}
         <tr>
           <td><strong>Cobertura Meta</strong></td>
           <td class="num">${(cobertura*100).toFixed(0)}%</td>
