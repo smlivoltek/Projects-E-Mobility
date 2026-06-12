@@ -615,7 +615,7 @@ function renderDiretoria(){
           <td><strong>Felipe</strong></td>
           <td class="num">${fK(compFelipe.anterior.pipeline)}</td>
           <td class="num">${fK(compFelipe.agora.pipeline)}</td>
-          <td class="num" style="color:${compFelipe.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${compFelipe.deltas.pipeline>=0?'+':''}${fK(compFelipe.deltas.pipeline)}</td>
+          <td class="num" style="color:${compFelipe.deltas.pipeline>=0?'var(--green)':'var(--red)'}; font-weight:600">${compFelipe.deltas.pipeline>=0?'+':'-'}${fK(Math.abs(compFelipe.deltas.pipeline))}</td>
         </tr>
       </table>
     </div>
@@ -624,17 +624,17 @@ function renderDiretoria(){
         <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
         <tr>
           <td><strong>Novos Clientes</strong></td>
-          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td class="num">${compAll.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
         <tr>
           <td><strong>Deals Fechados</strong></td>
-          <td class="num">${metAll.ganhos}</td>
+          <td class="num">${compAll.agora.ganhos}</td>
           <td><span class="status ok">WON</span></td>
         </tr>
         <tr>
           <td><strong>Deals Perdidos</strong></td>
-          <td class="num">${metAll.perdidos}</td>
+          <td class="num">${compAll.agora.perdidos}</td>
           <td><span class="status critical">LOST</span></td>
         </tr>
       </table>
@@ -1248,7 +1248,7 @@ function renderBruno(){
         <tr><th>Métrica</th><th class="num">Valor</th><th>Status</th></tr>
         <tr>
           <td><strong>Novos Clientes</strong></td>
-          <td class="num">${rows.filter(r=>r._dias_sem_atualizar<14).length}</td>
+          <td class="num">${comp.agora.clientes_novos}</td>
           <td><span class="status ok">Novos 2w</span></td>
         </tr>
         <tr>
