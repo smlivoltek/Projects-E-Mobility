@@ -461,9 +461,9 @@ function getComparativoSnapshot(vendor){
     
     const statusLatest = (latest.STATUS || '').toLowerCase().trim();
     
-    // DEBUG dos primeiros 3 registros
-    if(idx < 3) {
-      console.log(`   [${idx+1}] ${customer}: RAW="${valorRaw}" → PARSED=${valorLatest} R$ | STATUS="${statusLatest}"`);
+    // DEBUG dos primeiros 5 registros
+    if(idx < 5) {
+      console.log(`   [${idx+1}] ${customer}: previous=${previous?'SIM':'NÃO'} | RAW="${valorRaw}" → PARSED=${valorLatest} R$ | STATUS="${statusLatest}"`);
     }
     
     // ✅ AGORA (Latest)
@@ -510,9 +510,18 @@ function getComparativoSnapshot(vendor){
   
   console.log('═'.repeat(60));
   console.log(`📊 RESULTADO FINAL para "${vendor}":`);
-  console.log(`   AGORA - Pipeline: ${fK(agora.pipeline)} | Ganhos: ${agora.ganhos} | Perdidos: ${agora.perdidos}`);
+  console.log(`   AGORA - Pipeline: ${fK(agora.pipeline)} | Ganhos: ${agora.ganhos} | Perdidos: ${agora.perdidos} | NOVOS: ${agora.clientes_novos}`);
   console.log(`   ANTERIOR - Pipeline: ${fK(anterior.pipeline)} | Ganhos: ${anterior.ganhos} | Perdidos: ${anterior.perdidos}`);
   console.log(`   DELTA - Pipeline: ${fK(agora.pipeline - anterior.pipeline)} | Ganhos: ${agora.ganhos - anterior.ganhos} | Perdidos: ${agora.perdidos - anterior.perdidos}`);
+  
+  // DEBUG: mostrar todos os clientes novos
+  if(agora.clientes_novos_list.length > 0) {
+    console.log(`\n📌 CLIENTES NOVOS (${agora.clientes_novos_list.length}):`);
+    agora.clientes_novos_list.forEach((c, i) => {
+      console.log(`   ${i+1}. ${c}`);
+    });
+  }
+  
   console.log('═'.repeat(60));
   
   return {
