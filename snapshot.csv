@@ -42,8 +42,8 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 03/04/2026,OPP-DIA-0426-025,DIADEMA,Bruno Reis," R$  870.000,00 ", Lead ,Parado,Médio,100%,,08/06/2026,,,
 03/04/2026,OPP-DIA-0426-026,DIADEMA,Bruno Reis," R$  3.500.000,00 ", Lead ,Parado,Baixo,100%,,03/04/2026,,,
 13/04/2026,OPP-DIA-0426-026,DIADEMA,Bruno Reis," R$  3.500.000,00 ", Lead ,Parado,Baixo,100%,Retonar em alguns meses,08/06/2026,,,
-03/04/2026,OPP-EVO-0426-009,EVMOBILITY (GBT),Felipe Hanke," R$  250.000,00 ",Proposta,Aguardando processo interno,,15%,"Estão comprando um carregador GBT à 65k, porém precisam com urgência, enviei o valor de frete aéreo na sexta, porém ainda sem retorno.",12/05/2026,,,
-,,EVMOBILITY (HUB MERCADO LIVRE),Felipe Hanke,,Proposta,Aguardando processo interno,,10%,"Estamos criando um modelo de negócio em conjunto para ser apresentado ao Mercado Livre, está ainda em desenvolvimento da solução",12/05/2026,,,
+03/04/2026,OPP-EVO-0426-009,EVMOBILITY (GBT),Felipe Hanke," R$  250.000,00 ",Proposta,Aguardando Engenharia,,15%,"Estão comprando um carregador GBT à 65k, porém precisam com urgência, enviei o valor de frete aéreo na sexta, porém ainda sem retorno.",12/05/2026,,,
+,,EVMOBILITY (HUB MERCADO LIVRE),Felipe Hanke,,Proposta,Aguardando Engenharia,,10%,"Estamos criando um modelo de negócio em conjunto para ser apresentado ao Mercado Livre, está ainda em desenvolvimento da solução",12/05/2026,,,
 03/04/2026,OPP-EVO-0426-003,EVMOBILITY (lISTA DE PREÇOS),Felipe Hanke," R$  29.000,00 ",Negociação,Aguardando parceiro,,100%,"Contato realizado com Pedro, solicitou que enviássemos lista de preços e mantivessemos estoque no  Brasil, lista de preços enviada, reunião agendada com flávio para falarmos sobre estoque no Brasil",12/05/2026,,,
 03/04/2026,OPP-EVO-0426-003,EVOLUTION MOBILITY (GRUPO PÁTRIA),Felipe Hanke," R$  29.000,00 ",,,,100%,,03/04/2026,,,12/05/2026
 13/04/2026,OPP-EVO-0426-003,EVOLUTION MOBILITY (GRUPO PÁTRIA),Felipe Hanke," R$ 29.000,00 ", Negociação ,Parado,,100%,Contato está no Histórico com a Anna,13/04/2026,,,
@@ -61,14 +61,14 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 13/04/2026,OPP-EZ -0426-014,EZ VOLT,Felipe Hanke,, Negociação ,Parado,,0%,,13/04/2026,,,
 12/05/2026,OPP-GOV-0526-033,GOVER DE PERNAMBUCO,Bruno Reis,, Negociação , Aguardando cliente ,Médio,,,05/06/2026,,,
 12/05/2026,OPP-GOV-0526-033,GOVER DE PERNAMBUCO,Bruno Reis,, Negociação , Aguardando cliente ,Médio,,Dia do Bid dia 26/06,08/06/2026,,,
-13/04/2026,OPP-Gre-0426-023,Green Yellow,Felipe Hanke,, Negociação ,Aguardando processo interno,,,"Contato realizado, aguardando jurídico analizar contrato e",13/04/2026,,,
+13/04/2026,OPP-Gre-0426-023,Green Yellow,Felipe Hanke,, Negociação ,Aguardando interno,,,"Contato realizado, aguardando jurídico analizar contrato e",13/04/2026,,,
 13/04/2026,OPP-GRE-0426-024,GREEN YELLOW,Felipe Hanke,, Lead ,Em andamento,,0%,"Contato realizado, aguardando jurídico analizar contrato e",12/05/2026,,,
 13/04/2026,OPP-GRU-0426-023,GRUPO SEKITA,Felipe Hanke,,Qualificação,Em andamento,,,"Fazer visita em São Gotardo, usa gerador à diesel no Plantio",13/04/2026,,,12/05/2026
 13/04/2026,OPP-GRU-0426-023,GRUPO SEKITA,Felipe Hanke,, Lead ,Em andamento,,0%,"Fazer visita em São Gotardo, usa gerador à diesel no Plantio",12/05/2026,,,
 13/04/2026,OPP-HS -0426-020,HS PRATES,Felipe Hanke,,Qualificação,Em andamento,,,"Fazer visita em São Gotardo, usa gerador à diesel no Plantio",13/04/2026,,,12/05/2026
 13/04/2026,OPP-HS -0426-022,HS PRATES,Felipe Hanke,,Lead,Em andamento,,0%,"Fazer visita em São Gotardo, usa gerador à diesel no Plantio",12/05/2026,,,
-13/04/2026,OPP-JUN-0426-013,JUNDU,Felipe Hanke,, Proposta ,Aguardando processo interno,,80%,"Verificando com Kelly sobre novo Bess para POC, Felipe está em contato com Jener",12/05/2026,,,
-13/04/2026,OPP-JUN-0426-018,JUNDU,Felipe Hanke,, Negociação ,Aguardando processo interno,,,"Verificando com Kelly sobre novo Bess para POC, Felipe está em contato com Jener",13/04/2026,,,12/05/2026
+13/04/2026,OPP-JUN-0426-013,JUNDU,Felipe Hanke,, Proposta ,Aguardando interno,,80%,"Verificando com Kelly sobre novo Bess para POC, Felipe está em contato com Jener",12/05/2026,,,
+13/04/2026,OPP-JUN-0426-018,JUNDU,Felipe Hanke,, Negociação ,Aguardando interno,,,"Verificando com Kelly sobre novo Bess para POC, Felipe está em contato com Jener",13/04/2026,,,12/05/2026
 03/04/2026,OPP-KBP-0426-013,KBPX,Bruno Reis," R$  10.000.000,00 ", Proposta , Aguardando cliente ,,100%,,03/04/2026,,,
 13/04/2026,OPP-KBP-0426-013,KBPX,Bruno Reis," R$  10.000.000,00 ", Proposta , Aguardando cliente ,,100%,,13/04/2026,,,
 03/04/2026,OPP-KBP-0426-013,KBPX,Bruno Reis," R$  10.000.000,00 ", Proposta , Aguardando cliente ,,100%,,03/04/2026,,,
@@ -79,8 +79,8 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 13/04/2026,OPP-MAC-0426-023,MACAÉ,Bruno Reis," R$  5.250.000,00 ", Lead , Aguardando cliente ,,100%,,13/04/2026,,,
 03/04/2026,OPP-MAC-0426-023,MACAÉ,Bruno Reis," R$ 5.250.000,00 ", Lead , Aguardando cliente ,Baixo,100%,Aguardando abertura do Lead,08/06/0206,,,
 03/04/2026,OPP-MAR-0426-002,MARECHAL,Felipe Hanke," R$  725.000,00 ",,,,100%,,03/04/2026,,,08/06/0206
-13/04/2026,OPP-MAR-0426-002,MARECHAL,Felipe Hanke," R$ 725.000,00 ", Negociação , Aguardando interno ,,100%,"Aguardando atualização da proposta Comercial e Técnica, Empresa e Onibus.",,,,
-03/04/2026,OPP-MAR-0426-002,MARECHAL,Felipe Hanke," R$  200.567,00 ", Proposta ,Aguardando processo interno,,100%,"Proposta apresentada, porém cliente disse que não possui carga para conexão do carregador, temos de revisar o escopo incluindo 1 Bess de 261",08/06/0206,,,
+13/04/2026,OPP-MAR-0426-002,MARECHAL,Felipe Hanke," R$ 725.000,00 ", Negociação , Aguardando Pricing ,,100%,"Aguardando atualização da proposta Comercial e Técnica, Empresa e Onibus.",,,,
+03/04/2026,OPP-MAR-0426-002,MARECHAL,Felipe Hanke," R$  200.567,00 ", Proposta , Aguardando Engenharia ,,100%,"Proposta apresentada, porém cliente disse que não possui carga para conexão do carregador, temos de revisar o escopo incluindo 1 Bess de 261",08/06/0206,,,
 12/05/2026,OPP-MON-0526-032,MONTES CLAROS,Bruno Reis,, Lead , Aguardando cliente ,Médio,100%,Aguardando a licitação,08/06/2026,,,
 13/04/2026,OPP-MOV-0326-031,MOVEBUSS,Bruno Reis,, Proposta ,Aguardando cliente,Médio,50%,,13/04/2026,,,
 04/03/2026,OPP-MOV-0326-031,MOVEBUSS,Bruno Reis,, Fechamento ,Aguardando cliente,Médio,100%,Aguardando decisão do cliente,08/06/2026,,,
@@ -89,7 +89,7 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 13/04/2026,OPP-NOR-0426-015,NORTEBUSS,Bruno Reis," R$  10.000.000,00 ", Proposta , Aguardando interno ,Baixo,100%,Vão para alta tensão e estamos aguardando proposta,05/06/2026,,,
 03/04/2026,OPP-NOR-0426-016,NORTEBUSS,Bruno Reis," R$  4.257.000,00 ", Lead , Em andamento ,Baixo,100%,,03/04/2026,,,
 13/04/2026,OPP-NOR-0426-016,NORTEBUSS,Bruno Reis," R$  4.257.000,00 ", Qualificação , Em andamento ,Baixo,100%,,13/04/2026,,,
-03/04/2026,OPP-NOR-0426-016,NORTEBUSS,Bruno Reis," R$ 4.257.000,00 ", Proposta , Aguardando interno ,Baixo,100%,Vão para alta tensão e estamos aguardando proposta,05/06/2026,,,
+03/04/2026,OPP-NOR-0426-016,NORTEBUSS,Bruno Reis," R$ 4.257.000,00 ", Proposta , Aguardando Pricing ,Baixo,100%,Vão para alta tensão e estamos aguardando proposta,05/06/2026,,,
 03/04/2026,OPP-PÊS-0426-009,PÊSSEGO,Bruno Reis,, Lead ,Parado,,0%,,03/04/2026,,,05/06/2026
 13/04/2026,OPP-PÊS-0426-009,PÊSSEGO,Bruno Reis,, Lead , Parado ,Alto,0%,,13/04/2026,,,
 03/04/2026,OPP-PÊS-0426-009,PÊSSEGO,Bruno Reis, R$ - , Lead , Parado ,Alto,0%,Retornar em alguns meses,08/06/2026,,,
@@ -102,14 +102,14 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 03/04/2026,OPP-PRE-0426-005,PREFEITURA DE SÃO JOSÉ DOS CAMPOS,Felipe Hanke,,,,,0%,,03/04/2026,,,08/06/2026
 13/04/2026,OPP-PRE-0426-005,PREFEITURA DE SÃO JOSÉ DOS CAMPOS,Felipe Hanke,, Negociação ,Parado,,0%,Verificar alternativa de quem investirá,13/04/2026,,,
 03/04/2026,OPP-PRE-0426-005,PREFEITURA DE SÃO JOSÉ DOS CAMPOS,Felipe Hanke,, Qualificação ,Parado,,0%,Verificar alternativa de quem investirá,12/05/2026,,,
-03/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis,, Lead , Parado ,,0%,,03/04/2026,,,12/05/2026
-13/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis,, Lead , Parado ,Médio,0%,,13/04/2026,,,
-03/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis, R$ - , Negociação , Aguardando interno ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
+03/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis,, Lead ,Parado,,0%,,03/04/2026,,,12/05/2026
+13/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis,, Lead ,Parado,Médio,0%,,13/04/2026,,,
+03/04/2026,OPP-SAM-0426-017,SAMBAÍBA,Bruno Reis, R$ - , Negociação , Aguardando Engenharia ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
 03/04/2026,OPP-SAM-0426-018,SAMBAÍBA G1,Bruno Reis,, Lead ,Parado,,0%,,03/04/2026,,,08/06/2026
 13/04/2026,OPP-SAM-0426-018,SAMBAÍBA G1,Bruno Reis,, Lead ,Parado,,0%,,13/04/2026,,,
-03/04/2026,OPP-SAM-0426-018,SAMBAÍBA G1,Bruno Reis, R$ - , Negociação , Aguardando interno ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
-13/04/2026,OPP-SAM-0426-019,SAMBAIBA G3,Bruno Reis, R$ - , Negociação , Aguardando interno ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
-14/04/2026,OPP-SAM-0426-020,SAMBAIBA G4,Bruno Reis, R$ - , Negociação , Aguardando interno ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
+03/04/2026,OPP-SAM-0426-018,SAMBAÍBA G1,Bruno Reis, R$ - , Negociação , Aguardando Engenharia ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
+13/04/2026,OPP-SAM-0426-019,SAMBAIBA G3,Bruno Reis, R$ - , Negociação , Aguardando Engenharia ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
+14/04/2026,OPP-SAM-0426-020,SAMBAIBA G4,Bruno Reis, R$ - , Negociação , Aguardando Engenharia ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
 03/04/2026,OPP-SHC-0426-012,SHC JAC MOTORS,Felipe Hanke," R$  90.000,00 ",,,,30%,,03/04/2026,,,
 13/04/2026,OPP-SHC-0426-012,SHC JAC MOTORS,Felipe Hanke," R$  90.000,00 ", Negociação ,Parado,,30%,Verificar com Flávio,13/04/2026,,,
 03/04/2026,OPP-SHC-0426-012,SHC JAC MOTORS,Felipe Hanke,,Qualificação,Parado,,30%,Verificar com Flávio,12/05/2026,,,
@@ -118,12 +118,12 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 03/04/2026,OPP-TRA-0426-029,TRANSPASS (RV TRANS),Bruno Reis, R$ - , Lead , Parado ,Baixo,0%,,14/05/2026,,,
 03/04/2026,OPP-TRA-0426-029,TRANSPASS (RV TRANS),Bruno Reis,, Lead ,Parado,,0%,,03/04/2026,,,14/05/2026
 13/04/2026,OPP-TRA-0426-029,TRANSPASS (RV TRANS),Bruno Reis,, Lead , Parado ,,0%,,13/04/2026,,,
-03/04/2026,OPP-TRA-0426-029,TRANSPASS (RV TRANS),Bruno Reis, R$ - , Negociação , Aguardando interno ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
+03/04/2026,OPP-TRA-0426-029,TRANSPASS (RV TRANS),Bruno Reis, R$ - , Negociação , Aguardando Engenharia ,Médio,50%,Aguardando time de engenharia,08/06/2026,,,
 03/04/2026,OPP-UBE-0426-016,UBERLANDIA,Felipe Hanke,,,,,0%,,03/04/2026,,,08/06/2026
 13/04/2026,OPP-UBE-0426-016,UBERLANDIA,Felipe Hanke,, Negociação ,Parado,,0%,"Conversa realizada com Paulo, enviei datasheet do BESS para esclarecimento, fazer contato para entender sobre outras oportunidades",13/04/2026,,,
 03/04/2026,OPP-UBE-0426-016,UBERLANDIA,Felipe Hanke,, Proposta ,Parado,,0%,"Conversa realizada com Paulo, enviei datasheet do BESS para esclarecimento, fazer contato para entender sobre outras oportunidades",12/05/2026,,,
 13/04/2026,OPP-VAL-0426-019,VALE VARGEM GRANDE,Felipe Hanke,, Qualificação ,Em andamento,,,Aguardando envio de informações para especificação de Bess para canteiro de obras e Bombas,13/04/2026,,,#REF!
-13/04/2026,OPP-VAL-0426-021,VALE VARGEM GRANDE,Felipe Hanke,, Proposta ,Aguardando processo interno,,80%,Aguardando envio de informações para especificação de Bess para canteiro de obras e Bombas,12/05/2026,,,
+13/04/2026,OPP-VAL-0426-021,VALE VARGEM GRANDE,Felipe Hanke,, Proposta , Aguardando Engenharia ,,80%,Aguardando envio de informações para especificação de Bess para canteiro de obras e Bombas,12/05/2026,,,
 03/04/2026,OPP-VIA-0426-006,VIAÇÃO CIDADE SORRISO,Felipe Hanke," R$  2.500.000,00 ",,,,100%,,03/04/2026,,,
 13/04/2026,OPP-VIA-0426-006,VIAÇÃO CIDADE SORRISO,Felipe Hanke," R$ 2.500.000,00 ", Negociação ,Aguardando cliente,,100%,"Proposta Comercial e Técnica enviada, Acompanhar grupo Gulim",13/04/2026,,,
 03/04/2026,OPP-VIA-0426-006,VIAÇÃO CIDADE SORRISO,Felipe Hanke," R$  2.115.818,00 ",Fechamento,Aguardando cliente,,100%,"Revisão para carregador de 180kW, Flávio está alinhando com Cao e Beto CWBus",12/05/2026,,,
@@ -142,7 +142,7 @@ DATA_SNAPSHOT,ID_OPORTUNIDADE,CUSTOMER,VENDEDOR, TOTAL NET LVK (R$) ,ESTAGIO,STA
 13/04/2026,OPP-VIA-0426-017,VIAÇÃO SANTA BRÍGIDA,Felipe Hanke,, Negociação ,Parado,,0%,"Tentar aproximar e agendar uma conversa, Flávio quem possui o contato do pessoal, pegar detalhe da negociação",13/04/2026,,,
 03/04/2026,OPP-VIA-0426-017,VIAÇÃO SANTA BRÍGIDA,Felipe Hanke,,Proposta,Parado,,0%,"Tentar aproximar e agendar uma conversa, Flávio quem possui o contato do pessoal, pegar detalhe da negociação",12/05/2026,,,
 03/04/2026,OPP-VIA-0426-015,VIAÇÃO SÃO GABRIEL,Felipe Hanke," R$  670.000,00 ",,,,100%,,03/04/2026,,,12/05/2026
-13/04/2026,OPP-VIA-0426-015,VIAÇÃO SÃO GABRIEL,Felipe Hanke," R$ 670.000,00 ", Negociação ,Aguardando processo interno,,100%,Previsão de envio da proposta dia 15/04,13/04/2026,,,
-03/04/2026,OPP-VIA-0426-015,VIAÇÃO SÃO GABRIEL,Felipe Hanke," R$  1.599.067,75 ", Proposta ,Aguardando processo interno,,100%,Previsão de envio da proposta dia 15/04,12/05/2026,,,
-13/04/2026,OPP-XCM-0426-011,XCMG,Felipe Hanke," R$  419.389,00 ",Negociação,Aguardando parceiro,,0%,"Proposta enviada, Rodrigo disse que agora é com setor de compras e que ele não tem mais controle da negociação, na Intermodal vi ele muito proximo no Stand da Nansen, verificar avanço.",12/05/2026,,,
-13/04/2026,OPP-XCM-0426-026,XCMG,Felipe Hanke,, Negociação ,Aguardando processo interno,,,"Proposta enviada, Rodrigo disse que enviará para compras, aguardar retorno",13/04/2026,,,12/05/2026
+13/04/2026,OPP-VIA-0426-015,VIAÇÃO SÃO GABRIEL,Felipe Hanke," R$ 670.000,00 ", Negociação , Aguardando Pricing ,,100%,Previsão de envio da proposta dia 15/04,13/04/2026,,,
+03/04/2026,OPP-VIA-0426-015,VIAÇÃO SÃO GABRIEL,Felipe Hanke," R$  1.599.067,75 ", Proposta , Aguardando Pricing ,,100%,Previsão de envio da proposta dia 15/04,12/05/2026,,,
+13/04/2026,OPP-XCM-0426-011,XCMG,Felipe Hanke," R$  419.389,00 ",Negociação, Aguardando cliente ,,0%,"Proposta enviada, Rodrigo disse que agora é com setor de compras e que ele não tem mais controle da negociação, na Intermodal vi ele muito proximo no Stand da Nansen, verificar avanço.",12/05/2026,,,
+13/04/2026,OPP-XCM-0426-026,XCMG,Felipe Hanke,, Negociação , Aguardando cliente ,,,"Proposta enviada, Rodrigo disse que enviará para compras, aguardar retorno",13/04/2026,,,12/05/2026
