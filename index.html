@@ -1185,6 +1185,7 @@ function renderBruno(){
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
+  const metBruno_conc=getConcentracao(rows);
   
   // 🔄 Calcular comparativo usando snapshot
   const comp = getComparativoSnapshot('bruno');
@@ -1280,6 +1281,11 @@ function renderBruno(){
           <td><strong>Opps Paradas</strong></td>
           <td class="num">${oppsParadas.length}</td>
           <td><span class="status warn">Atenção</span></td>
+        <tr>
+          <td><strong>Concentração Top 5</strong></td>
+          <td class="num">${(metBruno_conc.pct).toFixed(0)}%</td>
+          <td><span class="status ${metBruno_conc.pct>60?"critical":metBruno_conc.pct>40?"warn":"ok"}">${metBruno_conc.pct>60?"🔴 RISCO":metBruno_conc.pct>40?"🟡 MÉDIO":"🟢 OK"}</span></td>
+        </tr>
         </tr>
       </table>
     </div>
@@ -1365,6 +1371,7 @@ function renderFelipe(){
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
   const oppsTop=rows.sort((a,b)=>b._val-a._val).slice(0,10);
+  const metFelipe_conc=getConcentracao(rows);
   
   // 🔄 Calcular comparativo usando snapshot
   const comp = getComparativoSnapshot('felipe');
@@ -1465,6 +1472,11 @@ function renderFelipe(){
           <td><strong>Opps Paradas</strong></td>
           <td class="num">${oppsParadas.length}</td>
           <td><span class="status warn">Atenção</span></td>
+        <tr>
+          <td><strong>Concentração Top 5</strong></td>
+          <td class="num">${(metFelipe_conc.pct).toFixed(0)}%</td>
+          <td><span class="status ${metFelipe_conc.pct>60?"critical":metFelipe_conc.pct>40?"warn":"ok"}">${metFelipe_conc.pct>60?"🔴 RISCO":metFelipe_conc.pct>40?"🟡 MÉDIO":"🟢 OK"}</span></td>
+        </tr>
         </tr>
       </table>
     </div>
