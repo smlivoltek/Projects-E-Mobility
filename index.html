@@ -586,7 +586,7 @@ function renderDiretoria(){
   <div class="g2">
     <div class="card">
       <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr><th>Métrica</th><th class="num">Anterior</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline Total</strong></td>
           <td class="num">${fK(metAll.pipeline)}</td>
@@ -1207,19 +1207,22 @@ function renderBruno(){
   <div class="g2">
     <div class="card">
       <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr><th>Métrica</th><th class="num">Anterior</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline</strong></td>
+          <td class="num">${fK(comp.anterior.pipeline)}</td>
           <td class="num">${fK(comp.agora.pipeline)}</td>
           <td class="num" style="color:${comp.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${comp.deltas.pipeline>=0?'+':''}${fK(comp.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Deals Fechados</strong></td>
+          <td class="num">${comp.anterior.ganhos}</td>
           <td class="num">${comp.agora.ganhos}</td>
           <td class="num" style="color:${comp.deltas.ganhos>=0?'var(--green)':'var(--red)'}">${comp.deltas.ganhos>=0?'+':''} ${comp.deltas.ganhos}</td>
         </tr>
         <tr>
           <td><strong>Deals Perdidos</strong></td>
+          <td class="num">${comp.anterior.perdidos}</td>
           <td class="num">${comp.agora.perdidos}</td>
           <td class="num" style="color:${comp.deltas.perdidos<=0?'var(--green)':'var(--red)'}">${comp.deltas.perdidos>=0?'+':''} ${comp.deltas.perdidos}</td>
         </tr>
@@ -1388,19 +1391,22 @@ function renderFelipe(){
   <div class="g2">
     <div class="card">
       <table class="tbl">
-        <tr><th>Métrica</th><th class="num">Agora</th><th class="num">Δ</th></tr>
+        <tr><th>Métrica</th><th class="num">Anterior</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline</strong></td>
+          <td class="num">${fK(comp.anterior.pipeline)}</td>
           <td class="num">${fK(comp.agora.pipeline)}</td>
           <td class="num" style="color:${comp.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${comp.deltas.pipeline>=0?'+':''}${fK(comp.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Deals Fechados</strong></td>
+          <td class="num">${comp.anterior.ganhos}</td>
           <td class="num">${comp.agora.ganhos}</td>
           <td class="num" style="color:${comp.deltas.ganhos>=0?'var(--green)':'var(--red)'}">${comp.deltas.ganhos>=0?'+':''} ${comp.deltas.ganhos}</td>
         </tr>
         <tr>
           <td><strong>Deals Perdidos</strong></td>
+          <td class="num">${comp.anterior.perdidos}</td>
           <td class="num">${comp.agora.perdidos}</td>
           <td class="num" style="color:${comp.deltas.perdidos<=0?'var(--green)':'var(--red)'}">${comp.deltas.perdidos>=0?'+':''} ${comp.deltas.perdidos}</td>
         </tr>
