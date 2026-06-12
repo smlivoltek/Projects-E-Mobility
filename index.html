@@ -541,6 +541,11 @@ function renderDiretoria(){
   const oppsC=getOppsCriticas(rows);
   const cobB=metBruno.pipeline/metB,cobF=metFelipe.pipeline/metF;
   
+  // 📊 CALCULAR COMPARATIVOS SNAPSHOT
+  const compAll = getComparativoSnapshot();
+  const compBruno = getComparativoSnapshot('bruno');
+  const compFelipe = getComparativoSnapshot('felipe');
+  
   // Data mais recente
   const dataAtual=rows.reduce((max,r)=>!r._atualizacao?max:!max||r._atualizacao>max?r._atualizacao:max,null);
   document.getElementById('update-pill').textContent='📅 Atualizado: '+(dataAtual?dataAtual.toLocaleDateString('pt-BR'):'--');
@@ -596,18 +601,21 @@ function renderDiretoria(){
         <tr><th>Métrica</th><th class="num">Anterior</th><th class="num">Agora</th><th class="num">Δ</th></tr>
         <tr>
           <td><strong>Pipeline Total</strong></td>
-          <td class="num">${fK(metAll.pipeline)}</td>
-          <td class="num">--</td>
+          <td class="num">${fK(compAll.anterior.pipeline)}</td>
+          <td class="num">${fK(compAll.agora.pipeline)}</td>
+          <td class="num" style="color:${compAll.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${compAll.deltas.pipeline>=0?'+':''}${fK(compAll.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Bruno</strong></td>
-          <td class="num">${fK(metBruno.pipeline)}</td>
-          <td class="num">--</td>
+          <td class="num">${fK(compBruno.anterior.pipeline)}</td>
+          <td class="num">${fK(compBruno.agora.pipeline)}</td>
+          <td class="num" style="color:${compBruno.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${compBruno.deltas.pipeline>=0?'+':''}${fK(compBruno.deltas.pipeline)}</td>
         </tr>
         <tr>
           <td><strong>Felipe</strong></td>
-          <td class="num">${fK(metFelipe.pipeline)}</td>
-          <td class="num">--</td>
+          <td class="num">${fK(compFelipe.anterior.pipeline)}</td>
+          <td class="num">${fK(compFelipe.agora.pipeline)}</td>
+          <td class="num" style="color:${compFelipe.deltas.pipeline>=0?'var(--green)':'var(--red)'}">${compFelipe.deltas.pipeline>=0?'+':''}${fK(compFelipe.deltas.pipeline)}</td>
         </tr>
       </table>
     </div>
