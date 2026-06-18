@@ -138,7 +138,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 <script>
 const METAS = {bruno: 50000000, felipe: 12000000};
 const URLS = {
-  base: './base-geral.csv',
+  brunoBid: './Opp Bruno.csv',
+  felipeBid: './Opp Felipe.csv',
   snapshot: './snapshot.csv'
 };
 
@@ -155,65 +156,60 @@ const formatarValor = (value) => {
 function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
 function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
 function parseData(d){if(!d||d==='')return null;try{const s=String(d).trim();if(!s)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;const ano=p[2],mes=p[1],dia=p[0];if(ano.length===4)return new Date(parseInt(ano),parseInt(mes)-1,parseInt(dia));return new Date(s)}catch(e){return null}}
-function diasDesde(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
-function diasAte(d){if(!d)return 999;try{const t=parseData(d);if(!t)return 999;return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
+function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
+function diasAte(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
 
 // LOAD DATA
 async function loadData(){
   try{
     console.log('🔄 Carregando dados do repositório local...');
     
-    // Tentar carregar arquivo BASE-GERAL
-    console.log('📋 Carregando base-geral.csv...');
-    const resBase = await fetch(URLS.base, {method:'GET'});
-    if(!resBase.ok) {
-      throw new Error(`Base-Geral não encontrado (${resBase.status}). Verifique se o arquivo está no repositório.`);
-    }
-    const txtBase = await resBase.text();
-    console.log('✅ base-geral.csv carregado:', txtBase.length, 'bytes');
+    // Carregar Opp Bruno
+    console.log('📋 Carregando Opp Bruno.csv...');
+    const resBruno = await fetch(URLS.brunoBid, {method:'GET'});
+    if(!resBruno.ok) throw new Error(`Opp Bruno não encontrado`);
+    const txtBruno = await resBruno.text();
+    if(!txtBruno || txtBruno.length<100) throw new Error('Opp Bruno vazio');
+    const baseBruno = Papa.parse(txtBruno, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    console.log('✅ Opp Bruno carregado:', baseBruno.length, 'registros');
     
-    if(!txtBase || txtBase.length<100) {
-      throw new Error('Base-Geral vazio ou inválido');
-    }
+    // Carregar Opp Felipe
+    console.log('📋 Carregando Opp Felipe.csv...');
+    const resFelix = await fetch(URLS.felipeBid, {method:'GET'});
+    if(!resFelix.ok) throw new Error(`Opp Felipe não encontrado`);
+    const txtFelix = await resFelix.text();
+    if(!txtFelix || txtFelix.length<100) throw new Error('Opp Felipe vazio');
+    const baseFelix = Papa.parse(txtFelix, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    console.log('✅ Opp Felipe carregado:', baseFelix.length, 'registros');
     
-    DATA.base = Papa.parse(txtBase, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    console.log('📊 Base-Geral parseado:', DATA.base.length, 'registros');
+    // Mesclar os dois
+    DATA.base = [...baseBruno, ...baseFelix];
+    console.log('📊 Base consolidada:', DATA.base.length, 'registros totais');
     
-    if(DATA.base.length === 0) {
-      throw new Error('Nenhum registro válido na Base-Geral');
-    }
-    
-    // Tentar carregar SNAPSHOT
+    // Carregar SNAPSHOT
     console.log('📋 Carregando snapshot.csv...');
     const resSnapshot = await fetch(URLS.snapshot, {method:'GET'});
     if(!resSnapshot.ok) {
-      console.warn('⚠️ Snapshot não encontrado (arquivo opcional)');
+      console.warn('⚠️ Snapshot não encontrado');
       DATA.snapshot = [];
     } else {
       const txtSnapshot = await resSnapshot.text();
-      console.log('✅ snapshot.csv carregado:', txtSnapshot.length, 'bytes');
-      
       if(txtSnapshot && txtSnapshot.length > 100) {
         DATA.snapshot = Papa.parse(txtSnapshot, {header:true, skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-        console.log('📊 Snapshot parseado:', DATA.snapshot.length, 'registros');
+        console.log('✅ Snapshot carregado:', DATA.snapshot.length, 'registros');
       } else {
-        console.warn('⚠️ Snapshot vazio ou muito pequeno');
         DATA.snapshot = [];
       }
     }
     
     normalize();
     renderAll();
-    updateStatus('✓ Dados carregados: '+DATA.base.length+' oportunidades',true);
+    updateStatus('✓ '+DATA.base.length+' oportunidades carregadas',true);
   }catch(e){
     console.error('❌ Erro ao carregar:', e.message);
-    console.error('Stack:', e.stack);
-    const errMsg = `⚠️ ${e.message}. Você precisa fazer upload dos arquivos CSV para o repositório GitHub!`;
-    updateStatus(errMsg, false);
-    
-    // Mostrar modal APENAS se os arquivos não forem encontrados
+    updateStatus('❌ Erro: '+e.message, false);
     setTimeout(() => {
-      alert(`❌ ERRO DE CARREGAMENTO\n\n${e.message}\n\n✅ SOLUÇÃO:\n1. Baixe os CSVs do Google Sheets\n2. Suba-os para: https://github.com/smlivoltek/Projects-E-Mobility\n3. Hard Refresh: Ctrl+F5`);
+      alert(`ERRO:\n${e.message}\n\nSOLUÇÃO:\n1. Baixe Opp Bruno.csv e Opp Felipe.csv\n2. Suba em: github.com/smlivoltek/Projects-E-Mobility\n3. Hard Refresh: Ctrl+F5`);
     }, 1000);
   }
 }
@@ -317,12 +313,12 @@ function normalize(){
                     '';
     r._dataGanho=parseData(dataGanho);
     
-    // 🔧 Procurar DATA DE FECHAMENTO ESPERADO com diferentes variações
-    let dataFechamento = r['DATA FECHAMENTO ESPERADO'] ||
-                        r['Data Fechamento Esperado'] ||
-                        r['DATA_FECHAMENTO_ESPERADO'] ||
-                        r['Data_Fechamento_Esperado'] ||
-                        r['data fechamento esperado'] ||
+    // 🔧 Procurar DATA DE FECHAMENTO com diferentes variações
+    let dataFechamento = r['DATA DE FECHAMENTO'] ||
+                        r['Data de Fechamento'] ||
+                        r['DATA_DE_FECHAMENTO'] ||
+                        r['Data_de_Fechamento'] ||
+                        r['data de fechamento'] ||
                         '';
     r._fechamento=parseData(dataFechamento);
     
@@ -1309,6 +1305,21 @@ function renderBruno(){
   
   html+=`</div>
 
+  <!-- PENDÊNCIAS -->
+  <div class="sec">⏳ Pendências da Equipe</div>
+  <div class="g2">
+    <div class="kpi amber">
+      <div class="kpi-l">Aguardando Engenharia</div>
+      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
+      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-l">Aguardando Pré-Venda</div>
+      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
+      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+    </div>
+  </div>
+
   <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
   <div class="g2">
@@ -1499,6 +1510,21 @@ function renderFelipe(){
   }
   
   html+=`</div>
+
+  <!-- PENDÊNCIAS -->
+  <div class="sec">⏳ Pendências da Equipe</div>
+  <div class="g2">
+    <div class="kpi amber">
+      <div class="kpi-l">Aguardando Engenharia</div>
+      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
+      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-l">Aguardando Pré-Venda</div>
+      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
+      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+    </div>
+  </div>
 
   <!-- COMPARATIVO: AGORA VS 2 SEMANAS ATRÁS -->
   <div class="sec">📊 Comparativo: Agora vs 2 Semanas Atrás</div>
