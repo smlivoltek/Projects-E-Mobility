@@ -1308,15 +1308,27 @@ function renderBruno(){
   <!-- PENDÊNCIAS -->
   <div class="sec">⏳ Pendências da Equipe</div>
   <div class="g2">
-    <div class="kpi amber">
-      <div class="kpi-l">Aguardando Engenharia</div>
-      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
-      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+    <div class="card">
+      <div class="card-t">🔴 Aguardando Engenharia</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+      <table class="tbl" style="font-size:0.8rem">
+        <tr><th>Cliente</th><th>ID Opp</th></tr>
+        ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).map(r=>`
+        <tr><td>${r.CUSTOMER||'-'}</td><td>${r.ID_OPORTUNIDADE||'-'}</td></tr>
+        `).join('')}
+      </table>
     </div>
-    <div class="kpi amber">
-      <div class="kpi-l">Aguardando Pré-Venda</div>
-      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
-      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+    <div class="card">
+      <div class="card-t">🟡 Aguardando Pré-Venda</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+      <table class="tbl" style="font-size:0.8rem">
+        <tr><th>Cliente</th><th>ID Opp</th></tr>
+        ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).map(r=>`
+        <tr><td>${r.CUSTOMER||'-'}</td><td>${r.ID_OPORTUNIDADE||'-'}</td></tr>
+        `).join('')}
+      </table>
     </div>
   </div>
 
@@ -1514,15 +1526,27 @@ function renderFelipe(){
   <!-- PENDÊNCIAS -->
   <div class="sec">⏳ Pendências da Equipe</div>
   <div class="g2">
-    <div class="kpi amber">
-      <div class="kpi-l">Aguardando Engenharia</div>
-      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
-      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+    <div class="card">
+      <div class="card-t">🔴 Aguardando Engenharia</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+      <table class="tbl" style="font-size:0.8rem">
+        <tr><th>Cliente</th><th>ID Opp</th></tr>
+        ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).map(r=>`
+        <tr><td>${r.CUSTOMER||'-'}</td><td>${r.ID_OPORTUNIDADE||'-'}</td></tr>
+        `).join('')}
+      </table>
     </div>
-    <div class="kpi amber">
-      <div class="kpi-l">Aguardando Pré-Venda</div>
-      <div class="kpi-v">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
-      <div class="kpi-s">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+    <div class="card">
+      <div class="card-t">🟡 Aguardando Pré-Venda</div>
+      <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+      <table class="tbl" style="font-size:0.8rem">
+        <tr><th>Cliente</th><th>ID Opp</th></tr>
+        ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).map(r=>`
+        <tr><td>${r.CUSTOMER||'-'}</td><td>${r.ID_OPORTUNIDADE||'-'}</td></tr>
+        `).join('')}
+      </table>
     </div>
   </div>
 
