@@ -138,9 +138,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 <script>
 const METAS = {bruno: 50000000, felipe: 12000000};
 const URLS = {
-  brunoBid: './Opp Bruno.csv',
-  felipeBid: './Opp Felipe.csv',
-  snapshot: './snapshot.csv'
+  brunoBid: './Opp Bruno - BASE.csv',
+  felipeBid: './Opp Felipe - BASE.csv',
+  snapshot: './Opp Projects E-mobility - SNAPSHOTS.csv'
 };
 
 let DATA = {base: [], snapshot: [], snapshotByOpportunity: {}};
@@ -165,7 +165,7 @@ async function loadData(){
     console.log('🔄 Carregando dados do repositório local...');
     
     // Carregar Opp Bruno
-    console.log('📋 Carregando Opp Bruno.csv...');
+    console.log('📋 Carregando Opp Bruno - BASE.csv...');
     const resBruno = await fetch(URLS.brunoBid, {method:'GET'});
     if(!resBruno.ok) throw new Error(`Opp Bruno não encontrado`);
     const txtBruno = await resBruno.text();
@@ -174,7 +174,7 @@ async function loadData(){
     console.log('✅ Opp Bruno carregado:', baseBruno.length, 'registros');
     
     // Carregar Opp Felipe
-    console.log('📋 Carregando Opp Felipe.csv...');
+    console.log('📋 Carregando Opp Felipe - BASE.csv...');
     const resFelix = await fetch(URLS.felipeBid, {method:'GET'});
     if(!resFelix.ok) throw new Error(`Opp Felipe não encontrado`);
     const txtFelix = await resFelix.text();
@@ -187,7 +187,7 @@ async function loadData(){
     console.log('📊 Base consolidada:', DATA.base.length, 'registros totais');
     
     // Carregar SNAPSHOT
-    console.log('📋 Carregando snapshot.csv...');
+    console.log('📋 Carregando Opp Projects E-mobility - SNAPSHOTS.csv...');
     const resSnapshot = await fetch(URLS.snapshot, {method:'GET'});
     if(!resSnapshot.ok) {
       console.warn('⚠️ Snapshot não encontrado');
@@ -209,7 +209,7 @@ async function loadData(){
     console.error('❌ Erro ao carregar:', e.message);
     updateStatus('❌ Erro: '+e.message, false);
     setTimeout(() => {
-      alert(`ERRO:\n${e.message}\n\nSOLUÇÃO:\n1. Baixe Opp Bruno.csv e Opp Felipe.csv\n2. Suba em: github.com/smlivoltek/Projects-E-Mobility\n3. Hard Refresh: Ctrl+F5`);
+      alert(`ERRO:\n${e.message}\n\nSOLUÇÃO:\n1. Verifique os nomes dos CSVs no GitHub\n2. Hard Refresh: Ctrl+F5`);
     }, 1000);
   }
 }
