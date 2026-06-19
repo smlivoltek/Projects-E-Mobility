@@ -155,7 +155,7 @@ const formatarValor = (value) => {
 };
 function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
 function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
-function parseData(d){if(!d||d==='')return null;try{const s=String(d).trim();if(!s||s.length<6)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;let ano,mes,dia;if(p[0].length===4){ano=parseInt(p[0]);mes=parseInt(p[1]);dia=parseInt(p[2])}else{dia=parseInt(p[0]);mes=parseInt(p[1]);ano=parseInt(p[2])}if(ano<1900||ano>2100||mes<1||mes>12||dia<1||dia>31)return null;const date=new Date(ano,mes-1,dia);return date.getFullYear()===ano?date:null}catch(e){return null}}catch(e){return null}}
+function parseData(d){if(!d||d==='')return null;try{const s=String(d).trim();if(!s||s.length<6)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;let ano,mes,dia;if(p[0].length===4){ano=parseInt(p[0]);mes=parseInt(p[1]);dia=parseInt(p[2])}else{dia=parseInt(p[0]);mes=parseInt(p[1]);ano=parseInt(p[2])}if(ano<1900||ano>2100||mes<1||mes>12||dia<1||dia>31)return null;const date=new Date(ano,mes-1,dia);return date.getFullYear()===ano?date:null}catch(e){return null}}
 function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
 function diasAte(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
 
@@ -279,6 +279,7 @@ function fixData(d){
   }
   return d;
 }
+function fixData(d){const s=String(d).trim();if(s.includes('/0206')||s.includes('-0206')){return s.replace(/\/0206/g,'/2026').replace(/-0206/g,'-2026')}return d}
 function normalize(){
   DATA.base.forEach(r=>{
     r._val=parseBRL(
@@ -380,8 +381,7 @@ function processSnapshotData(){
     );
     
     r._vendor = (r['VENDEDOR'] || '').toLowerCase();
-    r._atualizacao = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || '');
-    r._status = (r['STATUS'] || '').trim();
+    r._atualizacao = parseData(fixData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || ''));\n    r._status = (r['STATUS'] || '').trim();
     
     // Agrupar
     if(!byOpportunity[oppId]) {
