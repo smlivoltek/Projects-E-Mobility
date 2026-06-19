@@ -156,8 +156,8 @@ const formatarValor = (value) => {
 function fKs(n){if(!n)return'R$ 0';return'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
 function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();const n=parseFloat(s);return isNaN(n)?0:n}
 function parseData(d){if(!d||d==='')return null;try{const s=String(d).trim().replace(/\/0206/g,'/2026');if(!s||s.length<6)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;let ano,mes,dia;if(p[0].length===4){ano=parseInt(p[0]);mes=parseInt(p[1]);dia=parseInt(p[2])}else{dia=parseInt(p[0]);mes=parseInt(p[1]);ano=parseInt(p[2])}if(ano<1900||ano>2100||mes<1||mes>12||dia<1||dia>31)return null;const d=new Date(ano,mes-1,dia);return d.getFullYear()===ano?d:null}catch(e){return null}}
-function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
-function diasAte(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
+function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor(new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
+function diasAte(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor(t-new Date())/(1000*60*60*24)))}catch(e){return 999}}
 
 // LOAD DATA
 async function loadData(){
@@ -208,7 +208,7 @@ async function loadData(){
   }catch(e){
     console.error('❌ Erro ao carregar:', e.message);
     updateStatus('❌ Erro: '+e.message, false);
-    setTimeout(() => {
+    setTimeout() => {
       alert(`ERRO:\n${e.message}\n\nSOLUÇÃO:\n1. Verifique os nomes dos CSVs no GitHub\n2. Hard Refresh: Ctrl+F5`);
     }, 1000);
   }
@@ -381,7 +381,7 @@ function processSnapshotData(){
     );
     
     r._vendor = (r['VENDEDOR'] || '').toLowerCase();
-    r._atualizacao = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || ''));\n    r._status = (r['STATUS'] || '').trim();
+    r._atualizacao = parseData(r['DATA DA ULTIMA ATUALIZAÇÃO'] || '');    r._status = (r['STATUS'] || '').trim();
     
     // Agrupar
     if(!byOpportunity[oppId]) {
@@ -399,7 +399,7 @@ function processSnapshotData(){
     const records = byOpportunity[oppId];
     
     // Ordenar por data descrescente
-    records.sort((a, b) => {
+    records.sort(a, b) => {
       const dateA = a._atualizacao || new Date(0);
       const dateB = b._atualizacao || new Date(0);
       return dateB - dateA;
@@ -418,11 +418,11 @@ function processSnapshotData(){
 // MÉTRICAS
 function getMetricas(rows,vendor){
   const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
-  const pipeline=filtered.reduce((s,r)=>s+r._val,0);
-  const ponderado=filtered.reduce((s,r)=>s+r._ponderado,0);
+  const pipeline=filtered.reduce(s,r)=>s+r._val,0);
+  const ponderado=filtered.reduce(s,r)=>s+r._ponderado,0);
   const ganhos=filtered.filter(r=>r.STATUS==='Ganhou').length;
   const perdidos=filtered.filter(r=>r.STATUS==='Perdida').length;
-  const fechados=filtered.filter(r=>r.STATUS==='Ganhou').reduce((s,r)=>s+r._val,0);
+  const fechados=filtered.filter(r=>r.STATUS==='Ganhou').reduce(s,r)=>s+r._val,0);
   return{pipeline,ponderado,ganhos,perdidos,fechados,count:filtered.length};
 }
 
@@ -430,24 +430,24 @@ function getConcentracao(rows,vendor){
   const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
   const byClient={};
   filtered.forEach(r=>{const c=r.CUSTOMER||'Unknown';byClient[c]=(byClient[c]||0)+r._val});
-  const sorted=Object.entries(byClient).sort((a,b)=>b[1]-a[1]);
-  const top5=sorted.slice(0,5).reduce((s,e)=>s+e[1],0);
-  const total=filtered.reduce((s,r)=>s+r._val,0);
+  const sorted=Object.entries(byClient).sort(a,b)=>b[1]-a[1]);
+  const top5=sorted.slice(0,5).reduce(s,e)=>s+e[1],0);
+  const total=filtered.reduce(s,r)=>s+r._val,0);
   return{pct:(top5/total*100)||0,top5:sorted.slice(0,5)};
 }
 
 function getAging(rows,vendor){
   const filtered=vendor?rows.filter(r=>(r._vendor||'').includes(vendor)):rows;
   return{
-    '0-30':filtered.filter(r=>r._dias_sem_atualizar<=30).reduce((s,r)=>s+r._val,0),
-    '31-60':filtered.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce((s,r)=>s+r._val,0),
-    '61-90':filtered.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce((s,r)=>s+r._val,0),
-    '90+':filtered.filter(r=>r._dias_sem_atualizar>90).reduce((s,r)=>s+r._val,0)
+    '0-30':filtered.filter(r=>r._dias_sem_atualizar<=30).reduce(s,r)=>s+r._val,0),
+    '31-60':filtered.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce(s,r)=>s+r._val,0),
+    '61-90':filtered.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce(s,r)=>s+r._val,0),
+    '90+':filtered.filter(r=>r._dias_sem_atualizar>90).reduce(s,r)=>s+r._val,0)
   };
 }
 
 function getOppsCriticas(rows){
-  return rows.filter(r=>r._val>0).sort((a,b)=>b._val-a._val).slice(0,5);
+  return rows.filter(r=>r._val>0).sort(a,b)=>b._val-a._val).slice(0,5);
 }
 
 // 🔄 CALCULAR COMPARATIVO COM SNAPSHOT (ÚLTIMA VS PENÚLTIMA ATUALIZAÇÃO)
@@ -467,7 +467,7 @@ function getComparativoSnapshot(vendor){
   const agora = { pipeline: 0, ganhos: 0, perdidos: 0, clientes_novos: 0, ganhos_list: [], perdidos_list: [], clientes_novos_list: [] };
   const anterior = { pipeline: 0, ganhos: 0, perdidos: 0 };
   
-  filtered.forEach((opp, idx) => {
+  filtered.forEach(opp, idx) => {
     const latest = opp.latest;
     const previous = opp.previous;
     
@@ -542,7 +542,7 @@ function getComparativoSnapshot(vendor){
   // DEBUG: mostrar todos os clientes novos
   if(agora.clientes_novos_list.length > 0) {
     console.log(`\n📌 CLIENTES NOVOS (${agora.clientes_novos_list.length}):`);
-    agora.clientes_novos_list.forEach((c, i) => {
+    agora.clientes_novos_list.forEach(c, i) => {
       console.log(`   ${i+1}. ${c}`);
     });
   }
@@ -588,7 +588,7 @@ function renderDiretoria(){
   const compFelipe = getComparativoSnapshot('felipe');
   
   // Data mais recente
-  const dataAtual=rows.reduce((max,r)=>!r._atualizacao?max:!max||r._atualizacao>max?r._atualizacao:max,null);
+  const dataAtual=rows.reduce(max,r)=>!r._atualizacao?max:!max||r._atualizacao>max?r._atualizacao:max,null);
   document.getElementById('update-pill').textContent='📅 Atualizado: '+(dataAtual?dataAtual.toLocaleDateString('pt-BR'):'--');
   
   let html=`
@@ -624,16 +624,16 @@ function renderDiretoria(){
     <canvas id="chart-fechamentos" style="max-height:300px;margin-bottom:20px"></canvas>
     <div style="margin-top:20px;padding-top:20px;border-top:1px solid #E5E7EB">
       <div style="font-size:0.85rem;font-weight:600;color:#666;margin-bottom:12px">📋 Próximos 90 dias:</div>
-      ${(() => {
+      ${() => {
         const proximos90 = rows.filter(r => {
           if(!r._fechamento) return false;
           const diasAte = (r._fechamento - new Date()) / (1000*60*60*24);
           return diasAte > 0 && diasAte <= 90;
-        }).sort((a,b) => a._fechamento - b._fechamento);
+        }).sort(a,b) => a._fechamento - b._fechamento);
         
         if(proximos90.length === 0) return '<div style="color:#999;font-size:0.85rem">Nenhuma oportunidade prevista</div>';
         
-        return proximos90.slice(0, 10).map((r, i) => {
+        return proximos90.slice(0, 10).map(r, i) => {
           const dataF = r._fechamento.toLocaleDateString('pt-BR');
           const vendor = (r.VENDEDOR || '').split(' ')[0];
           return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:0.8rem">
@@ -721,23 +721,23 @@ function renderDiretoria(){
   `;
   
   // CONFIÁVEL (>60%)
-  const conf=rows.filter(r=>r._prob>=60).sort((a,b)=>b._val-a._val);
-  conf.slice(0,5).forEach((r,i)=>{
-    html+=`<tr><td>${i===0?'🟢<strong>Confiável (>60%)</strong>':''}${i===0?'<br>'+fK(conf.reduce((s,x)=>s+x._val,0)):''}`;
+  const conf=rows.filter(r=>r._prob>=60).sort(a,b)=>b._val-a._val);
+  conf.slice(0,5).forEach(r,i)=>{
+    html+=`<tr><td>${i===0?'🟢<strong>Confiável (>60%)</strong>':''}${i===0?'<br>'+fK(conf.reduce(s,x)=>s+x._val,0)):''}`;
     html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status ok">✓</span></td></tr>`;
   });
   
   // EM RISCO (20-60%)
-  const risco=rows.filter(r=>r._prob>=20&&r._prob<60).sort((a,b)=>b._val-a._val);
-  risco.slice(0,5).forEach((r,i)=>{
-    html+=`<tr><td>${i===0?'🟡<strong>Em Risco (20-60%)</strong>':''}${i===0?'<br>'+fK(risco.reduce((s,x)=>s+x._val,0)):''}`;
+  const risco=rows.filter(r=>r._prob>=20&&r._prob<60).sort(a,b)=>b._val-a._val);
+  risco.slice(0,5).forEach(r,i)=>{
+    html+=`<tr><td>${i===0?'🟡<strong>Em Risco (20-60%)</strong>':''}${i===0?'<br>'+fK(risco.reduce(s,x)=>s+x._val,0)):''}`;
     html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status warn">⚠️</span></td></tr>`;
   });
   
   // MUITO RISCO (<20%)
-  const alto=rows.filter(r=>r._prob<20).sort((a,b)=>b._val-a._val);
-  alto.slice(0,5).forEach((r,i)=>{
-    html+=`<tr><td>${i===0?'🔴<strong>Muito Risco (<20%)</strong>':''}${i===0?'<br>'+fK(alto.reduce((s,x)=>s+x._val,0)):''}`;
+  const alto=rows.filter(r=>r._prob<20).sort(a,b)=>b._val-a._val);
+  alto.slice(0,5).forEach(r,i)=>{
+    html+=`<tr><td>${i===0?'🔴<strong>Muito Risco (<20%)</strong>':''}${i===0?'<br>'+fK(alto.reduce(s,x)=>s+x._val,0)):''}`;
     html+=`</td><td>${r.CUSTOMER}</td><td style="color:var(--${(r._vendor||'').includes('bruno')?'blue':'green'})">${(r.VENDEDOR||'').split(' ')[0]}</td><td class="num">${fK(r._val)}</td><td class="num">${r._prob}%</td><td><span class="status critical">🔴</span></td></tr>`;
   });
   
@@ -751,7 +751,7 @@ function renderDiretoria(){
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>(r._vendor||'').includes('bruno')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
+  rows.filter(r=>(r._vendor||'').includes('bruno')).sort(a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
@@ -761,7 +761,7 @@ function renderDiretoria(){
       <table class="tbl">
         <tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr>
   `;
-  rows.filter(r=>(r._vendor||'').includes('felipe')).sort((a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
+  rows.filter(r=>(r._vendor||'').includes('felipe')).sort(a,b)=>b._val-a._val).slice(0,10).forEach(r=>{
     const st=r._dias_sem_atualizar>30?'critical':r._dias_sem_atualizar>20?'warn':'ok';
     html+=`<tr><td>${r.CUSTOMER}</td><td class="num">${fK(r._val)}</td><td class="num" style="color:${st==='critical'?'var(--red)':st==='warn'?'var(--amber)':'var(--green)'}">${r._dias_sem_atualizar}d</td></tr>`;
   });
@@ -776,7 +776,7 @@ function renderDiretoria(){
   `;
   const statusAguardando = ['Aguardando Pricing', 'Aguardando Engenharia', 'Aguardando Interno', 'Aguardando cliente'];
   const oppsAguardando = rows.filter(r => statusAguardando.some(status => r.STATUS?.includes(status)))
-    .sort((a, b) => b._val - a._val);
+    .sort(a, b) => b._val - a._val);
   
   if(oppsAguardando.length === 0) {
     html+=`<tr><td colspan="5" style="text-align:center;color:#999;padding:20px">Nenhuma oportunidade aguardando</td></tr>`;
@@ -811,45 +811,45 @@ function renderDiretoria(){
       </tr>
   `;
   
-  const aging0_30=rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).reduce((s,r)=>s+r._val,0);
-  const aging31_60=rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce((s,r)=>s+r._val,0);
-  const aging61_90=rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce((s,r)=>s+r._val,0);
-  const aging90=rows.filter(r=>r._dias_sem_atualizar>90).reduce((s,r)=>s+r._val,0);
+  const aging0_30=rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).reduce(s,r)=>s+r._val,0);
+  const aging31_60=rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).reduce(s,r)=>s+r._val,0);
+  const aging61_90=rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).reduce(s,r)=>s+r._val,0);
+  const aging90=rows.filter(r=>r._dias_sem_atualizar>90).reduce(s,r)=>s+r._val,0);
   const totalAging=aging0_30+aging31_60+aging61_90+aging90;
   
   html+=`<tr>
     <td><strong>0-30 dias</strong></td>
     <td class="num">${fK(aging0_30)}</td>
-    <td class="num">${totalAging>0?((aging0_30/totalAging)*100).toFixed(0):'0'}%</td>
+    <td class="num">${totalAging>0?(aging0_30/totalAging)*100).toFixed(0):'0'}%</td>
     <td style="font-size:.8rem;color:var(--muted)">
-      ${rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+      ${rows.filter(r=>r._dias_sem_atualizar>=0&&r._dias_sem_atualizar<=30).sort(a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
     </td>
     <td><span class="status ok">✓ OK</span></td>
   </tr>
   <tr>
     <td><strong>31-60 dias</strong></td>
     <td class="num">${fK(aging31_60)}</td>
-    <td class="num">${totalAging>0?((aging31_60/totalAging)*100).toFixed(0):'0'}%</td>
+    <td class="num">${totalAging>0?(aging31_60/totalAging)*100).toFixed(0):'0'}%</td>
     <td style="font-size:.8rem;color:var(--muted)">
-      ${rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+      ${rows.filter(r=>r._dias_sem_atualizar>30&&r._dias_sem_atualizar<=60).sort(a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
     </td>
     <td><span class="status warn">⚠️ Atenção</span></td>
   </tr>
   <tr>
     <td><strong>61-90 dias</strong></td>
     <td class="num">${fK(aging61_90)}</td>
-    <td class="num">${totalAging>0?((aging61_90/totalAging)*100).toFixed(0):'0'}%</td>
+    <td class="num">${totalAging>0?(aging61_90/totalAging)*100).toFixed(0):'0'}%</td>
     <td style="font-size:.8rem;color:var(--muted)">
-      ${rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+      ${rows.filter(r=>r._dias_sem_atualizar>60&&r._dias_sem_atualizar<=90).sort(a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
     </td>
     <td><span class="status warn">🔴 Crítico</span></td>
   </tr>
   <tr>
     <td><strong>90+ dias</strong></td>
     <td class="num">${fK(aging90)}</td>
-    <td class="num">${totalAging>0?((aging90/totalAging)*100).toFixed(0):'0'}%</td>
+    <td class="num">${totalAging>0?(aging90/totalAging)*100).toFixed(0):'0'}%</td>
     <td style="font-size:.8rem;color:var(--muted)">
-      ${rows.filter(r=>r._dias_sem_atualizar>90).sort((a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
+      ${rows.filter(r=>r._dias_sem_atualizar>90).sort(a,b)=>b._val-a._val).slice(0,3).map(r=>r.CUSTOMER).join(', ')||'--'}
     </td>
     <td><span class="status critical">🔴 REVISAR</span></td>
   </tr>
@@ -861,7 +861,7 @@ function renderDiretoria(){
   <div class="card">
   `;
   
-  const parados=rows.filter(r=>r._dias_sem_atualizar>25).sort((a,b)=>b._val-a._val);
+  const parados=rows.filter(r=>r._dias_sem_atualizar>25).sort(a,b)=>b._val-a._val);
   if(parados.length>0){
     html+=`<div class="alert"><div>🔴 <strong>Oportunidades paradas (>25d):</strong><br>`;
     parados.slice(0,3).forEach(r=>{
@@ -883,7 +883,7 @@ function renderDiretoria(){
   document.getElementById('diretoria-content').innerHTML=html;
   
   // Renderizar gráficos
-  setTimeout(()=>{
+  setTimeout()=>{
     renderFechamentosChart(rows);
     renderGanhosChart(rows);
     renderPerdidosChart(rows);
@@ -909,9 +909,9 @@ function renderFechamentosChart(rows){
     const ano=r._fechamento.getFullYear();
     if(ano===anoAtual){
       const valor=(r._ponderado||0);
-      if((r._vendor||'').includes('bruno')){
+      if(r._vendor||'').includes('bruno')){
         fechamentosBruno[mes]+=valor;
-      } else if((r._vendor||'').includes('felipe')){
+      } else if(r._vendor||'').includes('felipe')){
         fechamentosFelipe[mes]+=valor;
       }
     }
@@ -1260,7 +1260,7 @@ function renderBruno(){
   const metaAnual=METAS.bruno;
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
-  const oppsTop=rows.filter(r=>(r['TOP 10']||'').toLowerCase()==='sim').sort((a,b)=>b._val-a._val);
+  const oppsTop=rows.filter(r=>(r['TOP 10']||'').toLowerCase()==='sim').sort(a,b)=>b._val-a._val);
   const metBruno_conc=getConcentracao(rows);
   
   // 🔄 Calcular comparativo usando snapshot
@@ -1302,7 +1302,7 @@ function renderBruno(){
     html+=`</div>`;
   }
   
-  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
+  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort(a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
   if(oppsVencendo.length>0){
     html+=`<div class="alert warn"><strong>⚠️ Próximos de fechar (30d):</strong>`;
     oppsVencendo.slice(0,3).forEach(r=>{
@@ -1319,7 +1319,7 @@ function renderBruno(){
     <div class="card">
       <div class="card-t">🔴 Aguardando Engenharia</div>
       <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
-      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce(a,b)=>a+b._val,0))}</div>
       <table class="tbl" style="font-size:0.8rem">
         <tr><th>Cliente</th><th>ID Opp</th></tr>
         ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).map(r=>`
@@ -1330,7 +1330,7 @@ function renderBruno(){
     <div class="card">
       <div class="card-t">🟡 Aguardando Pré-Venda</div>
       <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
-      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce(a,b)=>a+b._val,0))}</div>
       <table class="tbl" style="font-size:0.8rem">
         <tr><th>Cliente</th><th>ID Opp</th></tr>
         ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).map(r=>`
@@ -1426,7 +1426,7 @@ function renderBruno(){
     <div class="card">
       <div class="card-t">🔴 Aguardando Engenharia</div>
       <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).length}</div>
-      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce((a,b)=>a+b._val,0))}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).reduce(a,b)=>a+b._val,0))}</div>
       <table class="tbl" style="font-size:0.8rem">
         <tr><th>Cliente</th><th>ID Opp</th></tr>
         ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Engenharia')).map(r=>`
@@ -1437,7 +1437,7 @@ function renderBruno(){
     <div class="card">
       <div class="card-t">🟡 Aguardando Pré-Venda</div>
       <div style="font-size:3rem;font-weight:900;color:var(--amber);margin-bottom:8px">${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).length}</div>
-      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce((a,b)=>a+b._val,0))}</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:16px">${fK(rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).reduce(a,b)=>a+b._val,0))}</div>
       <table class="tbl" style="font-size:0.8rem">
         <tr><th>Cliente</th><th>ID Opp</th></tr>
         ${rows.filter(r=>(r.STATUS||'').includes('Aguardando Pré-Venda')).map(r=>`
@@ -1468,7 +1468,7 @@ function renderBruno(){
         <th>Estágio</th>
       </tr>
   `;
-  rows.sort((a,b)=>b._prob-a._prob).forEach(r=>{
+  rows.sort(a,b)=>b._prob-a._prob).forEach(r=>{
     html+=`<tr class="cliente-row-bruno" data-cliente="${r.CUSTOMER.toLowerCase()}" data-prob="${r._prob||0}">
       <td><strong>${r.CUSTOMER}</strong></td>
       <td class="num">${fK(r._val)}</td>
@@ -1500,7 +1500,7 @@ function renderFelipe(){
   const metaAnual=METAS.felipe;
   const cobertura=met.pipeline/metaAnual;
   const oppsParadas=rows.filter(r=>r._dias_sem_atualizar>25);
-  const oppsTop=rows.filter(r=>(r['TOP 10']||'').toLowerCase()==='sim').sort((a,b)=>b._val-a._val);
+  const oppsTop=rows.filter(r=>(r['TOP 10']||'').toLowerCase()==='sim').sort(a,b)=>b._val-a._val);
   const metFelipe_conc=getConcentracao(rows);
   
   // 🔄 Calcular comparativo usando snapshot
@@ -1547,7 +1547,7 @@ function renderFelipe(){
   
   html+=`<div class="alert warn"><strong>🟡 Ação:</strong> Buscar 2 novos leads hoje. Pipeline não cobre meta.</div>`;
   
-  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort((a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
+  const oppsVencendo=rows.filter(r=>r._dias_ate_fechamento>0&&r._dias_ate_fechamento<=30).sort(a,b)=>a._dias_ate_fechamento-b._dias_ate_fechamento);
   if(oppsVencendo.length>0){
     html+=`<div class="alert ok"><strong>✓ Próximos de fechar:</strong>`;
     oppsVencendo.slice(0,3).forEach(r=>{
@@ -1659,7 +1659,7 @@ function renderFelipe(){
         <th>Estágio</th>
       </tr>
   `;
-  rows.sort((a,b)=>b._prob-a._prob).forEach(r=>{
+  rows.sort(a,b)=>b._prob-a._prob).forEach(r=>{
     html+=`<tr class="cliente-row-felipe" data-cliente="${r.CUSTOMER.toLowerCase()}" data-prob="${r._prob||0}">
       <td><strong>${r.CUSTOMER}</strong></td>
       <td class="num">${fK(r._val)}</td>
@@ -1687,7 +1687,7 @@ function filterClientesFelipe(){
 // RENDER OPORTUNIDADES
 function renderOportunidades(){
   // Filtrar apenas oportunidades que NÃO estão Ganho ou Perdido
-  const rows=DATA.base.filter(r=>r.CUSTOMER && !['ganhou','perdida'].includes((r.STATUS||'').toLowerCase()));
+  const rows=DATA.base.filter(r=>r.CUSTOMER && !['ganhou','perdida'].includes(r.STATUS||'').toLowerCase()));
   let html=`
   <div class="card">
     <div class="card-t">📋 Todas as Oportunidades (Ativas)</div>
