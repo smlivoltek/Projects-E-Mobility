@@ -271,6 +271,14 @@ function processCSV(){
   }
 }
 
+function fixData(d){
+  const s=String(d).trim();
+  // Corrigir datas com ano 0206 para 2026
+  if(s.includes('/0206')||s.includes('-0206')){
+    return s.replace(/\/0206/g,'/2026').replace(/-0206/g,'-2026');
+  }
+  return d;
+}
 function normalize(){
   DATA.base.forEach(r=>{
     r._val=parseBRL(
