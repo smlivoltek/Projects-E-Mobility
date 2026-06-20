@@ -444,10 +444,33 @@ function renderDashboard(){
 }
 
 function renderWonLostComparison(bruno, felipe){
-  const wonBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho');
-  const lostBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido');
-  const wonFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho');
-  const lostFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido');
+  // Debug: mostrar dados brutos
+  console.log('Bruno total:', bruno.length);
+  console.log('Felipe total:', felipe.length);
+  console.log('Bruno primeiro:', bruno[0]);
+  console.log('Felipe primeiro:', felipe[0]);
+  
+  const wonBruno=bruno.filter(r=>{
+    const status = (r.STATUS||'').trim();
+    return status==='Ganho' || status==='ganho' || status==='GANHO';
+  });
+  const lostBruno=bruno.filter(r=>{
+    const status = (r.STATUS||'').trim();
+    return status==='Perdido' || status==='perdido' || status==='PERDIDO';
+  });
+  const wonFelipe=felipe.filter(r=>{
+    const status = (r.STATUS||'').trim();
+    return status==='Ganho' || status==='ganho' || status==='GANHO';
+  });
+  const lostFelipe=felipe.filter(r=>{
+    const status = (r.STATUS||'').trim();
+    return status==='Perdido' || status==='perdido' || status==='PERDIDO';
+  });
+  
+  console.log('Won Bruno:', wonBruno.length, wonBruno);
+  console.log('Won Felipe:', wonFelipe.length, wonFelipe);
+  console.log('Lost Bruno:', lostBruno.length, lostBruno);
+  console.log('Lost Felipe:', lostFelipe.length, lostFelipe);
   
   const wonValBruno=wonBruno.reduce((s,r)=>s+r._val,0);
   const lostValBruno=lostBruno.reduce((s,r)=>s+r._val,0);
