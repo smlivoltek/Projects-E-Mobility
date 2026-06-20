@@ -78,6 +78,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .opp-count{margin-top:12px;font-size:.8rem;color:var(--muted);font-weight:600}
 
 .tabs{display:flex;gap:8px;margin-bottom:8px;border-bottom:2px solid var(--brd)}
+.kpi-tip{display:inline-block;position:relative;cursor:help;color:var(--muted2);font-size:.8rem;margin-left:4px}
+.kpi-tip .tip-box{display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:.72rem;font-weight:500;line-height:1.4;padding:8px 12px;border-radius:6px;width:220px;text-align:left;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.kpi-tip:hover .tip-box{display:block}
+.kpi-tip .tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1F2937}
+.exec-kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.exec-kpi.attention{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-bg) inset}
+.exec-kpi.warn{border-color:var(--red);box-shadow:0 0 0 1px var(--red-bg) inset}
+.exec-kpi-l{font-size:.7rem;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center}
+.exec-kpi-v{font-family:var(--fh);font-size:1.65rem;font-weight:900;margin-bottom:2px;line-height:1}
+.exec-kpi-v.green{color:var(--green)}.exec-kpi-v.red{color:var(--red)}.exec-kpi-v.amber{color:var(--amber)}.exec-kpi-v.neutral{color:var(--text)}
+
 .tab-btn{font-family:var(--fh);font-weight:700;font-size:.9rem;padding:12px 22px;background:none;border:none;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;transition:all .15s}
 .tab-btn:hover{color:var(--text)}
 .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
@@ -100,6 +111,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="all">Visão Geral</button>
+    <button class="tab-btn" data-tab="exec">Executive Dashboard</button>
     <button class="tab-btn" data-tab="bruno">Bruno Reis</button>
     <button class="tab-btn" data-tab="felipe">Felipe Hanke</button>
   </div>
@@ -196,6 +208,49 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
         </table>
       </div>
       <div class="opp-count" id="opps-count-all"></div>
+    </div>
+  </div>
+
+  <!-- ============ EXECUTIVE DASHBOARD ============ -->
+  <div class="tab-panel" id="panel-exec">
+    <div class="sec">Executive KPIs</div>
+    <div class="g4">
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Annual Target<span class="kpi-tip">ⓘ<span class="tip-box">Revenue target assigned for the current year.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-target">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Total Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Total value of all active opportunities.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-pipeline">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Weighted Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Pipeline value adjusted by each opportunity's probability of closing.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-weighted">-</div>
+      </div>
+      <div class="exec-kpi" id="exec-coverage-card">
+        <div class="exec-kpi-l">Pipeline Coverage<span class="kpi-tip">ⓘ<span class="tip-box">How many times the current pipeline covers the annual target. Green ≥ 2x, yellow 1x–2x, red &lt; 1x.</span></span></div>
+        <div class="exec-kpi-v" id="exec-coverage">-</div>
+      </div>
+      <div class="exec-kpi" id="exec-gap-card">
+        <div class="exec-kpi-l">Gap to Target<span class="kpi-tip">ⓘ<span class="tip-box">Difference between weighted pipeline and annual target. Green when positive, red when negative.</span></span></div>
+        <div class="exec-kpi-v" id="exec-gap">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Win Rate<span class="kpi-tip">ⓘ<span class="tip-box">Percentage of opportunities successfully converted into orders.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-winrate">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Won Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Won.</span></span></div>
+        <div class="exec-kpi-v green" id="exec-won">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Lost Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Lost.</span></span></div>
+        <div class="exec-kpi-v red" id="exec-lost">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Closing Next 90 Days<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities expected to close within the next 90 days.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-90days">-</div>
+      </div>
     </div>
   </div>
 
@@ -361,6 +416,7 @@ function renderAll(){
   const felipe=rows.filter(r=>r._vendor.includes('felipe'));
 
   renderKPIs(rows, 'all', METAS.bruno+METAS.felipe);
+  renderExecutive(rows);
   renderPerf('bruno', bruno);
   renderPerf('felipe', felipe);
   renderClosureChartCombined(bruno, felipe, 'chart-closures-all');
@@ -431,6 +487,45 @@ function initOppTable(allRows, config){
   document.getElementById(config.filterClientId).addEventListener('input',applyFilters);
   document.getElementById(config.filterStatusId).addEventListener('change',applyFilters);
   applyFilters();
+}
+
+function renderExecutive(rows){
+  const target=METAS.bruno+METAS.felipe;
+  const pipeline=rows.reduce((s,r)=>s+r._val,0);
+  const weighted=rows.reduce((s,r)=>s+r._ponderado,0);
+  const won=rows.filter(isWon);
+  const lost=rows.filter(isLost);
+  const wonVal=won.reduce((s,r)=>s+r._val,0);
+  const lostVal=lost.reduce((s,r)=>s+r._val,0);
+  const winRate=(won.length+lost.length)>0?(won.length/(won.length+lost.length)*100):0;
+  const closing90=rows.filter(r=>r._close&&(r._close-new Date())/(1000*60*60*24)<=90&&(r._close-new Date())/(1000*60*60*24)>0).reduce((s,r)=>s+r._val,0);
+  const coverage=target>0?(pipeline/target):0;
+  const gap=weighted-target;
+
+  document.getElementById('exec-target').textContent=fK(target);
+  document.getElementById('exec-pipeline').textContent=fK(pipeline);
+  document.getElementById('exec-weighted').textContent=fK(weighted);
+  document.getElementById('exec-winrate').textContent=winRate.toFixed(0)+'%';
+  document.getElementById('exec-won').textContent=fK(wonVal);
+  document.getElementById('exec-lost').textContent=fK(lostVal);
+  document.getElementById('exec-90days').textContent=fK(closing90);
+
+  const covEl=document.getElementById('exec-coverage');
+  const covCard=document.getElementById('exec-coverage-card');
+  covEl.textContent=coverage.toFixed(2)+'x';
+  covCard.classList.remove('attention','warn');
+  covEl.className='exec-kpi-v';
+  if(coverage>=2){covEl.classList.add('green')}
+  else if(coverage>=1){covEl.classList.add('amber');covCard.classList.add('attention')}
+  else{covEl.classList.add('red');covCard.classList.add('warn')}
+
+  const gapEl=document.getElementById('exec-gap');
+  const gapCard=document.getElementById('exec-gap-card');
+  gapEl.textContent=(gap>=0?'+':'')+fK(gap);
+  gapCard.classList.remove('warn');
+  gapEl.className='exec-kpi-v';
+  if(gap>=0){gapEl.classList.add('green')}
+  else{gapEl.classList.add('red');gapCard.classList.add('warn')}
 }
 
 function renderKPIs(rows, suffix, meta){
