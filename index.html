@@ -273,31 +273,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     </div>
   </div>
 
-  <!-- TOP 10 PROJECTS -->
-  <div class="sec">Top 10 Projetos (by Value)</div>
-  <div class="card">
-    <table class="tbl">
-      <tr>
-        <th>#</th>
-        <th>Customer</th>
-        <th>Project</th>
-        <th>Salesperson</th>
-        <th class="num">Valor</th>
-      </tr>
-      <tbody id="top10-tbody">
-        <tr><td colspan="5" style="text-align:center;padding:20px">Carregando...</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PIPELINE BY CLOSE DATE -->
-  <div class="sec">Pipeline by Expected Close Date</div>
-  <div class="card">
-    <div class="chart-container">
-      <canvas id="chart-closures"></canvas>
-    </div>
-  </div>
-
 
 </div>
 
@@ -418,12 +393,6 @@ function renderDashboard(){
   
   // Desempenho de Vendas
   
-  // Top 10
-  const top10=rows.sort((a,b)=>b._val-a._val).slice(0,10);
-  let html='';
-  top10.forEach((r,i)=>{html+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td>${r.VENDEDOR||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
-  document.getElementById('top10-tbody').innerHTML=html;
-  
   // Top 10 por Vendedor
   const top10bruno=bruno.sort((a,b)=>b._val-a._val).slice(0,10);
   let htmlBruno='';
@@ -437,8 +406,6 @@ function renderDashboard(){
   
   // Charts
   renderClosureChart();
-  renderWonChart();
-  renderLostChart();
   
   const renderPerf=(prefix,arr,meta)=>{
     const p=arr.reduce((s,r)=>s+r._val,0);
