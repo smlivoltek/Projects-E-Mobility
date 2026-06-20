@@ -108,18 +108,28 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   </div>
 
 
-  <div class="sec">Pedidos Ganhos (Tendência)</div>
+  <!-- PIPELINE BY CLOSE DATE -->
+  <div class="sec">Pipeline por Data de Fechamento Esperada</div>
   <div class="card">
     <div class="chart-container">
-      <canvas id="chart-won"></canvas>
+      <canvas id="chart-closures"></canvas>
     </div>
   </div>
 
-  <!-- LOST ORDERS TREND -->
-  <div class="sec">Pedidos Perdidos (Tendência)</div>
-  <div class="card">
-    <div class="chart-container">
-      <canvas id="chart-lost"></canvas>
+  <!-- WON/LOST ORDERS SIDE BY SIDE -->
+  <div class="sec">Ganhos vs Perdidos</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">Pedidos Ganhos (Tendência)</div>
+      <div class="chart-container">
+        <canvas id="chart-won"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">Pedidos Perdidos (Tendência)</div>
+      <div class="chart-container">
+        <canvas id="chart-lost"></canvas>
+      </div>
     </div>
   </div>
 
@@ -388,52 +398,84 @@ function renderClosureChart(){
 }
 
 function renderWonChart(){
-  const rows=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho');
-  const byMonth={};
+  const rowsBruno=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('bruno'));
+  const rowsFelipe=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('felipe'));
   
-  rows.forEach(r=>{
+  const byMonthBruno={};
+  const byMonthFelipe={};
+  
+  rowsBruno.forEach(r=>{
     const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonth[m]){byMonth[m]=0}
-    byMonth[m]+=1;
+    if(!byMonthBruno[m]){byMonthBruno[m]=0}
+    byMonthBruno[m]+=1;
   });
   
-  const months=Object.keys(byMonth).sort();
-  const counts=months.map(m=>byMonth[m]);
+  rowsFelipe.forEach(r=>{
+    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    if(!d)return;
+    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
+    byMonthFelipe[m]+=1;
+  });
+  
+  const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
+  const months=Array.from(allMonths).sort();
+  const countsBruno=months.map(m=>byMonthBruno[m]||0);
+  const countsFelipe=months.map(m=>byMonthFelipe[m]||0);
   
   new Chart(document.getElementById('chart-won'),{
     type:'line',
     data:{
       labels:months,
-      datasets:[{label:'Ganhos',data:counts,borderColor:'rgb(16,185,129)',backgroundColor:'rgba(16,185,129,.1)',borderWidth:2,tension:.4}]
+      datasets:[
+        {label:'Bruno',data:countsBruno,borderColor:'#8B4513',backgroundColor:'rgba(139,69,19,.1)',borderWidth:2,tension:.4},
+        {label:'Felipe',data:countsFelipe,borderColor:'#1F3A93',backgroundColor:'rgba(31,58,147,.1)',borderWidth:2,tension:.4}
+      ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:true}}}
   });
 }
 
 function renderLostChart(){
-  const rows=DATA.base.filter(r=>(r.STATUS||'').trim()==='Perdido');
-  const byMonth={};
+  const rowsBruno=DATA.base.filter(r=>(r.STATUS||'').trim()==='Perdido'&&r._vendor.includes('bruno'));
+  const rowsFelipe=DATA.base.filter(r=>(r.STATUS||'').trim()==='Perdido'&&r._vendor.includes('felipe'));
   
-  rows.forEach(r=>{
+  const byMonthBruno={};
+  const byMonthFelipe={};
+  
+  rowsBruno.forEach(r=>{
     const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonth[m]){byMonth[m]=0}
-    byMonth[m]+=1;
+    if(!byMonthBruno[m]){byMonthBruno[m]=0}
+    byMonthBruno[m]+=1;
   });
   
-  const months=Object.keys(byMonth).sort();
-  const counts=months.map(m=>byMonth[m]);
+  rowsFelipe.forEach(r=>{
+    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    if(!d)return;
+    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
+    byMonthFelipe[m]+=1;
+  });
+  
+  const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
+  const months=Array.from(allMonths).sort();
+  const countsBruno=months.map(m=>byMonthBruno[m]||0);
+  const countsFelipe=months.map(m=>byMonthFelipe[m]||0);
   
   new Chart(document.getElementById('chart-lost'),{
     type:'line',
     data:{
       labels:months,
-      datasets:[{label:'Perdidos',data:counts,borderColor:'rgb(239,68,68)',backgroundColor:'rgba(239,68,68,.1)',borderWidth:2,tension:.4}]
+      datasets:[
+        {label:'Bruno',data:countsBruno,borderColor:'#8B4513',backgroundColor:'rgba(139,69,19,.1)',borderWidth:2,tension:.4},
+        {label:'Felipe',data:countsFelipe,borderColor:'#1F3A93',backgroundColor:'rgba(31,58,147,.1)',borderWidth:2,tension:.4}
+      ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:true}}}
   });
 }
 
