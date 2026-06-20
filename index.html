@@ -133,10 +133,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
         <div class="perf-card">
           <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="bruno-won" style="color:var(--green)">-</div>
+          <div class="perf-val" id="bruno-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Pedidos Perdidos</div>
           <div class="perf-val" id="bruno-lost" style="color:var(--red)">-</div>
+          <div class="perf-val" id="bruno-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div>
         </div>
       </div>
     </div>
@@ -162,10 +164,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
         <div class="perf-card">
           <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="felipe-won" style="color:var(--green)">-</div>
+          <div class="perf-val" id="felipe-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Pedidos Perdidos</div>
           <div class="perf-val" id="felipe-lost" style="color:var(--red)">-</div>
+          <div class="perf-val" id="felipe-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div>
         </div>
       </div>
     </div>
@@ -361,13 +365,17 @@ function renderDashboard(){
   const renderPerf=(prefix,arr,meta)=>{
     const p=arr.reduce((s,r)=>s+r._val,0);
     const w=arr.reduce((s,r)=>s+r._ponderado,0);
-    const won=arr.filter(r=>(r.STATUS||'').trim()==='Ganho').length;
-    const lost=arr.filter(r=>(r.STATUS||'').trim()==='Perdido').length;
+    const wonArr=arr.filter(r=>(r.STATUS||'').trim()==='Ganho');
+    const lostArr=arr.filter(r=>(r.STATUS||'').trim()==='Perdido');
+    const wonVal=wonArr.reduce((s,r)=>s+r._val,0);
+    const lostVal=lostArr.reduce((s,r)=>s+r._val,0);
     document.getElementById(prefix+'-pipeline').textContent=fK(p);
     document.getElementById(prefix+'-weighted').textContent=fK(w);
     document.getElementById(prefix+'-forecast').textContent=fK(w);
-    document.getElementById(prefix+'-won').textContent=won;
-    document.getElementById(prefix+'-lost').textContent=lost;
+    document.getElementById(prefix+'-won').textContent=wonArr.length;
+    document.getElementById(prefix+'-won-val').textContent=fK(wonVal);
+    document.getElementById(prefix+'-lost').textContent=lostArr.length;
+    document.getElementById(prefix+'-lost-val').textContent=fK(lostVal);
   };
   
   renderPerf('bruno',bruno,METAS.bruno);
