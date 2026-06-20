@@ -466,17 +466,19 @@ function renderClosureChartSingle(rows, canvasId, label, bg, border){
   });
 }
 
-function wlColumnHTML(label, badgeColor, won, lost, maxVal){
+function wlColumnHTML(label, badgeColor, won, lost, weightedPipeline){
   const wonVal=won.reduce((s,r)=>s+r._val,0);
   const lostVal=lost.reduce((s,r)=>s+r._val,0);
-  const wonPct=maxVal>0?(wonVal/maxVal*100):0;
-  const lostPct=maxVal>0?(lostVal/maxVal*100):0;
+  const wonPct=weightedPipeline>0?(wonVal/weightedPipeline*100):0;
+  const lostPct=weightedPipeline>0?(lostVal/weightedPipeline*100):0;
+  const wonBarWidth=Math.min(wonPct,100);
+  const lostBarWidth=Math.min(lostPct,100);
   let html='<div class="wl-row">';
   html+='<div class="wl-vendor"><span class="wl-vendor-badge" style="background:'+badgeColor+'"></span>'+label+'</div>';
-  html+='<div class="wl-stat"><span class="wl-stat-label">Ganhos:</span><span class="wl-stat-value">'+won.length+' pedidos · <span style="color:var(--green)">'+fK(wonVal)+'</span></span></div>';
-  html+='<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:'+wonPct+'%">'+(wonPct>15?Math.round(wonPct)+'%':'')+'</div></div>';
-  html+='<div class="wl-stat" style="margin-top:14px"><span class="wl-stat-label">Perdidos:</span><span class="wl-stat-value">'+lost.length+' pedidos · <span style="color:var(--red)">'+fK(lostVal)+'</span></span></div>';
-  html+='<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:'+lostPct+'%">'+(lostPct>15?Math.round(lostPct)+'%':'')+'</div></div>';
+  html+='<div class="wl-stat"><span class="wl-stat-label">Ganhos:</span><span class="wl-stat-value">'+won.length+' pedidos · <span style="color:var(--green)">'+fK(wonVal)+'</span> · '+wonPct.toFixed(0)+'% do pipeline ponderado</span></div>';
+  html+='<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:'+wonBarWidth+'%">'+(wonBarWidth>15?wonPct.toFixed(0)+'%':'')+'</div></div>';
+  html+='<div class="wl-stat" style="margin-top:14px"><span class="wl-stat-label">Perdidos:</span><span class="wl-stat-value">'+lost.length+' pedidos · <span style="color:var(--red)">'+fK(lostVal)+'</span> · '+lostPct.toFixed(0)+'% do pipeline ponderado</span></div>';
+  html+='<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:'+lostBarWidth+'%">'+(lostBarWidth>15?lostPct.toFixed(0)+'%':'')+'</div></div>';
   html+='</div>';
   return html;
 }
@@ -484,21 +486,19 @@ function wlColumnHTML(label, badgeColor, won, lost, maxVal){
 function renderWonLostCombined(bruno, felipe, containerId){
   const wonBruno=bruno.filter(isWon), lostBruno=bruno.filter(isLost);
   const wonFelipe=felipe.filter(isWon), lostFelipe=felipe.filter(isLost);
-  const maxVal=Math.max(
-    wonBruno.reduce((s,r)=>s+r._val,0), lostBruno.reduce((s,r)=>s+r._val,0),
-    wonFelipe.reduce((s,r)=>s+r._val,0), lostFelipe.reduce((s,r)=>s+r._val,0)
-  );
+  const weightedBruno=bruno.reduce((s,r)=>s+r._ponderado,0);
+  const weightedFelipe=felipe.reduce((s,r)=>s+r._ponderado,0);
   let html='<div class="won-lost-grid">';
-  html+='<div class="won-lost-col">'+wlColumnHTML('Bruno Reis','#8B4513',wonBruno,lostBruno,maxVal)+'</div>';
-  html+='<div class="won-lost-col">'+wlColumnHTML('Felipe Hanke','#1F3A93',wonFelipe,lostFelipe,maxVal)+'</div>';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Bruno Reis','#8B4513',wonBruno,lostBruno,weightedBruno)+'</div>';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Felipe Hanke','#1F3A93',wonFelipe,lostFelipe,weightedFelipe)+'</div>';
   html+='</div>';
   document.getElementById(containerId).innerHTML=html;
 }
 
 function renderWonLostSingle(rows, containerId, label, badgeColor){
   const won=rows.filter(isWon), lost=rows.filter(isLost);
-  const maxVal=Math.max(won.reduce((s,r)=>s+r._val,0), lost.reduce((s,r)=>s+r._val,0));
-  let html='<div class="won-lost-grid single"><div class="won-lost-col">'+wlColumnHTML(label,badgeColor,won,lost,maxVal)+'</div></div>';
+  const weightedPipeline=rows.reduce((s,r)=>s+r._ponderado,0);
+  let html='<div class="won-lost-grid single"><div class="won-lost-col">'+wlColumnHTML(label,badgeColor,won,lost,weightedPipeline)+'</div></div>';
   document.getElementById(containerId).innerHTML=html;
 }
 
