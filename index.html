@@ -71,6 +71,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .wl-bar.won{background:linear-gradient(135deg, #10B981, #059669)}
 .wl-bar.lost{background:linear-gradient(135deg, #EF4444, #DC2626)}
 
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:12px 20px;font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#2563EB}
+.btn-primary:disabled{background:var(--muted2);cursor:not-allowed}
+.evo-banner{background:var(--amber-bg);border:1px solid var(--amber);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:.9rem;color:#92400E}
+.evo-banner a{color:var(--blue);font-weight:700}
+.exec-kpi-v.amber{color:var(--amber)}
+
 .filters-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .filters-bar input,.filters-bar select{padding:9px 12px;border:1px solid var(--brd);border-radius:8px;font-size:.85rem;font-family:var(--fb);background:var(--s1);color:var(--text)}
 .filters-bar input{flex:1;min-width:200px}
@@ -114,6 +121,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     <button class="tab-btn" data-tab="bruno">Bruno Reis</button>
     <button class="tab-btn" data-tab="felipe">Felipe Hanke</button>
     <button class="tab-btn" data-tab="exec">Executive Dashboard</button>
+    <button class="tab-btn" data-tab="evolucao">Evolução do Pipeline</button>
   </div>
 
   <!-- ============ VISAO GERAL ============ -->
@@ -442,6 +450,118 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
             <tbody id="exec-ranking"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EVOLUÇÃO DO PIPELINE ============ -->
+  <div class="tab-panel" id="panel-evolucao">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div>
+        <div class="card-t" style="margin-bottom:4px">Comparação de Períodos</div>
+        <div id="evolucao-periodo" style="font-size:.9rem;color:var(--muted)">Carregando snapshots...</div>
+      </div>
+      <button id="btn-save-snapshot" class="btn-primary">📸 Salvar Snapshot Atual</button>
+    </div>
+    <div id="evolucao-aviso"></div>
+
+    <div id="evolucao-content" style="display:none">
+      <div class="sec">Indicadores de Evolução</div>
+      <div class="g4">
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Crescimento do Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Variação do valor total do pipeline entre os dois snapshots.</span></span></div>
+          <div class="exec-kpi-v" id="evo-pipeline-growth">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Crescimento do Pipeline Ponderado<span class="kpi-tip">ⓘ<span class="tip-box">Variação do pipeline ponderado pela probabilidade entre os dois snapshots.</span></span></div>
+          <div class="exec-kpi-v" id="evo-weighted-growth">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Evolução da Probabilidade Média<span class="kpi-tip">ⓘ<span class="tip-box">Variação da probabilidade média de fechamento entre os dois snapshots.</span></span></div>
+          <div class="exec-kpi-v" id="evo-prob-growth">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Novas Oportunidades<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades que apareceram apenas no snapshot mais recente.</span></span></div>
+          <div class="exec-kpi-v neutral" id="evo-new-count">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Oportunidades Ganhas<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades que mudaram para Ganho entre os dois snapshots.</span></span></div>
+          <div class="exec-kpi-v green" id="evo-won-count">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Oportunidades Perdidas<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades que mudaram para Perdido entre os dois snapshots.</span></span></div>
+          <div class="exec-kpi-v red" id="evo-lost-count">-</div>
+        </div>
+        <div class="exec-kpi">
+          <div class="exec-kpi-l">Oportunidades Removidas<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades que existiam no snapshot anterior e não aparecem mais no atual.</span></span></div>
+          <div class="exec-kpi-v amber" id="evo-removed-count">-</div>
+        </div>
+      </div>
+
+      <div class="sec">Principais Alterações de Valor</div>
+      <div class="card">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Vendedor</th><th>Valor Anterior</th><th>Valor Atual</th><th>Variação</th></tr></thead>
+          <tbody id="evo-table-value"></tbody>
+        </table>
+      </div>
+
+      <div class="g2">
+        <div>
+          <div class="sec">Alterações de Probabilidade</div>
+          <div class="card">
+            <table class="tbl" style="font-size:0.85rem">
+              <thead><tr><th>Cliente</th><th>Vendedor</th><th>Prob. Anterior</th><th>Prob. Atual</th></tr></thead>
+              <tbody id="evo-table-prob"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="sec">Alterações de Etapa</div>
+          <div class="card">
+            <table class="tbl" style="font-size:0.85rem">
+              <thead><tr><th>Cliente</th><th>Etapa Anterior</th><th>Nova Etapa</th></tr></thead>
+              <tbody id="evo-table-stage"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">Novas Oportunidades</div>
+      <div class="card">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Produto</th><th>Vendedor</th><th>Valor</th><th>Probabilidade</th></tr></thead>
+          <tbody id="evo-table-new"></tbody>
+        </table>
+      </div>
+
+      <div class="g2">
+        <div>
+          <div class="sec">Oportunidades Ganhas</div>
+          <div class="card">
+            <table class="tbl" style="font-size:0.85rem">
+              <thead><tr><th>Cliente</th><th>Vendedor</th><th>Valor</th></tr></thead>
+              <tbody id="evo-table-won"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="sec">Oportunidades Perdidas</div>
+          <div class="card">
+            <table class="tbl" style="font-size:0.85rem">
+              <thead><tr><th>Cliente</th><th>Vendedor</th><th>Valor</th><th>Motivo</th></tr></thead>
+              <tbody id="evo-table-lost"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">Oportunidades Removidas</div>
+      <div class="card">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Vendedor</th><th>Valor (no snapshot anterior)</th></tr></thead>
+          <tbody id="evo-table-removed"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -928,6 +1048,207 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
   });
 });
 
+const GITHUB_OWNER='smlivoltek';
+const GITHUB_REPO='Projects-E-Mobility';
+const SNAPSHOTS_FOLDER='snapshots';
+
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0');
+}
+
+function buildSnapshotCSV(){
+  const cleanRows=DATA.base.map(function(r){
+    const clean={};
+    Object.keys(r).forEach(function(k){
+      if(k.charAt(0)!=='_') clean[k]=r[k];
+    });
+    return clean;
+  });
+  return Papa.unparse(cleanRows);
+}
+
+function downloadSnapshot(){
+  if(!DATA.base||DATA.base.length===0){
+    alert('Os dados ainda estão carregando. Aguarde um instante e tente novamente.');
+    return;
+  }
+  const csv=buildSnapshotCSV();
+  const filename='snapshot'+todayISO()+'.csv';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const uploadUrl='https://github.com/'+GITHUB_OWNER+'/'+GITHUB_REPO+'/upload/main/'+SNAPSHOTS_FOLDER;
+  document.getElementById('evolucao-aviso').innerHTML='<div class="evo-banner">✅ Arquivo <strong>'+filename+'</strong> baixado. Agora suba ele para a pasta <strong>/'+SNAPSHOTS_FOLDER+'/</strong> no GitHub: <a href="'+uploadUrl+'" target="_blank">clique aqui para abrir a pasta de upload</a>.</div>';
+}
+
+function normalizeSnapshotRow(r){
+  r._val=parseBRL(r['TOTAL NET LVK (R$)']||r[' TOTAL NET LVK (R$) ']||r['TOTAL NET (R$)']||'0');
+  r._vendor=(r.VENDEDOR||'').toLowerCase().trim();
+  r._prob=parseFloat((r.PROBABILIDADE||'0').toString().replace('%',''))||0;
+  r._ponderado=(r._val*r._prob)/100;
+  r._id=(r['ID AUTOMÁTICO']||'').trim();
+  r._estagio=(r.ESTAGIO||'').trim();
+  return r;
+}
+
+function loadSnapshotCSV(filename){
+  const url='https://raw.githubusercontent.com/'+GITHUB_OWNER+'/'+GITHUB_REPO+'/main/'+SNAPSHOTS_FOLDER+'/'+filename;
+  return fetch(url).then(function(res){
+    if(!res.ok) throw new Error('Não foi possível carregar '+filename);
+    return res.text();
+  }).then(function(text){
+    const rows=Papa.parse(text,{header:true,skipEmptyLines:true}).data.filter(function(r){return r.CUSTOMER&&r['ID AUTOMÁTICO']});
+    rows.forEach(normalizeSnapshotRow);
+    return rows;
+  });
+}
+
+function dateFromSnapshotName(name){
+  const m=name.match(/^snapshot(\d{8})\.csv$/);
+  return m?m[1]:null;
+}
+
+function fmtDateBR(yyyymmdd){
+  const y=yyyymmdd.slice(0,4), mo=yyyymmdd.slice(4,6), d=yyyymmdd.slice(6,8);
+  return d+'/'+mo+'/'+y;
+}
+
+function initEvolucao(){
+  document.getElementById('btn-save-snapshot').addEventListener('click',downloadSnapshot);
+
+  fetch('https://api.github.com/repos/'+GITHUB_OWNER+'/'+GITHUB_REPO+'/contents/'+SNAPSHOTS_FOLDER)
+    .then(function(res){
+      if(!res.ok) throw new Error('Pasta de snapshots não encontrada (status '+res.status+').');
+      return res.json();
+    })
+    .then(function(files){
+      const dated=files
+        .map(function(f){return {name:f.name, date:dateFromSnapshotName(f.name)};})
+        .filter(function(f){return f.date;})
+        .sort(function(a,b){return b.date.localeCompare(a.date);});
+
+      if(dated.length<2){
+        document.getElementById('evolucao-periodo').textContent='Ainda não há snapshots suficientes para comparar.';
+        document.getElementById('evolucao-aviso').innerHTML='<div class="evo-banner">📭 Encontrei '+dated.length+' snapshot(s) na pasta /'+SNAPSHOTS_FOLDER+'/. São necessários pelo menos 2 para gerar a comparação. Clique em "Salvar Snapshot Atual" para gerar um novo, suba no GitHub, e volte aqui.</div>';
+        return;
+      }
+
+      const atual=dated[0], anterior=dated[1];
+      document.getElementById('evolucao-periodo').textContent='Comparando: '+fmtDateBR(anterior.date)+' → '+fmtDateBR(atual.date);
+
+      Promise.all([loadSnapshotCSV(anterior.name), loadSnapshotCSV(atual.name)])
+        .then(function(results){
+          renderEvolucao(results[0], results[1]);
+          document.getElementById('evolucao-content').style.display='block';
+        })
+        .catch(function(err){
+          document.getElementById('evolucao-aviso').innerHTML='<div class="evo-banner">⚠️ Erro ao carregar os snapshots: '+err.message+'</div>';
+        });
+    })
+    .catch(function(err){
+      document.getElementById('evolucao-periodo').textContent='Erro ao consultar a pasta de snapshots.';
+      document.getElementById('evolucao-aviso').innerHTML='<div class="evo-banner">⚠️ '+err.message+' Verifique se a pasta /'+SNAPSHOTS_FOLDER+'/ existe no repositório com pelo menos 2 arquivos snapshotAAAAMMDD.csv.</div>';
+    });
+}
+
+function renderEvolucao(anteriorRows, atualRows){
+  const mapAnterior={}, mapAtual={};
+  anteriorRows.forEach(function(r){mapAnterior[r._id]=r;});
+  atualRows.forEach(function(r){mapAtual[r._id]=r;});
+
+  const pipelineA=anteriorRows.reduce(function(s,r){return s+r._val;},0);
+  const pipelineB=atualRows.reduce(function(s,r){return s+r._val;},0);
+  const weightedA=anteriorRows.reduce(function(s,r){return s+r._ponderado;},0);
+  const weightedB=atualRows.reduce(function(s,r){return s+r._ponderado;},0);
+  const probAvgA=anteriorRows.length?anteriorRows.reduce(function(s,r){return s+r._prob;},0)/anteriorRows.length:0;
+  const probAvgB=atualRows.length?atualRows.reduce(function(s,r){return s+r._prob;},0)/atualRows.length:0;
+
+  const pipelineGrowth=pipelineB-pipelineA;
+  const weightedGrowth=weightedB-weightedA;
+  const probGrowth=probAvgB-probAvgA;
+
+  setGrowthKPI('evo-pipeline-growth', pipelineGrowth, fK);
+  setGrowthKPI('evo-weighted-growth', weightedGrowth, fK);
+  setGrowthKPI('evo-prob-growth', probGrowth, function(v){return v.toFixed(1)+'%';});
+
+  const novas=[], removidas=[], ganhas=[], perdidas=[], altValor=[], altProb=[], altEtapa=[];
+
+  atualRows.forEach(function(r){
+    const ant=mapAnterior[r._id];
+    if(!ant){
+      novas.push(r);
+      if(isWon(r)) ganhas.push(r);
+      if(isLost(r)) perdidas.push(r);
+      return;
+    }
+    if(!isWon(ant)&&isWon(r)) ganhas.push(r);
+    if(!isLost(ant)&&isLost(r)) perdidas.push(r);
+    if(Math.round(ant._val)!==Math.round(r._val)){
+      altValor.push({customer:r.CUSTOMER, vendor:r.VENDEDOR, before:ant._val, after:r._val});
+    }
+    if(ant._prob!==r._prob){
+      altProb.push({customer:r.CUSTOMER, vendor:r.VENDEDOR, before:ant._prob, after:r._prob});
+    }
+    if(ant._estagio&&r._estagio&&ant._estagio!==r._estagio){
+      altEtapa.push({customer:r.CUSTOMER, before:ant._estagio, after:r._estagio});
+    }
+  });
+
+  anteriorRows.forEach(function(r){
+    if(!mapAtual[r._id]) removidas.push(r);
+  });
+
+  document.getElementById('evo-new-count').textContent=novas.length+' · '+fK(novas.reduce(function(s,r){return s+r._val;},0));
+  document.getElementById('evo-won-count').textContent=ganhas.length+' · '+fK(ganhas.reduce(function(s,r){return s+r._val;},0));
+  document.getElementById('evo-lost-count').textContent=perdidas.length+' · '+fK(perdidas.reduce(function(s,r){return s+r._val;},0));
+  document.getElementById('evo-removed-count').textContent=removidas.length+' · '+fK(removidas.reduce(function(s,r){return s+r._val;},0));
+
+  altValor.sort(function(a,b){return Math.abs(b.after-b.before)-Math.abs(a.after-a.before);});
+  document.getElementById('evo-table-value').innerHTML=altValor.map(function(c){
+    const diff=c.after-c.before;
+    const color=diff>=0?'var(--green)':'var(--red)';
+    return '<tr><td>'+c.customer+'</td><td>'+(c.vendor||'-')+'</td><td>'+fK(c.before)+'</td><td>'+fK(c.after)+'</td><td style="color:'+color+';font-weight:700">'+(diff>=0?'+':'')+fK(diff)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted2)">Nenhuma alteração de valor</td></tr>';
+
+  document.getElementById('evo-table-prob').innerHTML=altProb.map(function(c){
+    return '<tr><td>'+c.customer+'</td><td>'+(c.vendor||'-')+'</td><td>'+c.before+'%</td><td>'+c.after+'%</td></tr>';
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Nenhuma alteração de probabilidade</td></tr>';
+
+  document.getElementById('evo-table-stage').innerHTML=altEtapa.map(function(c){
+    return '<tr><td>'+c.customer+'</td><td>'+c.before+'</td><td>'+c.after+'</td></tr>';
+  }).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted2)">Nenhuma alteração de etapa</td></tr>';
+
+  document.getElementById('evo-table-new').innerHTML=novas.map(function(r){
+    return '<tr><td>'+(r.CUSTOMER||'-')+'</td><td>'+(r.PRODUCT||'-')+'</td><td>'+(r.VENDEDOR||'-')+'</td><td class="num">'+fK(r._val)+'</td><td>'+r._prob+'%</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted2)">Nenhuma oportunidade nova</td></tr>';
+
+  document.getElementById('evo-table-won').innerHTML=ganhas.map(function(r){
+    return '<tr><td>'+(r.CUSTOMER||'-')+'</td><td>'+(r.VENDEDOR||'-')+'</td><td class="num">'+fK(r._val)+'</td></tr>';
+  }).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted2)">Nenhuma oportunidade ganha</td></tr>';
+
+  document.getElementById('evo-table-lost').innerHTML=perdidas.map(function(r){
+    return '<tr><td>'+(r.CUSTOMER||'-')+'</td><td>'+(r.VENDEDOR||'-')+'</td><td class="num">'+fK(r._val)+'</td><td style="font-size:0.75rem">'+(r['MOTIVO PERDA']||'-')+'</td></tr>';
+  }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Nenhuma oportunidade perdida</td></tr>';
+
+  document.getElementById('evo-table-removed').innerHTML=removidas.map(function(r){
+    return '<tr><td>'+(r.CUSTOMER||'-')+'</td><td>'+(r.VENDEDOR||'-')+'</td><td class="num">'+fK(r._val)+'</td></tr>';
+  }).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted2)">Nenhuma oportunidade removida</td></tr>';
+}
+
+function setGrowthKPI(id, value, formatter){
+  const el=document.getElementById(id);
+  el.textContent=(value>=0?'+':'')+formatter(value);
+  el.className='exec-kpi-v '+(value>=0?'green':'red');
+}
+
+initEvolucao();
 loadData();
 </script>
 </body>
