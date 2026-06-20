@@ -138,6 +138,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-card"><div class="perf-label">Ponderado</div><div class="perf-val" style="color:#000" id="bruno-weighted">-</div></div>
           <div class="perf-card"><div class="perf-label">Pedidos Ganhos</div><div class="perf-val" id="bruno-won" style="color:var(--green)">-</div><div class="perf-val" id="bruno-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div></div>
           <div class="perf-card"><div class="perf-label">Pedidos Perdidos</div><div class="perf-val" id="bruno-lost" style="color:var(--red)">-</div><div class="perf-val" id="bruno-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div></div>
+          <div class="perf-card"><div class="perf-label">Fechando em 90 Dias</div><div class="perf-val" style="color:#000" id="bruno-closing90">-</div></div>
         </div>
       </div>
       <div class="card">
@@ -148,6 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-card"><div class="perf-label">Ponderado</div><div class="perf-val" style="color:#000" id="felipe-weighted">-</div></div>
           <div class="perf-card"><div class="perf-label">Pedidos Ganhos</div><div class="perf-val" id="felipe-won" style="color:var(--green)">-</div><div class="perf-val" id="felipe-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div></div>
           <div class="perf-card"><div class="perf-label">Pedidos Perdidos</div><div class="perf-val" id="felipe-lost" style="color:var(--red)">-</div><div class="perf-val" id="felipe-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div></div>
+          <div class="perf-card"><div class="perf-label">Fechando em 90 Dias</div><div class="perf-val" style="color:#000" id="felipe-closing90">-</div></div>
         </div>
       </div>
     </div>
@@ -178,9 +180,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
     <div class="sec">Saúde do Pipeline</div>
     <div class="g3">
-      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Oportunidades atualizadas</div></div>
-      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Requerem atenção</div></div>
-      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Ação requerida imediata</div></div>
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-green-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-green-pct-all">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-amber-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-amber-pct-all">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-red-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-red-pct-all">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem um próximo passo definido.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-nostep-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-nostep-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-nostep-pct-all">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🚫 Sem Atividade Registrada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem nenhuma data de última atualização registrada.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-noactivity-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-noactivity-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-noactivity-pct-all">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📅 Data de Fechamento Expirada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades abertas cuja data de fechamento esperada já passou.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-expired-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-expired-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-expired-pct-all">0% do pipeline</div></div>
     </div>
 
     <div class="sec">Gestão de Riscos</div>
@@ -252,9 +257,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
     <div class="sec">Saúde do Pipeline</div>
     <div class="g3">
-      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-bruno">R$ 0</div></div>
-      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-bruno">R$ 0</div></div>
-      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-bruno">R$ 0</div></div>
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-green-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-green-pct-bruno">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-amber-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-amber-pct-bruno">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-red-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-red-pct-bruno">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem um próximo passo definido.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-nostep-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-nostep-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-nostep-pct-bruno">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🚫 Sem Atividade Registrada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem nenhuma data de última atualização registrada.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-noactivity-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-noactivity-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-noactivity-pct-bruno">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📅 Data de Fechamento Expirada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades abertas cuja data de fechamento esperada já passou.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-expired-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-expired-val-bruno">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-expired-pct-bruno">0% do pipeline</div></div>
     </div>
 
     <div class="sec">Gestão de Riscos</div>
@@ -321,9 +329,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
     <div class="sec">Saúde do Pipeline</div>
     <div class="g3">
-      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-felipe">R$ 0</div></div>
-      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-felipe">R$ 0</div></div>
-      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-felipe">R$ 0</div></div>
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-green-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-green-pct-felipe">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-amber-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-amber-pct-felipe">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-red-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-red-pct-felipe">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem um próximo passo definido.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-nostep-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-nostep-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-nostep-pct-felipe">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">🚫 Sem Atividade Registrada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem nenhuma data de última atualização registrada.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-noactivity-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-noactivity-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-noactivity-pct-felipe">0% do pipeline</div></div>
+      <div class="card"><div class="card-t">📅 Data de Fechamento Expirada<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades abertas cuja data de fechamento esperada já passou.</span></span></div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-expired-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:4px" id="health-expired-val-felipe">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)" id="health-expired-pct-felipe">0% do pipeline</div></div>
     </div>
 
     <div class="sec">Gestão de Riscos</div>
@@ -719,12 +730,14 @@ function renderPerf(prefix, arr){
   const w=arr.reduce((s,r)=>s+r._ponderado,0);
   const wonArr=arr.filter(isWon);
   const lostArr=arr.filter(isLost);
+  const closing90=arr.filter(r=>r._close&&(r._close-new Date())/(1000*60*60*24)<=90&&(r._close-new Date())/(1000*60*60*24)>0);
   document.getElementById(prefix+'-pipeline').textContent=fK(p);
   document.getElementById(prefix+'-weighted').textContent=fK(w);
   document.getElementById(prefix+'-won').textContent=wonArr.length;
   document.getElementById(prefix+'-won-val').textContent=fK(wonArr.reduce((s,r)=>s+r._val,0));
   document.getElementById(prefix+'-lost').textContent=lostArr.length;
   document.getElementById(prefix+'-lost-val').textContent=fK(lostArr.reduce((s,r)=>s+r._val,0));
+  document.getElementById(prefix+'-closing90').textContent=fK(closing90.reduce((s,r)=>s+r._val,0));
 }
 
 function renderTop10(arr, tbodyId){
@@ -735,15 +748,26 @@ function renderTop10(arr, tbodyId){
 }
 
 function renderHealth(rows, suffix){
+  const totalPipeline=rows.reduce((s,r)=>s+r._val,0);
+  const pct=v=>totalPipeline>0?(v/totalPipeline*100).toFixed(0)+'% do pipeline':'0% do pipeline';
+  const setCard=function(key, arr){
+    const val=arr.reduce((s,r)=>s+r._val,0);
+    document.getElementById('health-'+key+'-'+suffix).textContent=arr.length;
+    document.getElementById('health-'+key+'-val-'+suffix).textContent=fK(val);
+    document.getElementById('health-'+key+'-pct-'+suffix).textContent=pct(val);
+  };
   const healthy=rows.filter(r=>r._dias<=7);
   const attention=rows.filter(r=>r._dias>7&&r._dias<=15);
   const critical=rows.filter(r=>r._dias>15);
-  document.getElementById('health-green-'+suffix).textContent=healthy.length;
-  document.getElementById('health-green-val-'+suffix).textContent=fK(healthy.reduce((s,r)=>s+r._val,0));
-  document.getElementById('health-amber-'+suffix).textContent=attention.length;
-  document.getElementById('health-amber-val-'+suffix).textContent=fK(attention.reduce((s,r)=>s+r._val,0));
-  document.getElementById('health-red-'+suffix).textContent=critical.length;
-  document.getElementById('health-red-val-'+suffix).textContent=fK(critical.reduce((s,r)=>s+r._val,0));
+  const nostep=rows.filter(r=>!(r['PROX PASSO']||'').trim());
+  const noactivity=rows.filter(r=>!r._atua);
+  const expired=rows.filter(r=>r._close&&r._close<new Date()&&!isWon(r)&&!isLost(r));
+  setCard('green', healthy);
+  setCard('amber', attention);
+  setCard('red', critical);
+  setCard('nostep', nostep);
+  setCard('noactivity', noactivity);
+  setCard('expired', expired);
 }
 
 function renderRisks(rows, suffix){
