@@ -295,7 +295,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 </div>
 
 <script>
-const URLS = {bruno: './Opp%20Bruno.csv', felipe: './Opp%20Felipe.csv'};
+const URLS = {
+  bruno: './Opp Bruno.csv', 
+  felipe: './Opp Felipe.csv',
+  bruno2: './OppBruno.csv',
+  felipe2: './OppFelipe.csv'
+};
 const METAS = {bruno: 50000000, felipe: 12000000};
 let DATA = {base: [], charts: {}};
 
@@ -307,8 +312,13 @@ function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseDa
 async function loadData(){
   try{
     console.log('🔄 Carregando dados...');
-    const [resBruno,resFelipe]=await Promise.all([fetch(URLS.bruno),fetch(URLS.felipe)]);
-    if(!resBruno.ok||!resFelipe.ok)throw new Error('CSVs não encontrados');
+    let resBruno = await fetch(URLS.bruno);
+    if(!resBruno.ok) resBruno = await fetch(URLS.bruno2);
+    
+    let resFelipe = await fetch(URLS.felipe);
+    if(!resFelipe.ok) resFelipe = await fetch(URLS.felipe2);
+    
+    if(!resBruno.ok||!resFelipe.ok)throw new Error('CSVs não encontrados. Verifique os nomes: Opp Bruno.csv, Opp Felipe.csv');
     
     const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
     const dataFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
