@@ -117,15 +117,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="g3" style="margin-bottom:0">
         <div class="perf-card">
           <div class="perf-label">Meta Anual</div>
-          <div class="perf-val" id="bruno-meta">R$ 50M</div>
+          <div class="perf-val" style="color:#000" id="bruno-meta">R$ 50M</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Pipeline</div>
-          <div class="perf-val" id="bruno-pipeline">-</div>
+          <div class="perf-val" style="color:#000" id="bruno-pipeline">-</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Ponderado</div>
-          <div class="perf-val" id="bruno-weighted">-</div>
+          <div class="perf-val" style="color:#000" id="bruno-weighted">-</div>
         </div>
 
         <div class="perf-card">
@@ -145,15 +145,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="g3" style="margin-bottom:0">
         <div class="perf-card">
           <div class="perf-label">Meta Anual</div>
-          <div class="perf-val" id="felipe-meta">R$ 12M</div>
+          <div class="perf-val" style="color:#000" id="felipe-meta">R$ 12M</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Pipeline</div>
-          <div class="perf-val" id="felipe-pipeline">-</div>
+          <div class="perf-val" style="color:#000" id="felipe-pipeline">-</div>
         </div>
         <div class="perf-card">
           <div class="perf-label">Ponderado</div>
-          <div class="perf-val" id="felipe-weighted">-</div>
+          <div class="perf-val" style="color:#000" id="felipe-weighted">-</div>
         </div>
 
         <div class="perf-card">
@@ -383,17 +383,21 @@ function renderClosureChart(){
   
   const byMonthBruno={};
   const byMonthFelipe={};
+  const clientesBruno={};
+  const clientesFelipe={};
   
   rowsBruno.forEach(r=>{
     const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonthBruno[m]){byMonthBruno[m]=0}
+    if(!byMonthBruno[m]){byMonthBruno[m]=0; clientesBruno[m]=[]}
     byMonthBruno[m]+=r._val;
+    if(!clientesBruno[m].includes(r.CUSTOMER)){clientesBruno[m].push(r.CUSTOMER)}
   });
   
   rowsFelipe.forEach(r=>{
     const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
+    if(!byMonthFelipe[m]){byMonthFelipe[m]=0; clientesFelipe[m]=[]}
     byMonthFelipe[m]+=r._val;
+    if(!clientesFelipe[m].includes(r.CUSTOMER)){clientesFelipe[m].push(r.CUSTOMER)}
   });
   
   const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -425,9 +429,25 @@ function renderClosureChart(){
         legend:{display:true},
         datalabels:{display:true},
         tooltip:{
+          enabled:true,
           callbacks:{
+            title:function(ctx){
+              return ctx[0].label;
+            },
             label:function(ctx){
               return ctx.dataset.label+': '+fK(ctx.parsed.y);
+            },
+            afterLabel:function(ctx){
+              const idx=ctx.dataIndex;
+              const label=ctx.chart.data.labels[idx];
+              const monthKey=months[idx];
+              let clientes=[];
+              if(ctx.dataset.label==='Bruno'){
+                clientes=clientesBruno[monthKey]||[];
+              }else{
+                clientes=clientesFelipe[monthKey]||[];
+              }
+              return clientes.length>0?'Clientes:\n'+clientes.join(', '):'';
             }
           }
         }
