@@ -50,7 +50,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .tbl .num{text-align:right;font-family:monospace;font-weight:700;color:var(--blue)}
 .badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:700}
 .badge.green{background:var(--green-bg);color:var(--green)}.badge.amber{background:var(--amber-bg);color:var(--amber)}.badge.red{background:var(--red-bg);color:var(--red)}
-.chart-container{position:relative;height:300px;margin-bottom:20px}
+.chart-container{position:relative;height:400px;margin-bottom:20px}
 .risk-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--brd-light)}
 .risk-item:last-child{border-bottom:none}
 .risk-val{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--red)}
@@ -182,7 +182,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
         <th>Customer</th>
         <th>Project</th>
         <th>Salesperson</th>
-        <th class="num">Value</th>
+        <th class="num">Valor</th>
       </tr>
       <tbody id="top10-tbody">
         <tr><td colspan="5" style="text-align:center;padding:20px">Carregando...</td></tr>
@@ -213,19 +213,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-val" id="bruno-pipeline">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Weighted</div>
+          <div class="perf-label">Ponderado</div>
           <div class="perf-val" id="bruno-weighted">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Forecast</div>
+          <div class="perf-label">Previsto</div>
           <div class="perf-val" id="bruno-forecast">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Won Orders</div>
+          <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="bruno-won" style="color:var(--green)">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Lost Orders</div>
+          <div class="perf-label">Pedidos Perdidos</div>
           <div class="perf-val" id="bruno-lost" style="color:var(--red)">-</div>
         </div>
       </div>
@@ -242,19 +242,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-val" id="felipe-pipeline">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Weighted</div>
+          <div class="perf-label">Ponderado</div>
           <div class="perf-val" id="felipe-weighted">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Forecast</div>
+          <div class="perf-label">Previsto</div>
           <div class="perf-val" id="felipe-forecast">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Won Orders</div>
+          <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="felipe-won" style="color:var(--green)">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Lost Orders</div>
+          <div class="perf-label">Pedidos Perdidos</div>
           <div class="perf-val" id="felipe-lost" style="color:var(--red)">-</div>
         </div>
       </div>
@@ -374,26 +374,49 @@ function renderDashboard(){
 }
 
 function renderClosureChart(){
-  const rows=DATA.base.filter(r=>r._close);
-  const byMonth={};
+  const rowsBruno=DATA.base.filter(r=>r._close&&r._vendor.includes('bruno'));
+  const rowsFelipe=DATA.base.filter(r=>r._close&&r._vendor.includes('felipe'));
   
-  rows.forEach(r=>{
+  const byMonthBruno={};
+  const byMonthFelipe={};
+  
+  rowsBruno.forEach(r=>{
     const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonth[m]){byMonth[m]={val:0,cnt:0}}
-    byMonth[m].val+=r._val;
-    byMonth[m].cnt+=1;
+    if(!byMonthBruno[m]){byMonthBruno[m]=0}
+    byMonthBruno[m]+=r._val;
   });
   
-  const months=Object.keys(byMonth).sort();
-  const vals=months.map(m=>byMonth[m].val);
+  rowsFelipe.forEach(r=>{
+    const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
+    byMonthFelipe[m]+=r._val;
+  });
+  
+  const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
+  const months=Array.from(allMonths).sort();
+  const valsBruno=months.map(m=>byMonthBruno[m]||0);
+  const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
   
   new Chart(document.getElementById('chart-closures'),{
     type:'bar',
     data:{
       labels:months,
-      datasets:[{label:'Valor',data:vals,backgroundColor:'rgba(59,130,246,.8)',borderColor:'rgb(59,130,246)',borderWidth:1}]
+      datasets:[
+        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1},
+        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1}
+      ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:true}},
+      scales:{
+        y:{
+          beginAtZero:true,
+          ticks:{callback:function(val){return fK(val)}}
+        }
+      }
+    }
   });
 }
 
