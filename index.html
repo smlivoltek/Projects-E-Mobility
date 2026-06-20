@@ -36,7 +36,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
 .kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.blue::before{background:var(--blue)}
 .kpi-l{font-size:.7rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:6px;letter-spacing:.05em}
-.kpi-v{font-family:var(--fh);font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:4px;line-height:1}
+.kpi-v{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--text);margin-bottom:4px;line-height:1}
 .kpi-s{font-size:.85rem;color:var(--muted);font-weight:600}
 .card{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:24px;margin-bottom:24px}
 .card-t{font-family:var(--fh);font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:18px}
@@ -57,7 +57,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .risk-val{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--red)}
 .perf-card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px;text-align:center}
 .perf-name{font-family:var(--fh);font-weight:800;font-size:.95rem;margin-bottom:12px}
-.perf-val{font-family:var(--fh);font-size:1.8rem;font-weight:900;color:var(--blue);margin-bottom:4px}
+.perf-val{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--blue);margin-bottom:4px}
 .perf-label{font-size:.75rem;color:var(--muted2);text-transform:uppercase;font-weight:700}
 @media(max-width:1400px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.g3,.g4,.g6{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
@@ -91,11 +91,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="kpi-v" id="kpi-target">-</div>
       <div class="kpi-s">Bruno + Felipe</div>
     </div>
-    <div class="kpi amber">
-      <div class="kpi-l">Receita Prevista</div>
-      <div class="kpi-v" id="kpi-forecast">-</div>
-      <div class="kpi-s">Receita prevista</div>
-    </div>
+
     <div class="kpi red">
       <div class="kpi-l">Gap para Meta</div>
       <div class="kpi-v" id="kpi-gap">-</div>
@@ -182,16 +178,51 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   <div class="sec">Ganhos vs Perdidos</div>
   <div class="g2">
     <div class="card">
-      <div class="card-t">Pedidos Ganhos (Tendência)</div>
+      <div class="card-t">Pedidos Ganhos</div>
       <div class="chart-container">
         <canvas id="chart-won"></canvas>
       </div>
     </div>
     <div class="card">
-      <div class="card-t">Pedidos Perdidos (Tendência)</div>
+      <div class="card-t">Pedidos Perdidos</div>
       <div class="chart-container">
         <canvas id="chart-lost"></canvas>
       </div>
+    </div>
+  </div>
+
+
+
+  <!-- TOP 10 POR VENDEDOR -->
+  <div class="sec">Top 10 Oportunidades por Vendedor</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">👤 Bruno Reis</div>
+      <table class="tbl" style="font-size:0.85rem">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="top10-bruno"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-t">👤 Felipe Hanke</div>
+      <table class="tbl" style="font-size:0.85rem">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="top10-felipe"></tbody>
+      </table>
     </div>
   </div>
 
@@ -319,7 +350,6 @@ function renderDashboard(){
   document.getElementById('kpi-pipeline').textContent=fK(pipeline);
   document.getElementById('kpi-weighted').textContent=fK(weighted);
   document.getElementById('kpi-target').textContent=fK(metaTotal);
-  document.getElementById('kpi-forecast').textContent=fK(forecast);
   document.getElementById('kpi-gap').textContent=fK(gap);
   document.getElementById('kpi-coverage').textContent=coverage.toFixed(0)+'%';
   
@@ -349,6 +379,17 @@ function renderDashboard(){
   let html='';
   top10.forEach((r,i)=>{html+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td>${r.VENDEDOR||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
   document.getElementById('top10-tbody').innerHTML=html;
+  
+  // Top 10 por Vendedor
+  const top10bruno=bruno.sort((a,b)=>b._val-a._val).slice(0,10);
+  let htmlBruno='';
+  top10bruno.forEach((r,i)=>{htmlBruno+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
+  document.getElementById('top10-bruno').innerHTML=htmlBruno;
+  
+  const top10felipe=felipe.sort((a,b)=>b._val-a._val).slice(0,10);
+  let htmlFelipe='';
+  top10felipe.forEach((r,i)=>{htmlFelipe+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
+  document.getElementById('top10-felipe').innerHTML=htmlFelipe;
   
   // Charts
   renderClosureChart();
