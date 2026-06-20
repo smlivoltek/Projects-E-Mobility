@@ -6,6 +6,7 @@
 <title>E-Mobility CRM | Dashboard Executivo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -406,13 +407,15 @@ function renderClosureChart(){
   const valsBruno=months.map(m=>byMonthBruno[m]||0);
   const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
   
+  Chart.register(ChartDataLabels);
   new Chart(document.getElementById('chart-closures'),{
     type:'bar',
+    plugins:[ChartDataLabels],
     data:{
       labels:labels,
       datasets:[
-        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1},
-        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1}
+        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}},
+        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#fff',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}}
       ]
     },
     options:{
@@ -420,7 +423,14 @@ function renderClosureChart(){
       maintainAspectRatio:false,
       plugins:{
         legend:{display:true},
-        datalabels:{display:true}
+        datalabels:{display:true},
+        tooltip:{
+          callbacks:{
+            label:function(ctx){
+              return ctx.dataset.label+': '+fK(ctx.parsed.y);
+            }
+          }
+        }
       },
       scales:{
         y:{
