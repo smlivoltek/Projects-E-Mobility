@@ -126,10 +126,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-label">Ponderado</div>
           <div class="perf-val" id="bruno-weighted">-</div>
         </div>
-        <div class="perf-card">
-          <div class="perf-label">Previsto</div>
-          <div class="perf-val" id="bruno-forecast">-</div>
-        </div>
+
         <div class="perf-card">
           <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="bruno-won" style="color:var(--green)">-</div>
@@ -157,10 +154,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-label">Ponderado</div>
           <div class="perf-val" id="felipe-weighted">-</div>
         </div>
-        <div class="perf-card">
-          <div class="perf-label">Previsto</div>
-          <div class="perf-val" id="felipe-forecast">-</div>
-        </div>
+
         <div class="perf-card">
           <div class="perf-label">Pedidos Ganhos</div>
           <div class="perf-val" id="felipe-won" style="color:var(--green)">-</div>
@@ -371,7 +365,7 @@ function renderDashboard(){
     const lostVal=lostArr.reduce((s,r)=>s+r._val,0);
     document.getElementById(prefix+'-pipeline').textContent=fK(p);
     document.getElementById(prefix+'-weighted').textContent=fK(w);
-    document.getElementById(prefix+'-forecast').textContent=fK(w);
+
     document.getElementById(prefix+'-won').textContent=wonArr.length;
     document.getElementById(prefix+'-won-val').textContent=fK(wonVal);
     document.getElementById(prefix+'-lost').textContent=lostArr.length;
