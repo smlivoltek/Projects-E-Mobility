@@ -354,6 +354,26 @@ function normalize(){
   });
 }
 
+
+// FUNÇÃO ALTERNATIVA: Mostra dados sem filtro de STATUS
+function renderWonLostComparisonRaw(bruno, felipe){
+  // Ganhos: últimas 6 oportunidades de cada um
+  const brunoBest = bruno.sort((a,b)=>b._val-a._val).slice(0,6);
+  const felipeBest = felipe.sort((a,b)=>b._val-a._val).slice(0,6);
+  
+  const wonValBruno = brunoBest.filter(r=>(r.STATUS||'').includes('Ganho')).reduce((s,r)=>s+r._val,0);
+  const wonValFelipe = felipeBest.filter(r=>(r.STATUS||'').includes('Ganho')).reduce((s,r)=>s+r._val,0);
+  
+  let html = '<div class="card" style="background:#f0f4f8; border-left: 4px solid #3B82F6; padding: 20px;">';
+  html += '<strong>🔍 Debug - Top Oportunidades:</strong><br>';
+  html += '<strong style="color:#8B4513">Bruno:</strong> ' + brunoBest.length + ' ops | Ganhos: ' + fK(wonValBruno) + '<br>';
+  html += '<strong style="color:#1F3A93">Felipe:</strong> ' + felipeBest.length + ' ops | Ganhos: ' + fK(wonValFelipe) + '<br>';
+  html += '</div>';
+  
+  return html;
+}
+
+
 function renderDashboard(){
   const rows=DATA.base;
   const metaTotal=METAS.bruno+METAS.felipe;
@@ -532,7 +552,14 @@ function renderWonLostComparison(bruno, felipe){
   html += '</div>'; // fecha lost col
   html += '</div>'; // fecha grid
   
-  document.getElementById('won-lost-container').innerHTML = html;
+  // Adicionar card de debug
+  let debugHtml = '<div style="background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; padding:16px; margin-bottom:16px; font-family:monospace; font-size:0.85rem;">';
+  debugHtml += '<strong style="color:#DC2626">🔍 Debug Dados Carregados:</strong><br>';
+  debugHtml += 'Bruno: ' + wonBruno.length + ' ganhos | ' + lostBruno.length + ' perdidos<br>';
+  debugHtml += 'Felipe: ' + wonFelipe.length + ' ganhos | ' + lostFelipe.length + ' perdidos<br>';
+  debugHtml += '</div>';
+  
+  document.getElementById('won-lost-container').innerHTML = debugHtml + html;
 }
 
 function renderClosureChart(){
