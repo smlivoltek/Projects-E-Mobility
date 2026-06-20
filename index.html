@@ -73,15 +73,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   </div>
 
   <!-- EXECUTIVE KPI CARDS -->
-  <div class="sec">Executive KPIs</div>
+  <div class="sec">KPIs Executivos</div>
   <div class="g6">
     <div class="kpi blue">
-      <div class="kpi-l">Total Pipeline</div>
+      <div class="kpi-l">Pipeline Total</div>
       <div class="kpi-v" id="kpi-pipeline">-</div>
       <div class="kpi-s">Todas as oportunidades</div>
     </div>
     <div class="kpi green">
-      <div class="kpi-l">Weighted Pipeline</div>
+      <div class="kpi-l">Pipeline Ponderado</div>
       <div class="kpi-v" id="kpi-weighted">-</div>
       <div class="kpi-s">Pipeline ponderado</div>
     </div>
@@ -91,39 +91,55 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="kpi-s">Bruno + Felipe</div>
     </div>
     <div class="kpi amber">
-      <div class="kpi-l">Forecast Revenue</div>
+      <div class="kpi-l">Receita Prevista</div>
       <div class="kpi-v" id="kpi-forecast">-</div>
       <div class="kpi-s">Receita prevista</div>
     </div>
     <div class="kpi red">
-      <div class="kpi-l">Gap to Target</div>
+      <div class="kpi-l">Gap para Meta</div>
       <div class="kpi-v" id="kpi-gap">-</div>
       <div class="kpi-s">Falta para meta</div>
     </div>
     <div class="kpi green">
-      <div class="kpi-l">Target Coverage</div>
+      <div class="kpi-l">Cobertura de Meta</div>
       <div class="kpi-v" id="kpi-coverage">-</div>
       <div class="kpi-s">% da meta atingida</div>
     </div>
   </div>
 
+
+  <div class="sec">Pedidos Ganhos (Tendência)</div>
+  <div class="card">
+    <div class="chart-container">
+      <canvas id="chart-won"></canvas>
+    </div>
+  </div>
+
+  <!-- LOST ORDERS TREND -->
+  <div class="sec">Pedidos Perdidos (Tendência)</div>
+  <div class="card">
+    <div class="chart-container">
+      <canvas id="chart-lost"></canvas>
+    </div>
+  </div>
+
   <!-- PIPELINE HEALTH SCORE -->
-  <div class="sec">Pipeline Health Score</div>
+  <div class="sec">Saúde do Pipeline</div>
   <div class="g3">
     <div class="card">
-      <div class="card-t">🟢 Healthy (< 7 dias)</div>
+      <div class="card-t">🟢 Saudável (< 7 dias)</div>
       <div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green">0</div>
       <div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val">R$ 0</div>
       <div style="font-size:.75rem;color:var(--muted2)">Oportunidades atualizadas</div>
     </div>
     <div class="card">
-      <div class="card-t">🟡 Attention (8-15 dias)</div>
+      <div class="card-t">🟡 Atenção (8-15 dias)</div>
       <div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber">0</div>
       <div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val">R$ 0</div>
       <div style="font-size:.75rem;color:var(--muted2)">Requerem atenção</div>
     </div>
     <div class="card">
-      <div class="card-t">🔴 Critical (> 15 dias)</div>
+      <div class="card-t">🔴 Crítico (> 15 dias)</div>
       <div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red">0</div>
       <div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val">R$ 0</div>
       <div style="font-size:.75rem;color:var(--muted2)">Ação requerida imediata</div>
@@ -131,24 +147,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   </div>
 
   <!-- EXECUTIVE RISK CARDS -->
-  <div class="sec">Executive Risk Management</div>
+  <div class="sec">Gestão de Riscos</div>
   <div class="g3">
     <div class="card">
-      <div class="card-t">⚠️ Stalled Opps (>15d)</div>
+      <div class="card-t">⚠️ Opps Paradas (>15d)</div>
       <div id="risk-stalled">-</div>
     </div>
     <div class="card">
-      <div class="card-t">📋 No Next Action</div>
+      <div class="card-t">📋 Sem Próximo Passo</div>
       <div id="risk-noaction">-</div>
     </div>
     <div class="card">
-      <div class="card-t">⏰ Closing in 90d</div>
+      <div class="card-t">⏰ Fechando em 90d</div>
       <div id="risk-90days">-</div>
     </div>
   </div>
 
   <!-- TOP 10 PROJECTS -->
-  <div class="sec">Top 10 Projects (by Value)</div>
+  <div class="sec">Top 10 Projetos (by Value)</div>
   <div class="card">
     <table class="tbl">
       <tr>
@@ -173,7 +189,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   </div>
 
   <!-- SALES PERFORMANCE -->
-  <div class="sec">Sales Performance</div>
+  <div class="sec">Desempenho de Vendas</div>
   <div class="g2">
     <div class="card">
       <div class="card-t">👤 Bruno Reis</div>
@@ -327,7 +343,7 @@ function renderDashboard(){
   // Charts
   renderClosureChart();
   
-  // Sales Performance
+  // Desempenho de Vendas
   const bruno=rows.filter(r=>r._vendor.includes('bruno'));
   const felipe=rows.filter(r=>r._vendor.includes('felipe'));
   
@@ -366,6 +382,56 @@ function renderClosureChart(){
     data:{
       labels:months,
       datasets:[{label:'Valor',data:vals,backgroundColor:'rgba(59,130,246,.8)',borderColor:'rgb(59,130,246)',borderWidth:1}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function renderWonChart(){
+  const rows=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho');
+  const byMonth={};
+  
+  rows.forEach(r=>{
+    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    if(!d)return;
+    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonth[m]){byMonth[m]=0}
+    byMonth[m]+=1;
+  });
+  
+  const months=Object.keys(byMonth).sort();
+  const counts=months.map(m=>byMonth[m]);
+  
+  new Chart(document.getElementById('chart-won'),{
+    type:'line',
+    data:{
+      labels:months,
+      datasets:[{label:'Ganhos',data:counts,borderColor:'rgb(16,185,129)',backgroundColor:'rgba(16,185,129,.1)',borderWidth:2,tension:.4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function renderLostChart(){
+  const rows=DATA.base.filter(r=>(r.STATUS||'').trim()==='Perdido');
+  const byMonth={};
+  
+  rows.forEach(r=>{
+    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    if(!d)return;
+    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonth[m]){byMonth[m]=0}
+    byMonth[m]+=1;
+  });
+  
+  const months=Object.keys(byMonth).sort();
+  const counts=months.map(m=>byMonth[m]);
+  
+  new Chart(document.getElementById('chart-lost'),{
+    type:'line',
+    data:{
+      labels:months,
+      datasets:[{label:'Perdidos',data:counts,borderColor:'rgb(239,68,68)',backgroundColor:'rgba(239,68,68,.1)',borderWidth:2,tension:.4}]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
   });
