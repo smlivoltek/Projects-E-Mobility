@@ -392,15 +392,21 @@ function renderClosureChart(){
     byMonthFelipe[m]+=r._val;
   });
   
+  const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
   const months=Array.from(allMonths).sort();
+  const labels=months.map(m=>{
+    const [y,mo]=m.split('-');
+    return monthNames[parseInt(mo)-1]+'/'+y;
+  });
+  
   const valsBruno=months.map(m=>byMonthBruno[m]||0);
   const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
   
   new Chart(document.getElementById('chart-closures'),{
     type:'bar',
     data:{
-      labels:months,
+      labels:labels,
       datasets:[
         {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1},
         {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1}
@@ -409,7 +415,10 @@ function renderClosureChart(){
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      plugins:{legend:{display:true}},
+      plugins:{
+        legend:{display:true},
+        datalabels:{display:true}
+      },
       scales:{
         y:{
           beginAtZero:true,
