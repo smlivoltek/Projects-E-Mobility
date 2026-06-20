@@ -71,6 +71,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .wl-bar.won{background:linear-gradient(135deg, #10B981, #059669)}
 .wl-bar.lost{background:linear-gradient(135deg, #EF4444, #DC2626)}
 
+.filters-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.filters-bar input,.filters-bar select{padding:9px 12px;border:1px solid var(--brd);border-radius:8px;font-size:.85rem;font-family:var(--fb);background:var(--s1);color:var(--text)}
+.filters-bar input{flex:1;min-width:200px}
+.filters-bar select{min-width:160px}
+.opp-count{margin-top:12px;font-size:.8rem;color:var(--muted);font-weight:600}
+
 .tabs{display:flex;gap:8px;margin-bottom:8px;border-bottom:2px solid var(--brd)}
 .tab-btn{font-family:var(--fh);font-weight:700;font-size:.9rem;padding:12px 22px;background:none;border:none;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;transition:all .15s}
 .tab-btn:hover{color:var(--text)}
@@ -171,6 +177,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-all">-</div></div>
       <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-all">-</div></div>
     </div>
+
+    <div class="sec">Todas as Oportunidades</div>
+    <div class="card">
+      <div class="filters-bar">
+        <select id="filter-vendor-all">
+          <option value="">Todos os Vendedores</option>
+          <option value="bruno">Bruno Reis</option>
+          <option value="felipe">Felipe Hanke</option>
+        </select>
+        <input type="text" id="filter-client-all" placeholder="Buscar cliente...">
+        <select id="filter-status-all"><option value="">Todos os Status</option></select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Produto</th><th>Vendedor</th><th>Status</th><th>Prob.</th><th>Fechamento</th><th>Próximo Passo</th><th>Valor</th></tr></thead>
+          <tbody id="opps-table-all"></tbody>
+        </table>
+      </div>
+      <div class="opp-count" id="opps-count-all"></div>
+    </div>
   </div>
 
   <!-- ============ BRUNO TAB ============ -->
@@ -211,6 +237,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-bruno">-</div></div>
       <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-bruno">-</div></div>
     </div>
+
+    <div class="sec">Todas as Oportunidades</div>
+    <div class="card">
+      <div class="filters-bar">
+        <input type="text" id="filter-client-bruno" placeholder="Buscar cliente...">
+        <select id="filter-status-bruno"><option value="">Todos os Status</option></select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Produto</th><th>Status</th><th>Prob.</th><th>Fechamento</th><th>Próximo Passo</th><th>Valor</th></tr></thead>
+          <tbody id="opps-table-bruno"></tbody>
+        </table>
+      </div>
+      <div class="opp-count" id="opps-count-bruno"></div>
+    </div>
   </div>
 
   <!-- ============ FELIPE TAB ============ -->
@@ -250,6 +291,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-felipe">-</div></div>
       <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-felipe">-</div></div>
       <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-felipe">-</div></div>
+    </div>
+
+    <div class="sec">Todas as Oportunidades</div>
+    <div class="card">
+      <div class="filters-bar">
+        <input type="text" id="filter-client-felipe" placeholder="Buscar cliente...">
+        <select id="filter-status-felipe"><option value="">Todos os Status</option></select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>Cliente</th><th>Produto</th><th>Status</th><th>Prob.</th><th>Fechamento</th><th>Próximo Passo</th><th>Valor</th></tr></thead>
+          <tbody id="opps-table-felipe"></tbody>
+        </table>
+      </div>
+      <div class="opp-count" id="opps-count-felipe"></div>
     </div>
   </div>
 
@@ -327,6 +383,54 @@ function renderAll(){
   renderTop10(felipe, 'top10-felipe-tab');
   renderHealth(felipe, 'felipe');
   renderRisks(felipe, 'felipe');
+
+  initOppTable(rows, {tbodyId:'opps-table-all', filterClientId:'filter-client-all', filterStatusId:'filter-status-all', filterVendorId:'filter-vendor-all', countId:'opps-count-all', showVendor:true});
+  initOppTable(bruno, {tbodyId:'opps-table-bruno', filterClientId:'filter-client-bruno', filterStatusId:'filter-status-bruno', countId:'opps-count-bruno', showVendor:false});
+  initOppTable(felipe, {tbodyId:'opps-table-felipe', filterClientId:'filter-client-felipe', filterStatusId:'filter-status-felipe', countId:'opps-count-felipe', showVendor:false});
+}
+
+function renderOppRows(rows, config){
+  const sorted=[...rows].sort((a,b)=>b._val-a._val);
+  let html='';
+  sorted.forEach(r=>{
+    html+='<tr>';
+    html+='<td>'+(r.CUSTOMER||'-')+'</td>';
+    html+='<td>'+(r['PRODUCT']||'-')+'</td>';
+    if(config.showVendor) html+='<td>'+(r.VENDEDOR||'-')+'</td>';
+    html+='<td>'+(r.STATUS||'-')+'</td>';
+    html+='<td>'+(r._prob?r._prob+'%':'-')+'</td>';
+    html+='<td>'+(r._close?r._close.toLocaleDateString('pt-BR'):'-')+'</td>';
+    html+='<td style="font-size:0.75rem">'+(r['PROX PASSO']||'-')+'</td>';
+    html+='<td class="num">'+fK(r._val)+'</td>';
+    html+='</tr>';
+  });
+  const colspan=config.showVendor?8:7;
+  document.getElementById(config.tbodyId).innerHTML=html||('<tr><td colspan="'+colspan+'" style="text-align:center;color:var(--muted2)">Nenhuma oportunidade encontrada</td></tr>');
+  document.getElementById(config.countId).textContent=rows.length+' oportunidade(s) · Total: '+fK(rows.reduce((s,r)=>s+r._val,0));
+}
+
+function initOppTable(allRows, config){
+  const statuses=Array.from(new Set(allRows.map(r=>(r.STATUS||'').trim()).filter(Boolean))).sort();
+  const statusSel=document.getElementById(config.filterStatusId);
+  statusSel.innerHTML='<option value="">Todos os Status</option>'+statuses.map(function(s){return '<option value="'+s+'">'+s+'</option>'}).join('');
+
+  function applyFilters(){
+    let filtered=allRows;
+    if(config.filterVendorId){
+      const v=document.getElementById(config.filterVendorId).value;
+      if(v) filtered=filtered.filter(function(r){return r._vendor.includes(v)});
+    }
+    const client=document.getElementById(config.filterClientId).value.trim().toLowerCase();
+    if(client) filtered=filtered.filter(function(r){return (r.CUSTOMER||'').toLowerCase().includes(client)});
+    const status=document.getElementById(config.filterStatusId).value;
+    if(status) filtered=filtered.filter(function(r){return (r.STATUS||'').trim()===status});
+    renderOppRows(filtered, config);
+  }
+
+  if(config.filterVendorId) document.getElementById(config.filterVendorId).addEventListener('change',applyFilters);
+  document.getElementById(config.filterClientId).addEventListener('input',applyFilters);
+  document.getElementById(config.filterStatusId).addEventListener('change',applyFilters);
+  applyFilters();
 }
 
 function renderKPIs(rows, suffix, meta){
@@ -466,18 +570,18 @@ function renderClosureChartSingle(rows, canvasId, label, bg, border){
   });
 }
 
-function wlColumnHTML(label, badgeColor, won, lost, weightedPipeline){
+function wlColumnHTML(label, badgeColor, won, lost, pipelineTotal){
   const wonVal=won.reduce((s,r)=>s+r._val,0);
   const lostVal=lost.reduce((s,r)=>s+r._val,0);
-  const wonPct=weightedPipeline>0?(wonVal/weightedPipeline*100):0;
-  const lostPct=weightedPipeline>0?(lostVal/weightedPipeline*100):0;
+  const wonPct=pipelineTotal>0?(wonVal/pipelineTotal*100):0;
+  const lostPct=pipelineTotal>0?(lostVal/pipelineTotal*100):0;
   const wonBarWidth=Math.min(wonPct,100);
   const lostBarWidth=Math.min(lostPct,100);
   let html='<div class="wl-row">';
   html+='<div class="wl-vendor"><span class="wl-vendor-badge" style="background:'+badgeColor+'"></span>'+label+'</div>';
-  html+='<div class="wl-stat"><span class="wl-stat-label">Ganhos:</span><span class="wl-stat-value">'+won.length+' pedidos · <span style="color:var(--green)">'+fK(wonVal)+'</span> · '+wonPct.toFixed(0)+'% do pipeline ponderado</span></div>';
+  html+='<div class="wl-stat"><span class="wl-stat-label">Ganhos:</span><span class="wl-stat-value">'+won.length+' pedidos · <span style="color:var(--green)">'+fK(wonVal)+'</span> · '+wonPct.toFixed(0)+'% do pipeline total</span></div>';
   html+='<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:'+wonBarWidth+'%">'+(wonBarWidth>15?wonPct.toFixed(0)+'%':'')+'</div></div>';
-  html+='<div class="wl-stat" style="margin-top:14px"><span class="wl-stat-label">Perdidos:</span><span class="wl-stat-value">'+lost.length+' pedidos · <span style="color:var(--red)">'+fK(lostVal)+'</span> · '+lostPct.toFixed(0)+'% do pipeline ponderado</span></div>';
+  html+='<div class="wl-stat" style="margin-top:14px"><span class="wl-stat-label">Perdidos:</span><span class="wl-stat-value">'+lost.length+' pedidos · <span style="color:var(--red)">'+fK(lostVal)+'</span> · '+lostPct.toFixed(0)+'% do pipeline total</span></div>';
   html+='<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:'+lostBarWidth+'%">'+(lostBarWidth>15?lostPct.toFixed(0)+'%':'')+'</div></div>';
   html+='</div>';
   return html;
@@ -486,19 +590,19 @@ function wlColumnHTML(label, badgeColor, won, lost, weightedPipeline){
 function renderWonLostCombined(bruno, felipe, containerId){
   const wonBruno=bruno.filter(isWon), lostBruno=bruno.filter(isLost);
   const wonFelipe=felipe.filter(isWon), lostFelipe=felipe.filter(isLost);
-  const weightedBruno=bruno.reduce((s,r)=>s+r._ponderado,0);
-  const weightedFelipe=felipe.reduce((s,r)=>s+r._ponderado,0);
+  const pipelineBruno=bruno.reduce((s,r)=>s+r._val,0);
+  const pipelineFelipe=felipe.reduce((s,r)=>s+r._val,0);
   let html='<div class="won-lost-grid">';
-  html+='<div class="won-lost-col">'+wlColumnHTML('Bruno Reis','#8B4513',wonBruno,lostBruno,weightedBruno)+'</div>';
-  html+='<div class="won-lost-col">'+wlColumnHTML('Felipe Hanke','#1F3A93',wonFelipe,lostFelipe,weightedFelipe)+'</div>';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Bruno Reis','#8B4513',wonBruno,lostBruno,pipelineBruno)+'</div>';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Felipe Hanke','#1F3A93',wonFelipe,lostFelipe,pipelineFelipe)+'</div>';
   html+='</div>';
   document.getElementById(containerId).innerHTML=html;
 }
 
 function renderWonLostSingle(rows, containerId, label, badgeColor){
   const won=rows.filter(isWon), lost=rows.filter(isLost);
-  const weightedPipeline=rows.reduce((s,r)=>s+r._ponderado,0);
-  let html='<div class="won-lost-grid single"><div class="won-lost-col">'+wlColumnHTML(label,badgeColor,won,lost,weightedPipeline)+'</div></div>';
+  const pipelineTotal=rows.reduce((s,r)=>s+r._val,0);
+  let html='<div class="won-lost-grid single"><div class="won-lost-col">'+wlColumnHTML(label,badgeColor,won,lost,pipelineTotal)+'</div></div>';
   document.getElementById(containerId).innerHTML=html;
 }
 
