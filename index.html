@@ -352,6 +352,8 @@ function renderDashboard(){
   
   // Charts
   renderClosureChart();
+  renderWonChart();
+  renderLostChart();
   
   // Desempenho de Vendas
   const bruno=rows.filter(r=>r._vendor.includes('bruno'));
