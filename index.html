@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>E-Mobility CRM | Dashboard Executivo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAFBFC;--s1:#FFFFFF;--s2:#F8FAFB;--s3:#F3F4F6;
+  --brd:#E5E7EB;--brd-light:#F0F1F3;
+  --green:#10B981;--green-bg:#ECFDF5;
+  --amber:#F59E0B;--amber-bg:#FFFBEB;
+  --red:#EF4444;--red-bg:#FEF2F2;
+  --blue:#3B82F6;--blue-bg:#EFF6FF;
+  --text:#1F2937;--muted:#6B7280;--muted2:#9CA3AF;
+  --fh:'Plus Jakarta Sans',sans-serif;--fb:'Lato',sans-serif;
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.6}
+.wrap{max-width:1800px;margin:0 auto;padding:24px 32px}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--brd)}
+.hdr-t{font-family:var(--fh);font-size:2.5rem;font-weight:900;color:var(--text)}
+.hdr-s{font-size:.75rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:.72rem;font-weight:700;border:1px solid}
+.p-ok{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.p-err{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.sec{font-family:var(--fh);font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:32px 0 16px 0;display:flex;align-items:center;gap:12px}
+.sec::before{content:'';width:3px;height:1.2rem;background:var(--blue);border-radius:2px}
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px;position:relative;overflow:hidden;transition:all .3s}
+.kpi:hover{border-color:#D1D5DB;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.blue::before{background:var(--blue)}
+.kpi-l{font-size:.7rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:6px;letter-spacing:.05em}
+.kpi-v{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--text);margin-bottom:4px;line-height:1}
+.kpi-s{font-size:.85rem;color:var(--muted);font-weight:600}
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:24px;margin-bottom:24px}
+.card-t{font-family:var(--fh);font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:18px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.tbl{width:100%;border-collapse:collapse;font-size:.9rem}
+.tbl th{background:var(--s3);color:var(--muted);font-weight:700;padding:12px 14px;text-align:left;border-bottom:2px solid var(--brd);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--brd-light);color:var(--text)}
+.tbl tr:hover{background:var(--s2)}
+.tbl .num{text-align:right;font-family:monospace;font-weight:700;color:var(--blue)}
+.chart-container{position:relative;height:500px;margin-bottom:20px}
+.perf-card{background:var(--s1);border:1px solid var(--brd);border-radius:10px;padding:16px;text-align:center}
+.perf-val{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--blue);margin-bottom:4px}
+.perf-label{font-size:.75rem;color:var(--muted2);text-transform:uppercase;font-weight:700}
+
+.won-lost-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:24px}
+.won-lost-grid.single{grid-template-columns:1fr;max-width:600px}
+.won-lost-col{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:24px}
+.wl-title{font-family:var(--fh);font-size:1rem;font-weight:800;margin-bottom:20px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.wl-row{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--brd-light)}
+.wl-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.wl-vendor{font-family:var(--fh);font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.wl-vendor-badge{display:inline-block;width:12px;height:12px;border-radius:2px}
+.wl-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:.85rem}
+.wl-stat-label{color:var(--muted)}
+.wl-stat-value{font-family:var(--fh);font-weight:800;color:var(--text)}
+.wl-bar-wrapper{background:var(--s2);border-radius:4px;overflow:hidden;height:24px;margin-top:8px}
+.wl-bar{height:100%;display:flex;align-items:center;padding:0 10px;color:#fff;font-weight:700;font-size:.75rem;border-radius:4px}
+.wl-bar.won{background:linear-gradient(135deg, #10B981, #059669)}
+.wl-bar.lost{background:linear-gradient(135deg, #EF4444, #DC2626)}
+
+.tabs{display:flex;gap:8px;margin-bottom:8px;border-bottom:2px solid var(--brd)}
+.tab-btn{font-family:var(--fh);font-weight:700;font-size:.9rem;padding:12px 22px;background:none;border:none;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+@media(max-width:1400px){.g6{grid-template-columns:repeat(3,1fr)}.g5{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.g3,.g4,.g5,.g6{grid-template-columns:1fr}.g2{grid-template-columns:1fr}.won-lost-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-t">E-Mobility CRM</div>
+      <div class="hdr-s">Dashboard Executivo • Diretoria Brasil</div>
+    </div>
+    <div id="status-pill" class="pill p-ok">✓ Carregando...</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="all">Visão Geral</button>
+    <button class="tab-btn" data-tab="bruno">Bruno Reis</button>
+    <button class="tab-btn" data-tab="felipe">Felipe Hanke</button>
+  </div>
+
+  <!-- ============ VISAO GERAL ============ -->
+  <div class="tab-panel active" id="panel-all">
+
+    <div class="sec">KPIs Executivos</div>
+    <div class="g5">
+      <div class="kpi blue"><div class="kpi-l">Pipeline Total</div><div class="kpi-v" id="kpi-pipeline-all">-</div><div class="kpi-s">Todas as oportunidades</div></div>
+      <div class="kpi green"><div class="kpi-l">Pipeline Ponderado</div><div class="kpi-v" id="kpi-weighted-all">-</div><div class="kpi-s">Pipeline ponderado</div></div>
+      <div class="kpi blue"><div class="kpi-l">Meta Anual</div><div class="kpi-v" id="kpi-target-all">-</div><div class="kpi-s">Bruno + Felipe</div></div>
+      <div class="kpi red"><div class="kpi-l">Gap para Meta</div><div class="kpi-v" id="kpi-gap-all">-</div><div class="kpi-s">Falta para meta</div></div>
+      <div class="kpi green"><div class="kpi-l">Cobertura de Meta</div><div class="kpi-v" id="kpi-coverage-all">-</div><div class="kpi-s">% da meta atingida</div></div>
+    </div>
+
+    <div class="sec">Desempenho de Vendas</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-t">👤 Bruno Reis</div>
+        <div class="g3" style="margin-bottom:0">
+          <div class="perf-card"><div class="perf-label">Meta Anual</div><div class="perf-val" style="color:#000" id="bruno-meta">R$ 50M</div></div>
+          <div class="perf-card"><div class="perf-label">Pipeline</div><div class="perf-val" style="color:#000" id="bruno-pipeline">-</div></div>
+          <div class="perf-card"><div class="perf-label">Ponderado</div><div class="perf-val" style="color:#000" id="bruno-weighted">-</div></div>
+          <div class="perf-card"><div class="perf-label">Pedidos Ganhos</div><div class="perf-val" id="bruno-won" style="color:var(--green)">-</div><div class="perf-val" id="bruno-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div></div>
+          <div class="perf-card"><div class="perf-label">Pedidos Perdidos</div><div class="perf-val" id="bruno-lost" style="color:var(--red)">-</div><div class="perf-val" id="bruno-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">👤 Felipe Hanke</div>
+        <div class="g3" style="margin-bottom:0">
+          <div class="perf-card"><div class="perf-label">Meta Anual</div><div class="perf-val" style="color:#000" id="felipe-meta">R$ 12M</div></div>
+          <div class="perf-card"><div class="perf-label">Pipeline</div><div class="perf-val" style="color:#000" id="felipe-pipeline">-</div></div>
+          <div class="perf-card"><div class="perf-label">Ponderado</div><div class="perf-val" style="color:#000" id="felipe-weighted">-</div></div>
+          <div class="perf-card"><div class="perf-label">Pedidos Ganhos</div><div class="perf-val" id="felipe-won" style="color:var(--green)">-</div><div class="perf-val" id="felipe-won-val" style="font-size:1rem;color:var(--green);margin-top:4px">-</div></div>
+          <div class="perf-card"><div class="perf-label">Pedidos Perdidos</div><div class="perf-val" id="felipe-lost" style="color:var(--red)">-</div><div class="perf-val" id="felipe-lost-val" style="font-size:1rem;color:var(--red);margin-top:4px">-</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">Pipeline por Data de Fechamento Esperada</div>
+    <div class="card"><div class="chart-container"><canvas id="chart-closures-all"></canvas></div></div>
+
+    <div class="sec">Ganhos vs Perdidos</div>
+    <div id="won-lost-all"></div>
+
+    <div class="sec">Top 10 Oportunidades por Vendedor</div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-t">👤 Bruno Reis</div>
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
+          <tbody id="top10-bruno"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-t">👤 Felipe Hanke</div>
+        <table class="tbl" style="font-size:0.85rem">
+          <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
+          <tbody id="top10-felipe"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sec">Saúde do Pipeline</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Oportunidades atualizadas</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Requerem atenção</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-all">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-all">R$ 0</div><div style="font-size:.75rem;color:var(--muted2)">Ação requerida imediata</div></div>
+    </div>
+
+    <div class="sec">Gestão de Riscos</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-all">-</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-all">-</div></div>
+      <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-all">-</div></div>
+    </div>
+  </div>
+
+  <!-- ============ BRUNO TAB ============ -->
+  <div class="tab-panel" id="panel-bruno">
+    <div class="sec">KPIs — Bruno Reis</div>
+    <div class="g5">
+      <div class="kpi blue"><div class="kpi-l">Pipeline</div><div class="kpi-v" id="kpi-pipeline-bruno">-</div><div class="kpi-s">Todas as oportunidades</div></div>
+      <div class="kpi green"><div class="kpi-l">Pipeline Ponderado</div><div class="kpi-v" id="kpi-weighted-bruno">-</div><div class="kpi-s">Pipeline ponderado</div></div>
+      <div class="kpi blue"><div class="kpi-l">Meta Anual</div><div class="kpi-v" id="kpi-target-bruno">-</div><div class="kpi-s">Bruno Reis</div></div>
+      <div class="kpi red"><div class="kpi-l">Gap para Meta</div><div class="kpi-v" id="kpi-gap-bruno">-</div><div class="kpi-s">Falta para meta</div></div>
+      <div class="kpi green"><div class="kpi-l">Cobertura de Meta</div><div class="kpi-v" id="kpi-coverage-bruno">-</div><div class="kpi-s">% da meta atingida</div></div>
+    </div>
+
+    <div class="sec">Pipeline por Data de Fechamento Esperada</div>
+    <div class="card"><div class="chart-container"><canvas id="chart-closures-bruno"></canvas></div></div>
+
+    <div class="sec">Ganhos vs Perdidos</div>
+    <div id="won-lost-bruno"></div>
+
+    <div class="sec">Top 10 Oportunidades</div>
+    <div class="card">
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
+        <tbody id="top10-bruno-tab"></tbody>
+      </table>
+    </div>
+
+    <div class="sec">Saúde do Pipeline</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-bruno">R$ 0</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-bruno">R$ 0</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-bruno">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-bruno">R$ 0</div></div>
+    </div>
+
+    <div class="sec">Gestão de Riscos</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-bruno">-</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-bruno">-</div></div>
+      <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-bruno">-</div></div>
+    </div>
+  </div>
+
+  <!-- ============ FELIPE TAB ============ -->
+  <div class="tab-panel" id="panel-felipe">
+    <div class="sec">KPIs — Felipe Hanke</div>
+    <div class="g5">
+      <div class="kpi blue"><div class="kpi-l">Pipeline</div><div class="kpi-v" id="kpi-pipeline-felipe">-</div><div class="kpi-s">Todas as oportunidades</div></div>
+      <div class="kpi green"><div class="kpi-l">Pipeline Ponderado</div><div class="kpi-v" id="kpi-weighted-felipe">-</div><div class="kpi-s">Pipeline ponderado</div></div>
+      <div class="kpi blue"><div class="kpi-l">Meta Anual</div><div class="kpi-v" id="kpi-target-felipe">-</div><div class="kpi-s">Felipe Hanke</div></div>
+      <div class="kpi red"><div class="kpi-l">Gap para Meta</div><div class="kpi-v" id="kpi-gap-felipe">-</div><div class="kpi-s">Falta para meta</div></div>
+      <div class="kpi green"><div class="kpi-l">Cobertura de Meta</div><div class="kpi-v" id="kpi-coverage-felipe">-</div><div class="kpi-s">% da meta atingida</div></div>
+    </div>
+
+    <div class="sec">Pipeline por Data de Fechamento Esperada</div>
+    <div class="card"><div class="chart-container"><canvas id="chart-closures-felipe"></canvas></div></div>
+
+    <div class="sec">Ganhos vs Perdidos</div>
+    <div id="won-lost-felipe"></div>
+
+    <div class="sec">Top 10 Oportunidades</div>
+    <div class="card">
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
+        <tbody id="top10-felipe-tab"></tbody>
+      </table>
+    </div>
+
+    <div class="sec">Saúde do Pipeline</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">🟢 Saudável (&lt; 7 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--green);margin-bottom:8px" id="health-green-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-green-val-felipe">R$ 0</div></div>
+      <div class="card"><div class="card-t">🟡 Atenção (8-15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--amber);margin-bottom:8px" id="health-amber-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-amber-val-felipe">R$ 0</div></div>
+      <div class="card"><div class="card-t">🔴 Crítico (&gt; 15 dias)</div><div style="font-size:2.5rem;font-weight:900;color:var(--red);margin-bottom:8px" id="health-red-felipe">0</div><div style="font-size:.9rem;color:var(--muted);margin-bottom:8px" id="health-red-val-felipe">R$ 0</div></div>
+    </div>
+
+    <div class="sec">Gestão de Riscos</div>
+    <div class="g3">
+      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-felipe">-</div></div>
+      <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-felipe">-</div></div>
+      <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-felipe">-</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const URLS = { bruno: './Opp Bruno.csv', felipe: './Opp Felipe.csv' };
+const METAS = {bruno: 50000000, felipe: 12000000};
+let DATA = {base: []};
+
+function fK(n){return !n?'R$ 0,00':('R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}))}
+function parseData(d){if(!d)return null;try{const s=String(d).trim().replace(/\/0206/g,'/2026');if(!s||s.length<6)return null;const p=s.split(/[-\/]/);if(p.length<3)return null;let a,m,day;if(p[0].length===4){a=parseInt(p[0]);m=parseInt(p[1]);day=parseInt(p[2])}else{day=parseInt(p[0]);m=parseInt(p[1]);a=parseInt(p[2])}if(a<1900||a>2100||m<1||m>12||day<1||day>31)return null;const date=new Date(a,m-1,day);return date.getFullYear()===a?date:null}catch(e){return null}}
+function parseBRL(v){if(!v)return 0;const s=String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.').trim();return isNaN(parseFloat(s))?0:parseFloat(s)}
+function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseData(d);if(!t)return 999;return Math.max(0,Math.floor((new Date()-t)/(1000*60*60*24)))}catch(e){return 999}}
+function isWon(r){return ['ganho','ganha'].includes((r.STATUS||'').trim().toLowerCase())}
+function isLost(r){return ['perdido','perdida'].includes((r.STATUS||'').trim().toLowerCase())}
+
+async function loadData(){
+  try{
+    const resBruno = await fetch(URLS.bruno);
+    const resFelipe = await fetch(URLS.felipe);
+    if(!resBruno.ok||!resFelipe.ok){
+      throw new Error(`CSVs não encontrados. Bruno: ${resBruno.status}, Felipe: ${resFelipe.status}`);
+    }
+    const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    const dataFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    DATA.base=[...dataBruno,...dataFelipe];
+    normalize();
+    renderAll();
+    document.getElementById('status-pill').textContent='✓ '+DATA.base.length+' oportunidades';
+  }catch(e){
+    console.error(e);
+    document.getElementById('status-pill').textContent='❌ Erro: '+e.message;
+    document.getElementById('status-pill').className='pill p-err';
+  }
+}
+
+function normalize(){
+  DATA.base.forEach(r=>{
+    r._val=parseBRL(r['TOTAL NET LVK (R$)']||r[' TOTAL NET LVK (R$) ']||r['TOTAL NET (R$)']||'0');
+    r._vendor=(r.VENDEDOR||'').toLowerCase().trim();
+    r._atua=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
+    r._dias=diasDesde(r._atua);
+    r._prob=parseFloat(r.PROBABILIDADE||'0')||0;
+    r._ponderado=(r._val*r._prob)/100;
+    r._close=parseData(r['DATA DE FECHAMENTO']||'');
+  });
+}
+
+function renderAll(){
+  const rows=DATA.base;
+  const bruno=rows.filter(r=>r._vendor.includes('bruno'));
+  const felipe=rows.filter(r=>r._vendor.includes('felipe'));
+
+  renderKPIs(rows, 'all', METAS.bruno+METAS.felipe);
+  renderPerf('bruno', bruno);
+  renderPerf('felipe', felipe);
+  renderClosureChartCombined(bruno, felipe, 'chart-closures-all');
+  renderWonLostCombined(bruno, felipe, 'won-lost-all');
+  renderTop10(bruno, 'top10-bruno');
+  renderTop10(felipe, 'top10-felipe');
+  renderHealth(rows, 'all');
+  renderRisks(rows, 'all');
+
+  renderKPIs(bruno, 'bruno', METAS.bruno);
+  renderClosureChartSingle(bruno, 'chart-closures-bruno', 'Bruno', '#8B4513', '#6B3410');
+  renderWonLostSingle(bruno, 'won-lost-bruno', 'Bruno Reis', '#8B4513');
+  renderTop10(bruno, 'top10-bruno-tab');
+  renderHealth(bruno, 'bruno');
+  renderRisks(bruno, 'bruno');
+
+  renderKPIs(felipe, 'felipe', METAS.felipe);
+  renderClosureChartSingle(felipe, 'chart-closures-felipe', 'Felipe', '#1F3A93', '#152857');
+  renderWonLostSingle(felipe, 'won-lost-felipe', 'Felipe Hanke', '#1F3A93');
+  renderTop10(felipe, 'top10-felipe-tab');
+  renderHealth(felipe, 'felipe');
+  renderRisks(felipe, 'felipe');
+}
+
+function renderKPIs(rows, suffix, meta){
+  const pipeline=rows.reduce((s,r)=>s+r._val,0);
+  const weighted=rows.reduce((s,r)=>s+r._ponderado,0);
+  const gap=Math.max(0,meta-weighted);
+  const coverage=meta>0?(weighted/meta)*100:0;
+  document.getElementById('kpi-pipeline-'+suffix).textContent=fK(pipeline);
+  document.getElementById('kpi-weighted-'+suffix).textContent=fK(weighted);
+  document.getElementById('kpi-target-'+suffix).textContent=fK(meta);
+  document.getElementById('kpi-gap-'+suffix).textContent=fK(gap);
+  document.getElementById('kpi-coverage-'+suffix).textContent=coverage.toFixed(0)+'%';
+}
+
+function renderPerf(prefix, arr){
+  const p=arr.reduce((s,r)=>s+r._val,0);
+  const w=arr.reduce((s,r)=>s+r._ponderado,0);
+  const wonArr=arr.filter(isWon);
+  const lostArr=arr.filter(isLost);
+  document.getElementById(prefix+'-pipeline').textContent=fK(p);
+  document.getElementById(prefix+'-weighted').textContent=fK(w);
+  document.getElementById(prefix+'-won').textContent=wonArr.length;
+  document.getElementById(prefix+'-won-val').textContent=fK(wonArr.reduce((s,r)=>s+r._val,0));
+  document.getElementById(prefix+'-lost').textContent=lostArr.length;
+  document.getElementById(prefix+'-lost-val').textContent=fK(lostArr.reduce((s,r)=>s+r._val,0));
+}
+
+function renderTop10(arr, tbodyId){
+  const top10=[...arr].sort((a,b)=>b._val-a._val).slice(0,10);
+  let html='';
+  top10.forEach((r,i)=>{html+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td>${r.STATUS||'-'}</td><td style="font-size:0.75rem">${r['PROX PASSO']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
+  document.getElementById(tbodyId).innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
+}
+
+function renderHealth(rows, suffix){
+  const healthy=rows.filter(r=>r._dias<=7);
+  const attention=rows.filter(r=>r._dias>7&&r._dias<=15);
+  const critical=rows.filter(r=>r._dias>15);
+  document.getElementById('health-green-'+suffix).textContent=healthy.length;
+  document.getElementById('health-green-val-'+suffix).textContent=fK(healthy.reduce((s,r)=>s+r._val,0));
+  document.getElementById('health-amber-'+suffix).textContent=attention.length;
+  document.getElementById('health-amber-val-'+suffix).textContent=fK(attention.reduce((s,r)=>s+r._val,0));
+  document.getElementById('health-red-'+suffix).textContent=critical.length;
+  document.getElementById('health-red-val-'+suffix).textContent=fK(critical.reduce((s,r)=>s+r._val,0));
+}
+
+function renderRisks(rows, suffix){
+  const critical=rows.filter(r=>r._dias>15);
+  const noaction=rows.filter(r=>!(r['PROX PASSO']||'').trim());
+  const closing90=rows.filter(r=>r._close&&(r._close-new Date())/(1000*60*60*24)<=90&&(r._close-new Date())/(1000*60*60*24)>0);
+  document.getElementById('risk-stalled-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--red)">${critical.length}</div><div style="font-size:.85rem;color:var(--muted)">${fK(critical.reduce((s,r)=>s+r._val,0))}</div>`;
+  document.getElementById('risk-noaction-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--amber)">${noaction.length}</div><div style="font-size:.85rem;color:var(--muted)">Sem próximo passo</div>`;
+  document.getElementById('risk-90days-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--blue)">${closing90.length}</div><div style="font-size:.85rem;color:var(--muted)">Próximos 90 dias</div>`;
+}
+
+function monthlyBuckets(rows){
+  const byMonth={}, clientes={};
+  rows.forEach(r=>{
+    if(!r._close)return;
+    const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');
+    if(!byMonth[m]){byMonth[m]=0; clientes[m]=[]}
+    byMonth[m]+=r._val;
+    if(!clientes[m].includes(r.CUSTOMER)) clientes[m].push(r.CUSTOMER);
+  });
+  return {byMonth, clientes};
+}
+function monthLabel(m){
+  const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const parts=m.split('-');
+  return monthNames[parseInt(parts[1])-1]+'/'+parts[0];
+}
+
+function renderClosureChartCombined(bruno, felipe, canvasId){
+  const b=monthlyBuckets(bruno), f=monthlyBuckets(felipe);
+  const months=Array.from(new Set([...Object.keys(b.byMonth),...Object.keys(f.byMonth)])).sort();
+  const labels=months.map(monthLabel);
+  const valsBruno=months.map(m=>b.byMonth[m]||0);
+  const valsFelipe=months.map(m=>f.byMonth[m]||0);
+  const existing=Chart.getChart(canvasId);
+  if(existing) existing.destroy();
+  Chart.register(ChartDataLabels);
+  new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    plugins:[ChartDataLabels],
+    data:{labels:labels,datasets:[
+      {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return fK(v)}}},
+      {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return fK(v)}}}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true},datalabels:{display:true},
+        tooltip:{enabled:true,callbacks:{
+          title:function(ctx){return ctx[0].label},
+          label:function(ctx){return ctx.dataset.label+': '+fK(ctx.parsed.y)},
+          afterLabel:function(ctx){
+            const monthKey=months[ctx.dataIndex];
+            const clientes=ctx.dataset.label==='Bruno'?(b.clientes[monthKey]||[]):(f.clientes[monthKey]||[]);
+            return clientes.length>0?'Clientes:\n'+clientes.join(', '):'';
+          }
+        }}
+      },
+      scales:{y:{beginAtZero:true,ticks:{callback:function(v){return fK(v)}}}}
+    }
+  });
+}
+
+function renderClosureChartSingle(rows, canvasId, label, bg, border){
+  const buckets=monthlyBuckets(rows);
+  const byMonth=buckets.byMonth, clientes=buckets.clientes;
+  const months=Object.keys(byMonth).sort();
+  const labels=months.map(monthLabel);
+  const vals=months.map(m=>byMonth[m]||0);
+  const existing=Chart.getChart(canvasId);
+  if(existing) existing.destroy();
+  Chart.register(ChartDataLabels);
+  new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    plugins:[ChartDataLabels],
+    data:{labels:labels,datasets:[
+      {label:label,data:vals,backgroundColor:bg,borderColor:border,borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return fK(v)}}}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true},datalabels:{display:true},
+        tooltip:{enabled:true,callbacks:{
+          title:function(ctx){return ctx[0].label},
+          label:function(ctx){return ctx.dataset.label+': '+fK(ctx.parsed.y)},
+          afterLabel:function(ctx){
+            const monthKey=months[ctx.dataIndex];
+            const c=clientes[monthKey]||[];
+            return c.length>0?'Clientes:\n'+c.join(', '):'';
+          }
+        }}
+      },
+      scales:{y:{beginAtZero:true,ticks:{callback:function(v){return fK(v)}}}}
+    }
+  });
+}
+
+function wlColumnHTML(label, badgeColor, won, lost, maxVal){
+  const wonVal=won.reduce((s,r)=>s+r._val,0);
+  const lostVal=lost.reduce((s,r)=>s+r._val,0);
+  const wonPct=maxVal>0?(wonVal/maxVal*100):0;
+  const lostPct=maxVal>0?(lostVal/maxVal*100):0;
+  let html='<div class="wl-row">';
+  html+='<div class="wl-vendor"><span class="wl-vendor-badge" style="background:'+badgeColor+'"></span>'+label+'</div>';
+  html+='<div class="wl-stat"><span class="wl-stat-label">Ganhos:</span><span class="wl-stat-value">'+won.length+' pedidos · <span style="color:var(--green)">'+fK(wonVal)+'</span></span></div>';
+  html+='<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:'+wonPct+'%">'+(wonPct>15?Math.round(wonPct)+'%':'')+'</div></div>';
+  html+='<div class="wl-stat" style="margin-top:14px"><span class="wl-stat-label">Perdidos:</span><span class="wl-stat-value">'+lost.length+' pedidos · <span style="color:var(--red)">'+fK(lostVal)+'</span></span></div>';
+  html+='<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:'+lostPct+'%">'+(lostPct>15?Math.round(lostPct)+'%':'')+'</div></div>';
+  html+='</div>';
+  return html;
+}
+
+function renderWonLostCombined(bruno, felipe, containerId){
+  const wonBruno=bruno.filter(isWon), lostBruno=bruno.filter(isLost);
+  const wonFelipe=felipe.filter(isWon), lostFelipe=felipe.filter(isLost);
+  const maxVal=Math.max(
+    wonBruno.reduce((s,r)=>s+r._val,0), lostBruno.reduce((s,r)=>s+r._val,0),
+    wonFelipe.reduce((s,r)=>s+r._val,0), lostFelipe.reduce((s,r)=>s+r._val,0)
+  );
+  let html='<div class="won-lost-grid">';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Bruno Reis','#8B4513',wonBruno,lostBruno,maxVal)+'</div>';
+  html+='<div class="won-lost-col">'+wlColumnHTML('Felipe Hanke','#1F3A93',wonFelipe,lostFelipe,maxVal)+'</div>';
+  html+='</div>';
+  document.getElementById(containerId).innerHTML=html;
+}
+
+function renderWonLostSingle(rows, containerId, label, badgeColor){
+  const won=rows.filter(isWon), lost=rows.filter(isLost);
+  const maxVal=Math.max(won.reduce((s,r)=>s+r._val,0), lost.reduce((s,r)=>s+r._val,0));
+  let html='<div class="won-lost-grid single"><div class="won-lost-col">'+wlColumnHTML(label,badgeColor,won,lost,maxVal)+'</div></div>';
+  document.getElementById(containerId).innerHTML=html;
+}
+
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+loadData();
+</script>
+</body>
+</html>
