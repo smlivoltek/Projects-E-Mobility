@@ -218,8 +218,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="kpi blue"><div class="kpi-l">Pipeline</div><div class="kpi-v" id="kpi-pipeline-bruno">-</div><div class="kpi-s">Todas as oportunidades</div></div>
       <div class="kpi green"><div class="kpi-l">Pipeline Ponderado</div><div class="kpi-v" id="kpi-weighted-bruno">-</div><div class="kpi-s">Pipeline ponderado</div></div>
       <div class="kpi blue"><div class="kpi-l">Meta Anual</div><div class="kpi-v" id="kpi-target-bruno">-</div><div class="kpi-s">Bruno Reis</div></div>
-      <div class="kpi red"><div class="kpi-l">Gap para Meta</div><div class="kpi-v" id="kpi-gap-bruno">-</div><div class="kpi-s">Falta para meta</div></div>
-      <div class="kpi green"><div class="kpi-l">Cobertura de Meta</div><div class="kpi-v" id="kpi-coverage-bruno">-</div><div class="kpi-s">% da meta atingida</div></div>
+      <div class="kpi red"><div class="kpi-l">Gap para Meta<span class="kpi-tip">ⓘ<span class="tip-box">Diferença entre o pipeline ponderado e a meta anual. Verde quando positivo, vermelho quando negativo.</span></span></div><div class="kpi-v" id="kpi-gap-bruno">-</div><div class="kpi-s">Falta para meta</div></div>
+      <div class="kpi green"><div class="kpi-l">Cobertura de Meta<span class="kpi-tip">ⓘ<span class="tip-box">Pipeline ponderado dividido pela meta anual, em percentual.</span></span></div><div class="kpi-v" id="kpi-coverage-bruno">-</div><div class="kpi-s">% da meta atingida</div></div>
+    </div>
+    <div class="g3">
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Win Rate<span class="kpi-tip">ⓘ<span class="tip-box">Percentual de oportunidades convertidas em pedidos com sucesso.</span></span></div>
+        <div class="exec-kpi-v neutral" id="kpi-winrate-bruno">-</div>
+      </div>
+      <div class="exec-kpi" id="kpi-coveragex-bruno-card">
+        <div class="exec-kpi-l">Pipeline Coverage<span class="kpi-tip">ⓘ<span class="tip-box">Quantas vezes o pipeline total cobre a meta anual. Verde ≥ 2x, amarelo 1x–2x, vermelho &lt; 1x.</span></span></div>
+        <div class="exec-kpi-v" id="kpi-coveragex-bruno">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Fechando em 90 Dias<span class="kpi-tip">ⓘ<span class="tip-box">Valor total esperado para fechar nos próximos 90 dias.</span></span></div>
+        <div class="exec-kpi-v neutral" id="kpi-closing90val-bruno">-</div>
+      </div>
     </div>
 
     <div class="sec">Pipeline por Data de Fechamento Esperada</div>
@@ -228,7 +242,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     <div class="sec">Ganhos vs Perdidos</div>
     <div id="won-lost-bruno"></div>
 
-    <div class="sec">Top 10 Oportunidades</div>
+    <div class="sec">Top 10 Oportunidades<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades de maior valor atualmente no pipeline.</span></span></div>
     <div class="card">
       <table class="tbl" style="font-size:0.85rem">
         <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
@@ -245,9 +259,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
     <div class="sec">Gestão de Riscos</div>
     <div class="g3">
-      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-bruno">-</div></div>
+      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem nenhuma atividade há mais de 15 dias.</span></span></div><div id="risk-stalled-bruno">-</div></div>
       <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-bruno">-</div></div>
-      <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-bruno">-</div></div>
+      <div class="card"><div class="card-t">⏰ Fechando em 90d<span class="kpi-tip">ⓘ<span class="tip-box">Valor total esperado para fechar nos próximos 90 dias.</span></span></div><div id="risk-90days-bruno">-</div></div>
     </div>
 
     <div class="sec">Todas as Oportunidades</div>
@@ -273,8 +287,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
       <div class="kpi blue"><div class="kpi-l">Pipeline</div><div class="kpi-v" id="kpi-pipeline-felipe">-</div><div class="kpi-s">Todas as oportunidades</div></div>
       <div class="kpi green"><div class="kpi-l">Pipeline Ponderado</div><div class="kpi-v" id="kpi-weighted-felipe">-</div><div class="kpi-s">Pipeline ponderado</div></div>
       <div class="kpi blue"><div class="kpi-l">Meta Anual</div><div class="kpi-v" id="kpi-target-felipe">-</div><div class="kpi-s">Felipe Hanke</div></div>
-      <div class="kpi red"><div class="kpi-l">Gap para Meta</div><div class="kpi-v" id="kpi-gap-felipe">-</div><div class="kpi-s">Falta para meta</div></div>
-      <div class="kpi green"><div class="kpi-l">Cobertura de Meta</div><div class="kpi-v" id="kpi-coverage-felipe">-</div><div class="kpi-s">% da meta atingida</div></div>
+      <div class="kpi red"><div class="kpi-l">Gap para Meta<span class="kpi-tip">ⓘ<span class="tip-box">Diferença entre o pipeline ponderado e a meta anual. Verde quando positivo, vermelho quando negativo.</span></span></div><div class="kpi-v" id="kpi-gap-felipe">-</div><div class="kpi-s">Falta para meta</div></div>
+      <div class="kpi green"><div class="kpi-l">Cobertura de Meta<span class="kpi-tip">ⓘ<span class="tip-box">Pipeline ponderado dividido pela meta anual, em percentual.</span></span></div><div class="kpi-v" id="kpi-coverage-felipe">-</div><div class="kpi-s">% da meta atingida</div></div>
+    </div>
+    <div class="g3">
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Win Rate<span class="kpi-tip">ⓘ<span class="tip-box">Percentual de oportunidades convertidas em pedidos com sucesso.</span></span></div>
+        <div class="exec-kpi-v neutral" id="kpi-winrate-felipe">-</div>
+      </div>
+      <div class="exec-kpi" id="kpi-coveragex-felipe-card">
+        <div class="exec-kpi-l">Pipeline Coverage<span class="kpi-tip">ⓘ<span class="tip-box">Quantas vezes o pipeline total cobre a meta anual. Verde ≥ 2x, amarelo 1x–2x, vermelho &lt; 1x.</span></span></div>
+        <div class="exec-kpi-v" id="kpi-coveragex-felipe">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Fechando em 90 Dias<span class="kpi-tip">ⓘ<span class="tip-box">Valor total esperado para fechar nos próximos 90 dias.</span></span></div>
+        <div class="exec-kpi-v neutral" id="kpi-closing90val-felipe">-</div>
+      </div>
     </div>
 
     <div class="sec">Pipeline por Data de Fechamento Esperada</div>
@@ -283,7 +311,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     <div class="sec">Ganhos vs Perdidos</div>
     <div id="won-lost-felipe"></div>
 
-    <div class="sec">Top 10 Oportunidades</div>
+    <div class="sec">Top 10 Oportunidades<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades de maior valor atualmente no pipeline.</span></span></div>
     <div class="card">
       <table class="tbl" style="font-size:0.85rem">
         <thead><tr><th>#</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Próximos Passos</th><th>Valor</th></tr></thead>
@@ -300,9 +328,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
     <div class="sec">Gestão de Riscos</div>
     <div class="g3">
-      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)</div><div id="risk-stalled-felipe">-</div></div>
+      <div class="card"><div class="card-t">⚠️ Opps Paradas (&gt;15d)<span class="kpi-tip">ⓘ<span class="tip-box">Oportunidades sem nenhuma atividade há mais de 15 dias.</span></span></div><div id="risk-stalled-felipe">-</div></div>
       <div class="card"><div class="card-t">📋 Sem Próximo Passo</div><div id="risk-noaction-felipe">-</div></div>
-      <div class="card"><div class="card-t">⏰ Fechando em 90d</div><div id="risk-90days-felipe">-</div></div>
+      <div class="card"><div class="card-t">⏰ Fechando em 90d<span class="kpi-tip">ⓘ<span class="tip-box">Valor total esperado para fechar nos próximos 90 dias.</span></span></div><div id="risk-90days-felipe">-</div></div>
     </div>
 
     <div class="sec">Todas as Oportunidades</div>
@@ -474,6 +502,7 @@ function renderAll(){
   renderRisks(rows, 'all');
 
   renderKPIs(bruno, 'bruno', METAS.bruno);
+  renderRepExtras(bruno, 'bruno', METAS.bruno);
   renderClosureChartSingle(bruno, 'chart-closures-bruno', 'Bruno', '#8B4513', '#6B3410');
   renderWonLostSingle(bruno, 'won-lost-bruno', 'Bruno Reis', '#8B4513');
   renderTop10(bruno, 'top10-bruno-tab');
@@ -481,6 +510,7 @@ function renderAll(){
   renderRisks(bruno, 'bruno');
 
   renderKPIs(felipe, 'felipe', METAS.felipe);
+  renderRepExtras(felipe, 'felipe', METAS.felipe);
   renderClosureChartSingle(felipe, 'chart-closures-felipe', 'Felipe', '#1F3A93', '#152857');
   renderWonLostSingle(felipe, 'won-lost-felipe', 'Felipe Hanke', '#1F3A93');
   renderTop10(felipe, 'top10-felipe-tab');
@@ -722,7 +752,27 @@ function renderRisks(rows, suffix){
   const closing90=rows.filter(r=>r._close&&(r._close-new Date())/(1000*60*60*24)<=90&&(r._close-new Date())/(1000*60*60*24)>0);
   document.getElementById('risk-stalled-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--red)">${critical.length}</div><div style="font-size:.85rem;color:var(--muted)">${fK(critical.reduce((s,r)=>s+r._val,0))}</div>`;
   document.getElementById('risk-noaction-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--amber)">${noaction.length}</div><div style="font-size:.85rem;color:var(--muted)">Sem próximo passo</div>`;
-  document.getElementById('risk-90days-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--blue)">${closing90.length}</div><div style="font-size:.85rem;color:var(--muted)">Próximos 90 dias</div>`;
+  document.getElementById('risk-90days-'+suffix).innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--blue)">${closing90.length}</div><div style="font-size:.85rem;color:var(--muted)">${fK(closing90.reduce((s,r)=>s+r._val,0))}</div>`;
+}
+
+function renderRepExtras(rows, suffix, meta){
+  const won=rows.filter(isWon), lost=rows.filter(isLost);
+  const winRate=(won.length+lost.length)>0?(won.length/(won.length+lost.length)*100):0;
+  const pipeline=rows.reduce((s,r)=>s+r._val,0);
+  const coverage=meta>0?(pipeline/meta):0;
+  const closing90=rows.filter(r=>r._close&&(r._close-new Date())/(1000*60*60*24)<=90&&(r._close-new Date())/(1000*60*60*24)>0);
+
+  document.getElementById('kpi-winrate-'+suffix).textContent=winRate.toFixed(0)+'%';
+  document.getElementById('kpi-closing90val-'+suffix).textContent=fK(closing90.reduce((s,r)=>s+r._val,0));
+
+  const covEl=document.getElementById('kpi-coveragex-'+suffix);
+  const covCard=document.getElementById('kpi-coveragex-'+suffix+'-card');
+  covEl.textContent=coverage.toFixed(2)+'x';
+  covEl.className='exec-kpi-v';
+  covCard.classList.remove('attention','warn');
+  if(coverage>=2){covEl.classList.add('green')}
+  else if(coverage>=1){covEl.classList.add('amber');covCard.classList.add('attention')}
+  else{covEl.classList.add('red');covCard.classList.add('warn')}
 }
 
 function monthlyBuckets(rows){
