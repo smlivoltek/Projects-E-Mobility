@@ -51,7 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .tbl .num{text-align:right;font-family:monospace;font-weight:700;color:var(--blue)}
 .badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:700}
 .badge.green{background:var(--green-bg);color:var(--green)}.badge.amber{background:var(--amber-bg);color:var(--amber)}.badge.red{background:var(--red-bg);color:var(--red)}
-.chart-container{position:relative;height:400px;margin-bottom:20px}
+.chart-container{position:relative;height:500px;margin-bottom:20px}
 .risk-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--brd-light)}
 .risk-item:last-child{border-bottom:none}
 .risk-val{font-family:var(--fh);font-size:1.3rem;font-weight:800;color:var(--red)}
@@ -176,6 +176,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
   <!-- WON/LOST ORDERS SIDE BY SIDE -->
   <div class="sec">Ganhos vs Perdidos</div>
+  
+  <!-- RESUMO TABULAR -->
+  <div class="card">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Vendedor</th>
+          <th>Pedidos Ganhos (Qty)</th>
+          <th>Valor Ganho</th>
+          <th>Pedidos Perdidos (Qty)</th>
+          <th>Valor Perdido</th>
+        </tr>
+      </thead>
+      <tbody id="won-lost-summary"></tbody>
+    </table>
+  </div>
+  
   <div class="g2">
     <div class="card">
       <div class="card-t">Pedidos Ganhos</div>
@@ -435,6 +452,22 @@ function renderDashboard(){
   
   renderPerf('bruno',bruno,METAS.bruno);
   renderPerf('felipe',felipe,METAS.felipe);
+  
+  // Resumo Ganhos vs Perdidos
+  const wonBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho').length;
+  const lostBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido').length;
+  const wonValBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho').reduce((s,r)=>s+r._val,0);
+  const lostValBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido').reduce((s,r)=>s+r._val,0);
+  
+  const wonFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho').length;
+  const lostFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido').length;
+  const wonValFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho').reduce((s,r)=>s+r._val,0);
+  const lostValFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido').reduce((s,r)=>s+r._val,0);
+  
+  let htmlSummary='';
+  htmlSummary+=`<tr><td><strong>Bruno</strong></td><td style="text-align:center">${wonBruno}</td><td class="num" style="color:var(--green)">${fK(wonValBruno)}</td><td style="text-align:center">${lostBruno}</td><td class="num" style="color:var(--red)">${fK(lostValBruno)}</td></tr>`;
+  htmlSummary+=`<tr><td><strong>Felipe</strong></td><td style="text-align:center">${wonFelipe}</td><td class="num" style="color:var(--green)">${fK(wonValFelipe)}</td><td style="text-align:center">${lostFelipe}</td><td class="num" style="color:var(--red)">${fK(lostValFelipe)}</td></tr>`;
+  document.getElementById('won-lost-summary').innerHTML=htmlSummary;
 }
 
 function renderClosureChart(){
