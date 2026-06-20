@@ -526,6 +526,8 @@ function renderWonChart(){
   const rowsBruno=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('bruno'));
   const rowsFelipe=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('felipe'));
   
+  console.log('Won - Bruno:', rowsBruno.length, 'Felipe:', rowsFelipe.length);
+  
   const byMonthBruno={};
   const byMonthFelipe={};
   
