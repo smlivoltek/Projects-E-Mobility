@@ -296,8 +296,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
 <script>
 const URLS = {
-  bruno: 'https://raw.githubusercontent.com/smlivoltek/Projects-E-Mobility/main/Opp%20Bruno.csv',
-  felipe: 'https://raw.githubusercontent.com/smlivoltek/Projects-E-Mobility/main/Opp%20Felipe.csv'
+  bruno: './Opp Bruno.csv',
+  felipe: './Opp Felipe.csv'
 };
 const METAS = {bruno: 50000000, felipe: 12000000};
 let DATA = {base: [], charts: {}};
@@ -310,10 +310,15 @@ function diasDesde(d){if(!d)return 999;try{const t=(d instanceof Date)?d:parseDa
 async function loadData(){
   try{
     console.log('🔄 Carregando dados...');
-    const [resBruno,resFelipe]=await Promise.all([fetch(URLS.bruno),fetch(URLS.felipe)]);
+    console.log('📁 URLs:', URLS);
+    const resBruno = await fetch(URLS.bruno);
+    console.log('Bruno fetch:', resBruno.ok, resBruno.status);
+    
+    const resFelipe = await fetch(URLS.felipe);
+    console.log('Felipe fetch:', resFelipe.ok, resFelipe.status);
+    
     if(!resBruno.ok||!resFelipe.ok){
-      console.error('Bruno ok:', resBruno.ok, 'Felipe ok:', resFelipe.ok);
-      throw new Error('CSVs não encontrados');
+      throw new Error(`CSVs não encontrados. Bruno: ${resBruno.status}, Felipe: ${resFelipe.status}`);
     }
     
     const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
