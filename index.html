@@ -59,6 +59,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .perf-name{font-family:var(--fh);font-weight:800;font-size:.95rem;margin-bottom:12px}
 .perf-val{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--blue);margin-bottom:4px}
 .perf-label{font-size:.75rem;color:var(--muted2);text-transform:uppercase;font-weight:700}
+
+.won-lost-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:24px}
+.won-lost-col{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:24px}
+.wl-title{font-family:var(--fh);font-size:1rem;font-weight:800;margin-bottom:20px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.wl-row{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--brd-light)}
+.wl-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.wl-vendor{font-family:var(--fh);font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.wl-vendor-badge{display:inline-block;width:12px;height:12px;border-radius:2px}
+.wl-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:.85rem}
+.wl-stat-label{color:var(--muted)}
+.wl-stat-value{font-family:var(--fh);font-weight:800;color:var(--text)}
+.wl-bar-wrapper{background:var(--s2);border-radius:4px;overflow:hidden;height:24px;margin-top:8px}
+.wl-bar{height:100%;display:flex;align-items:center;padding:0 10px;color:#fff;font-weight:700;font-size:.75rem;border-radius:4px}
+.wl-bar.won{background:linear-gradient(135deg, #10B981, #059669)}
+.wl-bar.lost{background:linear-gradient(135deg, #EF4444, #DC2626)}
+
 @media(max-width:1400px){.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.g3,.g4,.g6{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
 </style>
@@ -176,37 +192,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
   <!-- WON/LOST ORDERS SIDE BY SIDE -->
   <div class="sec">Ganhos vs Perdidos</div>
-  
-  <!-- RESUMO TABULAR -->
-  <div class="card">
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>Vendedor</th>
-          <th>Pedidos Ganhos (Qty)</th>
-          <th>Valor Ganho</th>
-          <th>Pedidos Perdidos (Qty)</th>
-          <th>Valor Perdido</th>
-        </tr>
-      </thead>
-      <tbody id="won-lost-summary"></tbody>
-    </table>
-  </div>
-  
-  <div class="g2">
-    <div class="card">
-      <div class="card-t">Pedidos Ganhos</div>
-      <div class="chart-container">
-        <canvas id="chart-won"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-t">Pedidos Perdidos</div>
-      <div class="chart-container">
-        <canvas id="chart-lost"></canvas>
-      </div>
-    </div>
-  </div>
+  <div id="won-lost-container"></div>
 
 
 
@@ -453,21 +439,77 @@ function renderDashboard(){
   renderPerf('bruno',bruno,METAS.bruno);
   renderPerf('felipe',felipe,METAS.felipe);
   
-  // Resumo Ganhos vs Perdidos
-  const wonBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho').length;
-  const lostBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido').length;
-  const wonValBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho').reduce((s,r)=>s+r._val,0);
-  const lostValBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido').reduce((s,r)=>s+r._val,0);
+  // Novo: Ganhos vs Perdidos com visualização criativa
+  renderWonLostComparison(bruno, felipe);
+}
+
+function renderWonLostComparison(bruno, felipe){
+  const wonBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Ganho');
+  const lostBruno=bruno.filter(r=>(r.STATUS||'').trim()==='Perdido');
+  const wonFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho');
+  const lostFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido');
   
-  const wonFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho').length;
-  const lostFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido').length;
-  const wonValFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Ganho').reduce((s,r)=>s+r._val,0);
-  const lostValFelipe=felipe.filter(r=>(r.STATUS||'').trim()==='Perdido').reduce((s,r)=>s+r._val,0);
+  const wonValBruno=wonBruno.reduce((s,r)=>s+r._val,0);
+  const lostValBruno=lostBruno.reduce((s,r)=>s+r._val,0);
+  const wonValFelipe=wonFelipe.reduce((s,r)=>s+r._val,0);
+  const lostValFelipe=lostFelipe.reduce((s,r)=>s+r._val,0);
   
-  let htmlSummary='';
-  htmlSummary+=`<tr><td><strong>Bruno</strong></td><td style="text-align:center">${wonBruno}</td><td class="num" style="color:var(--green)">${fK(wonValBruno)}</td><td style="text-align:center">${lostBruno}</td><td class="num" style="color:var(--red)">${fK(lostValBruno)}</td></tr>`;
-  htmlSummary+=`<tr><td><strong>Felipe</strong></td><td style="text-align:center">${wonFelipe}</td><td class="num" style="color:var(--green)">${fK(wonValFelipe)}</td><td style="text-align:center">${lostFelipe}</td><td class="num" style="color:var(--red)">${fK(lostValFelipe)}</td></tr>`;
-  document.getElementById('won-lost-summary').innerHTML=htmlSummary;
+  // Calcular máximo para escala
+  const maxVal = Math.max(wonValBruno, wonValFelipe, lostValBruno, lostValFelipe);
+  const scale = maxVal > 0 ? 100 : 1;
+  
+  let html = '<div class="won-lost-grid">';
+  
+  // Coluna Ganhos
+  html += '<div class="won-lost-col">';
+  html += '<div class="wl-title">✓ Pedidos Ganhos</div>';
+  
+  // Bruno Ganhos
+  html += '<div class="wl-row">';
+  html += '<div class="wl-vendor"><span class="wl-vendor-badge" style="background:#8B4513"></span>Bruno Reis</div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Quantidade:</span><span class="wl-stat-value">' + wonBruno.length + ' pedidos</span></div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Valor:</span><span class="wl-stat-value" style="color:var(--green)">' + fK(wonValBruno) + '</span></div>';
+  const brunoPct = maxVal > 0 ? (wonValBruno / maxVal * 100) : 0;
+  html += '<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:' + brunoPct + '%">' + (brunoPct > 15 ? Math.round(brunoPct) + '%' : '') + '</div></div>';
+  html += '</div>';
+  
+  // Felipe Ganhos
+  html += '<div class="wl-row">';
+  html += '<div class="wl-vendor"><span class="wl-vendor-badge" style="background:#1F3A93"></span>Felipe Hanke</div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Quantidade:</span><span class="wl-stat-value">' + wonFelipe.length + ' pedidos</span></div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Valor:</span><span class="wl-stat-value" style="color:var(--green)">' + fK(wonValFelipe) + '</span></div>';
+  const felipePct = maxVal > 0 ? (wonValFelipe / maxVal * 100) : 0;
+  html += '<div class="wl-bar-wrapper"><div class="wl-bar won" style="width:' + felipePct + '%">' + (felipePct > 15 ? Math.round(felipePct) + '%' : '') + '</div></div>';
+  html += '</div>';
+  
+  html += '</div>'; // fecha won-lost-col
+  
+  // Coluna Perdidos
+  html += '<div class="won-lost-col">';
+  html += '<div class="wl-title">✗ Pedidos Perdidos</div>';
+  
+  // Bruno Perdidos
+  html += '<div class="wl-row">';
+  html += '<div class="wl-vendor"><span class="wl-vendor-badge" style="background:#8B4513"></span>Bruno Reis</div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Quantidade:</span><span class="wl-stat-value">' + lostBruno.length + ' pedidos</span></div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Valor:</span><span class="wl-stat-value" style="color:var(--red)">' + fK(lostValBruno) + '</span></div>';
+  const brunoLostPct = maxVal > 0 ? (lostValBruno / maxVal * 100) : 0;
+  html += '<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:' + brunoLostPct + '%">' + (brunoLostPct > 15 ? Math.round(brunoLostPct) + '%' : '') + '</div></div>';
+  html += '</div>';
+  
+  // Felipe Perdidos
+  html += '<div class="wl-row">';
+  html += '<div class="wl-vendor"><span class="wl-vendor-badge" style="background:#1F3A93"></span>Felipe Hanke</div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Quantidade:</span><span class="wl-stat-value">' + lostFelipe.length + ' pedidos</span></div>';
+  html += '<div class="wl-stat"><span class="wl-stat-label">Valor:</span><span class="wl-stat-value" style="color:var(--red)">' + fK(lostValFelipe) + '</span></div>';
+  const felipeLostPct = maxVal > 0 ? (lostValFelipe / maxVal * 100) : 0;
+  html += '<div class="wl-bar-wrapper"><div class="wl-bar lost" style="width:' + felipeLostPct + '%">' + (felipeLostPct > 15 ? Math.round(felipeLostPct) + '%' : '') + '</div></div>';
+  html += '</div>';
+  
+  html += '</div>'; // fecha lost col
+  html += '</div>'; // fecha grid
+  
+  document.getElementById('won-lost-container').innerHTML = html;
 }
 
 function renderClosureChart(){
@@ -555,53 +597,6 @@ function renderClosureChart(){
   });
 }
 
-function renderWonChart(){
-  const rowsBruno=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('bruno'));
-  const rowsFelipe=DATA.base.filter(r=>(r.STATUS||'').trim()==='Ganho'&&r._vendor.includes('felipe'));
-  
-  console.log('Won - Bruno:', rowsBruno.length, 'Felipe:', rowsFelipe.length);
-  
-  const byMonthBruno={};
-  const byMonthFelipe={};
-  
-  rowsBruno.forEach(r=>{
-    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
-    if(!d)return;
-    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonthBruno[m]){byMonthBruno[m]=0}
-    byMonthBruno[m]+=r._val;
-  });
-  
-  rowsFelipe.forEach(r=>{
-    const d=parseData(r['DATA DA ULTIMA ATUALIZAÇÃO']||'');
-    if(!d)return;
-    const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
-    if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
-    byMonthFelipe[m]+=r._val;
-  });
-  
-  const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
-  const months=Array.from(allMonths).sort();
-  const labels=months.map(m=>{const [y,mo]=m.split('-');return monthNames[parseInt(mo)-1]+'/'+y;});
-  
-  const valsBruno=months.map(m=>byMonthBruno[m]||0);
-  const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
-  
-  Chart.register(ChartDataLabels);
-  new Chart(document.getElementById('chart-won'),{
-    type:'bar',
-    plugins:[ChartDataLabels],
-    data:{
-      labels:labels,
-      datasets:[
-        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return fK(v)}}},
-        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#fff',font:{weight:'bold',size:10},formatter:function(v){return fK(v)}}}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:function(val){return fK(val)}}}}}
-  });
-}
 
 function renderLostChart(){
   const rowsBruno=DATA.base.filter(r=>(r.STATUS||'').trim()==='Perdido'&&r._vendor.includes('bruno'));
