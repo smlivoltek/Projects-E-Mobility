@@ -111,9 +111,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="all">Visão Geral</button>
-    <button class="tab-btn" data-tab="exec">Executive Dashboard</button>
     <button class="tab-btn" data-tab="bruno">Bruno Reis</button>
     <button class="tab-btn" data-tab="felipe">Felipe Hanke</button>
+    <button class="tab-btn" data-tab="exec">Executive Dashboard</button>
   </div>
 
   <!-- ============ VISAO GERAL ============ -->
@@ -208,49 +208,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
         </table>
       </div>
       <div class="opp-count" id="opps-count-all"></div>
-    </div>
-  </div>
-
-  <!-- ============ EXECUTIVE DASHBOARD ============ -->
-  <div class="tab-panel" id="panel-exec">
-    <div class="sec">Executive KPIs</div>
-    <div class="g4">
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Annual Target<span class="kpi-tip">ⓘ<span class="tip-box">Revenue target assigned for the current year.</span></span></div>
-        <div class="exec-kpi-v neutral" id="exec-target">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Total Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Total value of all active opportunities.</span></span></div>
-        <div class="exec-kpi-v neutral" id="exec-pipeline">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Weighted Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Pipeline value adjusted by each opportunity's probability of closing.</span></span></div>
-        <div class="exec-kpi-v neutral" id="exec-weighted">-</div>
-      </div>
-      <div class="exec-kpi" id="exec-coverage-card">
-        <div class="exec-kpi-l">Pipeline Coverage<span class="kpi-tip">ⓘ<span class="tip-box">How many times the current pipeline covers the annual target. Green ≥ 2x, yellow 1x–2x, red &lt; 1x.</span></span></div>
-        <div class="exec-kpi-v" id="exec-coverage">-</div>
-      </div>
-      <div class="exec-kpi" id="exec-gap-card">
-        <div class="exec-kpi-l">Gap to Target<span class="kpi-tip">ⓘ<span class="tip-box">Difference between weighted pipeline and annual target. Green when positive, red when negative.</span></span></div>
-        <div class="exec-kpi-v" id="exec-gap">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Win Rate<span class="kpi-tip">ⓘ<span class="tip-box">Percentage of opportunities successfully converted into orders.</span></span></div>
-        <div class="exec-kpi-v neutral" id="exec-winrate">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Won Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Won.</span></span></div>
-        <div class="exec-kpi-v green" id="exec-won">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Lost Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Lost.</span></span></div>
-        <div class="exec-kpi-v red" id="exec-lost">-</div>
-      </div>
-      <div class="exec-kpi">
-        <div class="exec-kpi-l">Closing Next 90 Days<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities expected to close within the next 90 days.</span></span></div>
-        <div class="exec-kpi-v neutral" id="exec-90days">-</div>
-      </div>
     </div>
   </div>
 
@@ -364,6 +321,92 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     </div>
   </div>
 
+  <!-- ============ EXECUTIVE DASHBOARD ============ -->
+  <div class="tab-panel" id="panel-exec">
+    <div class="sec">Executive KPIs</div>
+    <div class="g4">
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Annual Target<span class="kpi-tip">ⓘ<span class="tip-box">Revenue target assigned for the current year.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-target">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Total Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Total value of all active opportunities.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-pipeline">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Weighted Pipeline<span class="kpi-tip">ⓘ<span class="tip-box">Pipeline value adjusted by each opportunity's probability of closing.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-weighted">-</div>
+      </div>
+      <div class="exec-kpi" id="exec-coverage-card">
+        <div class="exec-kpi-l">Pipeline Coverage<span class="kpi-tip">ⓘ<span class="tip-box">How many times the current pipeline covers the annual target. Green ≥ 2x, yellow 1x–2x, red &lt; 1x.</span></span></div>
+        <div class="exec-kpi-v" id="exec-coverage">-</div>
+      </div>
+      <div class="exec-kpi" id="exec-gap-card">
+        <div class="exec-kpi-l">Gap to Target<span class="kpi-tip">ⓘ<span class="tip-box">Difference between weighted pipeline and annual target. Green when positive, red when negative.</span></span></div>
+        <div class="exec-kpi-v" id="exec-gap">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Win Rate<span class="kpi-tip">ⓘ<span class="tip-box">Percentage of opportunities successfully converted into orders.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-winrate">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Won Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Won.</span></span></div>
+        <div class="exec-kpi-v green" id="exec-won">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Lost Value<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities marked as Lost.</span></span></div>
+        <div class="exec-kpi-v red" id="exec-lost">-</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-l">Closing Next 90 Days<span class="kpi-tip">ⓘ<span class="tip-box">Total value of opportunities expected to close within the next 90 days.</span></span></div>
+        <div class="exec-kpi-v neutral" id="exec-90days">-</div>
+      </div>
+    </div>
+
+    <div class="sec">Pipeline by Closing Month</div>
+    <div class="card"><div class="chart-container"><canvas id="chart-exec-pipeline-month"></canvas></div></div>
+
+    <div class="g2">
+      <div>
+        <div class="sec">Won Orders by Month</div>
+        <div class="card"><div class="chart-container" style="height:350px"><canvas id="chart-exec-won-month"></canvas></div></div>
+      </div>
+      <div>
+        <div class="sec">Lost Orders by Month</div>
+        <div class="card"><div class="chart-container" style="height:350px"><canvas id="chart-exec-lost-month"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="sec">Top 10 Opportunities</div>
+    <div class="card">
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>#</th><th>Opportunity</th><th>Customer</th><th>Value</th><th>Probability</th><th>Expected Close Date</th></tr></thead>
+        <tbody id="exec-top10-opps"></tbody>
+      </table>
+    </div>
+
+    <div class="g2">
+      <div>
+        <div class="sec">Top 10 Customers</div>
+        <div class="card">
+          <table class="tbl" style="font-size:0.85rem">
+            <thead><tr><th>#</th><th>Customer</th><th>Pipeline Value</th><th>Opportunities</th></tr></thead>
+            <tbody id="exec-top10-customers"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="sec">Salesperson Ranking</div>
+        <div class="card">
+          <table class="tbl" style="font-size:0.85rem">
+            <thead><tr><th>#</th><th>Salesperson</th><th>Pipeline</th><th>Weighted</th><th>Won Value</th><th>Win Rate</th></tr></thead>
+            <tbody id="exec-ranking"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -417,6 +460,10 @@ function renderAll(){
 
   renderKPIs(rows, 'all', METAS.bruno+METAS.felipe);
   renderExecutive(rows);
+  renderExecCharts(rows);
+  renderExecTop10Opps(rows);
+  renderExecTop10Customers(rows);
+  renderExecRanking(bruno, felipe);
   renderPerf('bruno', bruno);
   renderPerf('felipe', felipe);
   renderClosureChartCombined(bruno, felipe, 'chart-closures-all');
@@ -526,6 +573,103 @@ function renderExecutive(rows){
   gapEl.className='exec-kpi-v';
   if(gap>=0){gapEl.classList.add('green')}
   else{gapEl.classList.add('red');gapCard.classList.add('warn')}
+}
+
+function monthLabelEN(m){
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const parts=m.split('-');
+  return monthNames[parseInt(parts[1])-1]+'/'+parts[0];
+}
+
+function renderExecCharts(rows){
+  // Pipeline by Closing Month (all opportunities with a close date)
+  const pipelineBuckets=monthlyBuckets(rows.filter(r=>r._close));
+  const pMonths=Object.keys(pipelineBuckets.byMonth).sort();
+  let ex=Chart.getChart('chart-exec-pipeline-month');
+  if(ex) ex.destroy();
+  Chart.register(ChartDataLabels);
+  new Chart(document.getElementById('chart-exec-pipeline-month'),{
+    type:'bar',
+    plugins:[ChartDataLabels],
+    data:{labels:pMonths.map(monthLabelEN),datasets:[
+      {label:'Pipeline',data:pMonths.map(m=>pipelineBuckets.byMonth[m]||0),backgroundColor:'#3B82F6',borderColor:'#2563EB',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:v=>fK(v)}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fK(v)}}}}
+  });
+
+  // Won Orders by Month
+  const wonRows=rows.filter(r=>isWon(r)&&r._close);
+  const wonBuckets={};
+  wonRows.forEach(r=>{const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');wonBuckets[m]=(wonBuckets[m]||0)+r._val;});
+  const wMonths=Object.keys(wonBuckets).sort();
+  let exW=Chart.getChart('chart-exec-won-month');
+  if(exW) exW.destroy();
+  new Chart(document.getElementById('chart-exec-won-month'),{
+    type:'bar',
+    plugins:[ChartDataLabels],
+    data:{labels:wMonths.map(monthLabelEN),datasets:[
+      {label:'Won',data:wMonths.map(m=>wonBuckets[m]||0),backgroundColor:'#10B981',borderColor:'#059669',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:9},formatter:v=>fK(v)}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fK(v)}}}}
+  });
+
+  // Lost Orders by Month
+  const lostRows=rows.filter(r=>isLost(r)&&r._close);
+  const lostBuckets={};
+  lostRows.forEach(r=>{const m=r._close.getFullYear()+'-'+(r._close.getMonth()+1).toString().padStart(2,'0');lostBuckets[m]=(lostBuckets[m]||0)+r._val;});
+  const lMonths=Object.keys(lostBuckets).sort();
+  let exL=Chart.getChart('chart-exec-lost-month');
+  if(exL) exL.destroy();
+  new Chart(document.getElementById('chart-exec-lost-month'),{
+    type:'bar',
+    plugins:[ChartDataLabels],
+    data:{labels:lMonths.map(monthLabelEN),datasets:[
+      {label:'Lost',data:lMonths.map(m=>lostBuckets[m]||0),backgroundColor:'#EF4444',borderColor:'#DC2626',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:9},formatter:v=>fK(v)}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:v=>fK(v)}}}}
+  });
+}
+
+function renderExecTop10Opps(rows){
+  const top10=[...rows].sort((a,b)=>b._val-a._val).slice(0,10);
+  let html='';
+  top10.forEach((r,i)=>{
+    html+='<tr><td><strong>'+(i+1)+'</strong></td><td>'+(r['PRODUCT']||r.CUSTOMER||'-')+'</td><td>'+(r.CUSTOMER||'-')+'</td><td class="num">'+fK(r._val)+'</td><td>'+(r._prob?r._prob+'%':'-')+'</td><td>'+(r._close?r._close.toLocaleDateString('en-GB'):'-')+'</td></tr>';
+  });
+  document.getElementById('exec-top10-opps').innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--muted2)">No data</td></tr>';
+}
+
+function renderExecTop10Customers(rows){
+  const byCustomer={};
+  rows.forEach(r=>{
+    const c=r.CUSTOMER||'-';
+    if(!byCustomer[c]) byCustomer[c]={val:0,count:0};
+    byCustomer[c].val+=r._val;
+    byCustomer[c].count+=1;
+  });
+  const top10=Object.keys(byCustomer).map(c=>({customer:c,val:byCustomer[c].val,count:byCustomer[c].count})).sort((a,b)=>b.val-a.val).slice(0,10);
+  let html='';
+  top10.forEach((c,i)=>{
+    html+='<tr><td><strong>'+(i+1)+'</strong></td><td>'+c.customer+'</td><td class="num">'+fK(c.val)+'</td><td>'+c.count+'</td></tr>';
+  });
+  document.getElementById('exec-top10-customers').innerHTML=html||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">No data</td></tr>';
+}
+
+function renderExecRanking(bruno, felipe){
+  const calc=(name, arr)=>{
+    const pipeline=arr.reduce((s,r)=>s+r._val,0);
+    const weighted=arr.reduce((s,r)=>s+r._ponderado,0);
+    const won=arr.filter(isWon), lost=arr.filter(isLost);
+    const wonVal=won.reduce((s,r)=>s+r._val,0);
+    const winRate=(won.length+lost.length)>0?(won.length/(won.length+lost.length)*100):0;
+    return {name, pipeline, weighted, wonVal, winRate};
+  };
+  const ranking=[calc('Bruno Reis',bruno), calc('Felipe Hanke',felipe)].sort((a,b)=>b.pipeline-a.pipeline);
+  let html='';
+  ranking.forEach((r,i)=>{
+    html+='<tr><td><strong>'+(i+1)+'</strong></td><td>'+r.name+'</td><td class="num">'+fK(r.pipeline)+'</td><td class="num">'+fK(r.weighted)+'</td><td class="num" style="color:var(--green)">'+fK(r.wonVal)+'</td><td>'+r.winRate.toFixed(0)+'%</td></tr>';
+  });
+  document.getElementById('exec-ranking').innerHTML=html;
 }
 
 function renderKPIs(rows, suffix, meta){
