@@ -204,6 +204,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
             <th>#</th>
             <th>Cliente</th>
             <th>Produto</th>
+            <th>Status</th>
+            <th>Próximos Passos</th>
             <th>Valor</th>
           </tr>
         </thead>
@@ -218,6 +220,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
             <th>#</th>
             <th>Cliente</th>
             <th>Produto</th>
+            <th>Status</th>
+            <th>Próximos Passos</th>
             <th>Valor</th>
           </tr>
         </thead>
@@ -351,6 +355,10 @@ function renderDashboard(){
   const rows=DATA.base;
   const metaTotal=METAS.bruno+METAS.felipe;
   
+  // ⚠️ DECLARAR TODAS AS VARIÁVEIS DE VENDEDOR AQUI, NO INÍCIO
+  const bruno=rows.filter(r=>r._vendor.includes('bruno'));
+  const felipe=rows.filter(r=>r._vendor.includes('felipe'));
+  
   // KPIs
   const pipeline=rows.reduce((s,r)=>s+r._val,0);
   const weighted=rows.reduce((s,r)=>s+r._ponderado,0);
@@ -385,9 +393,7 @@ function renderDashboard(){
   document.getElementById('risk-noaction').innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--amber)">${noaction}</div><div style="font-size:.85rem;color:var(--muted)">Sem próximo passo</div>`;
   document.getElementById('risk-90days').innerHTML=`<div style="font-size:2rem;font-weight:900;color:var(--blue)">${closing90}</div><div style="font-size:.85rem;color:var(--muted)">Próximos 90 dias</div>`;
   
-  // Desempenho de Vendas (DECLARAR PRIMEIRO!)
-  const bruno=rows.filter(r=>r._vendor.includes('bruno'));
-  const felipe=rows.filter(r=>r._vendor.includes('felipe'));
+  // Desempenho de Vendas
   
   // Top 10
   const top10=rows.sort((a,b)=>b._val-a._val).slice(0,10);
@@ -398,12 +404,12 @@ function renderDashboard(){
   // Top 10 por Vendedor
   const top10bruno=bruno.sort((a,b)=>b._val-a._val).slice(0,10);
   let htmlBruno='';
-  top10bruno.forEach((r,i)=>{htmlBruno+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
+  top10bruno.forEach((r,i)=>{htmlBruno+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td>${r.STATUS||'-'}</td><td style="font-size:0.75rem">${r['PROX PASSO']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
   document.getElementById('top10-bruno').innerHTML=htmlBruno;
   
   const top10felipe=felipe.sort((a,b)=>b._val-a._val).slice(0,10);
   let htmlFelipe='';
-  top10felipe.forEach((r,i)=>{htmlFelipe+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
+  top10felipe.forEach((r,i)=>{htmlFelipe+=`<tr><td><strong>${i+1}</strong></td><td>${r.CUSTOMER||'-'}</td><td>${r['PRODUCT']||'-'}</td><td>${r.STATUS||'-'}</td><td style="font-size:0.75rem">${r['PROX PASSO']||'-'}</td><td class="num">${fK(r._val)}</td></tr>`});
   document.getElementById('top10-felipe').innerHTML=htmlFelipe;
   
   // Charts
@@ -528,7 +534,7 @@ function renderWonChart(){
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
     if(!byMonthBruno[m]){byMonthBruno[m]=0}
-    byMonthBruno[m]+=1;
+    byMonthBruno[m]+=r._val;
   });
   
   rowsFelipe.forEach(r=>{
@@ -536,24 +542,29 @@ function renderWonChart(){
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
     if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
-    byMonthFelipe[m]+=1;
+    byMonthFelipe[m]+=r._val;
   });
   
+  const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
   const months=Array.from(allMonths).sort();
-  const countsBruno=months.map(m=>byMonthBruno[m]||0);
-  const countsFelipe=months.map(m=>byMonthFelipe[m]||0);
+  const labels=months.map(m=>{const [y,mo]=m.split('-');return monthNames[parseInt(mo)-1]+'/'+y;});
   
+  const valsBruno=months.map(m=>byMonthBruno[m]||0);
+  const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
+  
+  Chart.register(ChartDataLabels);
   new Chart(document.getElementById('chart-won'),{
-    type:'line',
+    type:'bar',
+    plugins:[ChartDataLabels],
     data:{
-      labels:months,
+      labels:labels,
       datasets:[
-        {label:'Bruno',data:countsBruno,borderColor:'#8B4513',backgroundColor:'rgba(139,69,19,.1)',borderWidth:2,tension:.4},
-        {label:'Felipe',data:countsFelipe,borderColor:'#1F3A93',backgroundColor:'rgba(31,58,147,.1)',borderWidth:2,tension:.4}
+        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}},
+        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#fff',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}}
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:true}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:function(val){return fK(val)}}}}}
   });
 }
 
@@ -569,7 +580,7 @@ function renderLostChart(){
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
     if(!byMonthBruno[m]){byMonthBruno[m]=0}
-    byMonthBruno[m]+=1;
+    byMonthBruno[m]+=r._val;
   });
   
   rowsFelipe.forEach(r=>{
@@ -577,24 +588,29 @@ function renderLostChart(){
     if(!d)return;
     const m=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0');
     if(!byMonthFelipe[m]){byMonthFelipe[m]=0}
-    byMonthFelipe[m]+=1;
+    byMonthFelipe[m]+=r._val;
   });
   
+  const monthNames=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const allMonths=new Set([...Object.keys(byMonthBruno),...Object.keys(byMonthFelipe)]);
   const months=Array.from(allMonths).sort();
-  const countsBruno=months.map(m=>byMonthBruno[m]||0);
-  const countsFelipe=months.map(m=>byMonthFelipe[m]||0);
+  const labels=months.map(m=>{const [y,mo]=m.split('-');return monthNames[parseInt(mo)-1]+'/'+y;});
   
+  const valsBruno=months.map(m=>byMonthBruno[m]||0);
+  const valsFelipe=months.map(m=>byMonthFelipe[m]||0);
+  
+  Chart.register(ChartDataLabels);
   new Chart(document.getElementById('chart-lost'),{
-    type:'line',
+    type:'bar',
+    plugins:[ChartDataLabels],
     data:{
-      labels:months,
+      labels:labels,
       datasets:[
-        {label:'Bruno',data:countsBruno,borderColor:'#8B4513',backgroundColor:'rgba(139,69,19,.1)',borderWidth:2,tension:.4},
-        {label:'Felipe',data:countsFelipe,borderColor:'#1F3A93',backgroundColor:'rgba(31,58,147,.1)',borderWidth:2,tension:.4}
+        {label:'Bruno',data:valsBruno,backgroundColor:'#8B4513',borderColor:'#6B3410',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#000',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}},
+        {label:'Felipe',data:valsFelipe,backgroundColor:'#1F3A93',borderColor:'#152857',borderWidth:1,datalabels:{anchor:'end',align:'top',color:'#fff',font:{weight:'bold',size:10},formatter:function(v){return 'R$ '+(v/1000000).toFixed(1)+'M'}}}
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true}},scales:{y:{beginAtZero:true}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},datalabels:{display:true}},scales:{y:{beginAtZero:true,ticks:{callback:function(val){return fK(val)}}}}}
   });
 }
 
