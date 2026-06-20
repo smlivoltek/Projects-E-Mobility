@@ -177,7 +177,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
   <div class="g2">
     <div class="card">
       <div class="card-t">👤 Bruno Reis</div>
-      <div class="g2" style="margin-bottom:0">
+      <div class="g3" style="margin-bottom:0">
+        <div class="perf-card">
+          <div class="perf-label">Meta Anual</div>
+          <div class="perf-val" id="bruno-meta">R$ 50M</div>
+        </div>
         <div class="perf-card">
           <div class="perf-label">Pipeline</div>
           <div class="perf-val" id="bruno-pipeline">-</div>
@@ -191,14 +195,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-val" id="bruno-forecast">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Gap to Target</div>
-          <div class="perf-val" id="bruno-gap">-</div>
+          <div class="perf-label">Won Orders</div>
+          <div class="perf-val" id="bruno-won" style="color:var(--green)">-</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">Lost Orders</div>
+          <div class="perf-val" id="bruno-lost" style="color:var(--red)">-</div>
         </div>
       </div>
     </div>
     <div class="card">
       <div class="card-t">👤 Felipe Hanke</div>
-      <div class="g2" style="margin-bottom:0">
+      <div class="g3" style="margin-bottom:0">
+        <div class="perf-card">
+          <div class="perf-label">Meta Anual</div>
+          <div class="perf-val" id="felipe-meta">R$ 12M</div>
+        </div>
         <div class="perf-card">
           <div class="perf-label">Pipeline</div>
           <div class="perf-val" id="felipe-pipeline">-</div>
@@ -212,8 +224,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="perf-val" id="felipe-forecast">-</div>
         </div>
         <div class="perf-card">
-          <div class="perf-label">Gap to Target</div>
-          <div class="perf-val" id="felipe-gap">-</div>
+          <div class="perf-label">Won Orders</div>
+          <div class="perf-val" id="felipe-won" style="color:var(--green)">-</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">Lost Orders</div>
+          <div class="perf-val" id="felipe-lost" style="color:var(--red)">-</div>
         </div>
       </div>
     </div>
@@ -318,11 +334,13 @@ function renderDashboard(){
   const renderPerf=(prefix,arr,meta)=>{
     const p=arr.reduce((s,r)=>s+r._val,0);
     const w=arr.reduce((s,r)=>s+r._ponderado,0);
-    const g=Math.max(0,meta-w);
+    const won=arr.filter(r=>(r.STATUS||'').includes('Ganhou')||r['STATUS_DADOS']==='Ganhou').length;
+    const lost=arr.filter(r=>(r.STATUS||'').includes('Perdida')||r['STATUS_DADOS']==='Perdida').length;
     document.getElementById(prefix+'-pipeline').textContent=fK(p);
     document.getElementById(prefix+'-weighted').textContent=fK(w);
     document.getElementById(prefix+'-forecast').textContent=fK(w);
-    document.getElementById(prefix+'-gap').textContent=fK(g);
+    document.getElementById(prefix+'-won').textContent=won;
+    document.getElementById(prefix+'-lost').textContent=lost;
   };
   
   renderPerf('bruno',bruno,METAS.bruno);
