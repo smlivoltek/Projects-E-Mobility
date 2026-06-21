@@ -1093,7 +1093,7 @@ function normalizeSnapshotRow(r){
   r._vendor=(r.VENDEDOR||'').toLowerCase().trim();
   r._prob=parseFloat((r.PROBABILIDADE||'0').toString().replace('%',''))||0;
   r._ponderado=(r._val*r._prob)/100;
-  r._id=(r['ID AUTOMÁTICO']||'').trim();
+  r._id=(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE']||'').trim();
   r._estagio=(r.ESTAGIO||'').trim();
   return r;
 }
@@ -1104,7 +1104,7 @@ function loadSnapshotCSV(filename){
     if(!res.ok) throw new Error('Não foi possível carregar '+filename);
     return res.text();
   }).then(function(text){
-    const rows=Papa.parse(text,{header:true,skipEmptyLines:true}).data.filter(function(r){return r.CUSTOMER&&r['ID AUTOMÁTICO']});
+    const rows=Papa.parse(text,{header:true,skipEmptyLines:true}).data.filter(function(r){return r.CUSTOMER&&(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE'])});
     rows.forEach(normalizeSnapshotRow);
     return rows;
   });
@@ -1162,6 +1162,13 @@ function renderEvolucao(anteriorRows, atualRows){
   const mapAnterior={}, mapAtual={};
   anteriorRows.forEach(function(r){mapAnterior[r._id]=r;});
   atualRows.forEach(function(r){mapAtual[r._id]=r;});
+
+  const idsAtual=Object.keys(mapAtual);
+  const overlap=idsAtual.filter(function(id){return mapAnterior[id];}).length;
+  const overlapRatio=idsAtual.length>0?(overlap/idsAtual.length):0;
+  if(idsAtual.length>5&&overlapRatio<0.15){
+    document.getElementById('evolucao-aviso').innerHTML='<div class="evo-banner">⚠️ Apenas '+overlap+' de '+idsAtual.length+' oportunidades do snapshot atual foram encontradas no snapshot anterior. Isso geralmente indica que os dois arquivos têm formatos diferentes (colunas, separador ou nome de ID incompatíveis). Confira se ambos foram gerados pelo botão "Salvar Snapshot Atual" antes de confiar nos números abaixo.</div>';
+  }
 
   const pipelineA=anteriorRows.reduce(function(s,r){return s+r._val;},0);
   const pipelineB=atualRows.reduce(function(s,r){return s+r._val;},0);
