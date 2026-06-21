@@ -1,66 +1,66 @@
-DATA_SNAPSHOT;ID_OPORTUNIDADE;CUSTOMER;VENDEDOR; TOTAL NET LVK (R$) ;ESTAGIO;STATUS;RISCO;PROBABILIDADE;PROX PASSO;DATA DA ULTIMA ATUALIZA«√O;DATA DE FECHAMENTO;CHAVE;STATUS ANTERIOR
-03/04/2026;OPP-A2 -0426-010;A2 TRANSPORTES;Bruno Reis; R$ 44.798.000,37 ; NegociaÁ„o ; Aguardando cliente ;Alto;100%;Solicitando acordo de ˙ltima chamada pq eles est„o com a WEG;08/06/2026;;;
-03/04/2026;OPP-Alf-0426-004;ALFARODOBUS;Bruno Reis; R$ 3.600.000,00 ; NegociaÁ„o ; Aguardando cliente ;Baixo;100%;Retorno da Enel sobre Projeto. Cobrar semanalmente;08/06/2026;;;
-03/04/2026;OPP-ALF-0526-006;ALFARODOBUS (Zona Leste);Bruno Reis; R$ 1.200.000,00 ; NegociaÁ„o ;Aguardando cliente;Baixo;100%;Cobrar retorno do cliente sobre cotaÁ„o;08/06/2026;;;
-03/04/2026;OPP-AMB-0426-011;AMBIENTAL (RV TRANS);Bruno Reis; R$ 20.000.000,00 ; NegociaÁ„o ; Parado ;Baixo;100%;J· enviamos proposta de Bess. Aguardando cliente retornar;08/06/2026;;;
-03/04/2026;OPP-ARA-0426-007;ARACAJU;Bruno Reis; R$ 640.000,00 ; Ganho ;Ganho;MÈdio;100%;;08/06/2026;;;
+DATA_SNAPSHOT;ID_OPORTUNIDADE;CUSTOMER;VENDEDOR; TOTAL NET LVK (R$) ;ESTAGIO;STATUS;RISCO;PROBABILIDADE;PROX PASSO;DATA DA ULTIMA ATUALIZA√á√ÉO;DATA DE FECHAMENTO;CHAVE;STATUS ANTERIOR
+03/04/2026;OPP-A2 -0426-010;A2 TRANSPORTES;Bruno Reis; R$ 44.798.000,37 ; Negocia√ß√£o ; Aguardando cliente ;Alto;100%;Solicitando acordo de √∫ltima chamada pq eles est√£o com a WEG;08/06/2026;;;
+03/04/2026;OPP-Alf-0426-004;ALFARODOBUS;Bruno Reis; R$ 3.600.000,00 ; Negocia√ß√£o ; Aguardando cliente ;Baixo;100%;Retorno da Enel sobre Projeto. Cobrar semanalmente;08/06/2026;;;
+03/04/2026;OPP-ALF-0526-006;ALFARODOBUS (Zona Leste);Bruno Reis; R$ 1.200.000,00 ; Negocia√ß√£o ;Aguardando cliente;Baixo;100%;Cobrar retorno do cliente sobre cota√ß√£o;08/06/2026;;;
+03/04/2026;OPP-AMB-0426-011;AMBIENTAL (RV TRANS);Bruno Reis; R$ 20.000.000,00 ; Negocia√ß√£o ; Parado ;Baixo;100%;J√° enviamos proposta de Bess. Aguardando cliente retornar;08/06/2026;;;
+03/04/2026;OPP-ARA-0426-007;ARACAJU;Bruno Reis; R$ 640.000,00 ; Ganho ;Ganho;M√©dio;100%;;08/06/2026;;;
 03/04/2026;OPP-AUT-0426-012;AUTOBLESS;Bruno Reis; R$ - ; Proposta ; Parado ;Alto;0%;Retornar em alguns meses;08/06/2026;;;
-03/04/2026;OPP-AZU-0426-004;AZUL TRANSPORTES;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis„o para carregador de 180kW, Fl·vio est· alinhando com Cao e Beto CWBus;12/05/2026;;;
-03/04/2026;OPP-BEL-0426-008;BEL…M;Bruno Reis; R$ - ; Lead ; Parado ;Baixo;0%;Retornar em alguns meses;08/06/2026;;;
-03/04/2026;OPP-CAM-0426-030;CAMA«ARI;Bruno Reis; R$ - ; Lead ;Parado;;50%;Retornar em alguns meses;06/06/2026;;;
-12/05/2026;OPP-Cam-0426-002;CAMPO BELO 1 (RV TRANS);Bruno Reis; R$ 1.948.000,00 ; NegociaÁ„o ;Parado;Baixo;100%;Aguardar a conclus„o do projeto de alta tens„o;05/06/2026;;;
-12/05/2026;OPP-CAM-0526-003;CAMPO BELO 2 (RV TRANS);Bruno Reis; R$ 1.948.000,00 ; NegociaÁ„o ;Parado;Baixo;100%;Pararam as negociaÁıes de Bess e vai para alta tens„o;05/06/2026;;;
-13/04/2026;OPP-CAS-0426-025;CASG;Felipe Hanke;;Lead;Em andamento;;0%;Fazer visita em S„o Gotardo, usa gerador ‡ diesel no Plantio;12/05/2026;;;
-;;CPO ORSINE;Felipe Hanke; R$  510.000,00 ; NegociaÁ„o ;Aguardando parceiro;;50%;Estamos em conversa com Orsine para fechar escopo FOB China;12/05/2026;;;
-13/04/2026;OPP-DAN-0426-020;DANIEL MELILO;Felipe Hanke;;QualificaÁ„o;Em andamento;;0%;Cliente pretende avanÁar na contrataÁ„o de carregadores.;12/05/2026;;;
-03/04/2026;OPP-DIA-0426-025;DIADEMA;Bruno Reis; R$ 870.000,00 ; Lead ;Parado;MÈdio;100%;Retonar em alguns meses;08/06/2026;;;
+03/04/2026;OPP-AZU-0426-004;AZUL TRANSPORTES;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis√£o para carregador de 180kW, Fl√°vio est√° alinhando com Cao e Beto CWBus;12/05/2026;;;
+03/04/2026;OPP-BEL-0426-008;BEL√âM;Bruno Reis; R$ - ; Lead ; Parado ;Baixo;0%;Retornar em alguns meses;08/06/2026;;;
+03/04/2026;OPP-CAM-0426-030;CAMA√áARI;Bruno Reis; R$ - ; Lead ;Parado;;50%;Retornar em alguns meses;06/06/2026;;;
+12/05/2026;OPP-Cam-0426-002;CAMPO BELO 1 (RV TRANS);Bruno Reis; R$ 1.948.000,00 ; Negocia√ß√£o ;Parado;Baixo;100%;Aguardar a conclus√£o do projeto de alta tens√£o;05/06/2026;;;
+12/05/2026;OPP-CAM-0526-003;CAMPO BELO 2 (RV TRANS);Bruno Reis; R$ 1.948.000,00 ; Negocia√ß√£o ;Parado;Baixo;100%;Pararam as negocia√ß√µes de Bess e vai para alta tens√£o;05/06/2026;;;
+13/04/2026;OPP-CAS-0426-025;CASG;Felipe Hanke;;Lead;Em andamento;;0%;Fazer visita em S√£o Gotardo, usa gerador √† diesel no Plantio;12/05/2026;;;
+;;CPO ORSINE;Felipe Hanke; R$  510.000,00 ; Negocia√ß√£o ;Aguardando parceiro;;50%;Estamos em conversa com Orsine para fechar escopo FOB China;12/05/2026;;;
+13/04/2026;OPP-DAN-0426-020;DANIEL MELILO;Felipe Hanke;;Qualifica√ß√£o;Em andamento;;0%;Cliente pretende avan√ßar na contrata√ß√£o de carregadores.;12/05/2026;;;
+03/04/2026;OPP-DIA-0426-025;DIADEMA;Bruno Reis; R$ 870.000,00 ; Lead ;Parado;M√©dio;100%;Retonar em alguns meses;08/06/2026;;;
 13/04/2026;OPP-DIA-0426-026;DIADEMA;Bruno Reis; R$ 3.500.000,00 ; Lead ;Parado;Baixo;100%;Retonar em alguns meses;08/06/2026;;;#REF!
-03/04/2026;OPP-EVO-0426-009;EVMOBILITY (GBT);Felipe Hanke; R$  250.000,00 ;Proposta;Aguardando Engenharia;;15%;Est„o comprando um carregador GBT ‡ 65k, porÈm precisam com urgÍncia, enviei o valor de frete aÈreo na sexta, porÈm ainda sem retorno.;12/05/2026;;;
-;;EVMOBILITY (HUB MERCADO LIVRE);Felipe Hanke;;Proposta;Aguardando Engenharia;;10%;Estamos criando um modelo de negÛcio em conjunto para ser apresentado ao Mercado Livre, est· ainda em desenvolvimento da soluÁ„o;12/05/2026;;;
-03/04/2026;OPP-EVO-0426-003;EVMOBILITY (lISTA DE PRE«OS);Felipe Hanke; R$  29.000,00 ;NegociaÁ„o;Aguardando parceiro;;100%;Contato realizado com Pedro, solicitou que envi·ssemos lista de preÁos e mantivessemos estoque no  Brasil, lista de preÁos enviada, reuni„o agendada com fl·vio para falarmos sobre estoque no Brasil;12/05/2026;;;
-13/04/2026;OPP-EVO-0426-003;EVOLUTION MOBILITY (GRUPO P¡TRIA);Felipe Hanke; R$ 29.000,00 ; NegociaÁ„o ;Parado;;100%;Contato est· no HistÛrico com a Anna;13/04/2026;;;#REF!
-13/04/2026;OPP-EVO-0426-009;EVOLUTION MOBILITY (GRUPO P¡TRIA);Felipe Hanke; R$ 37.500,00 ; NegociaÁ„o ;Aguardando cliente;;15%;Est„o comprando um carregador GBT ‡ 65k, porÈm precisam com urgÍncia, enviei o valor de frete aÈreo na sexta, porÈm ainda sem retorno.;13/04/2026;;;#REF!
-13/04/2026;OPP-EVO-0426-010;EVOLUTION MOBILITY (GRUPO P¡TRIA);Felipe Hanke; R$ 348.000,00 ; NegociaÁ„o ;Aguardando cliente;;15%;Est„o comprando um carregador GBT ‡ 65k, porÈm precisam com urgÍncia, enviei o valor de frete aÈreo na sexta, porÈm ainda sem retorno.;13/04/2026;;;#REF!
-03/04/2026;OPP-EXP-0426-011;EXPRESS;Felipe Hanke;;QualificaÁ„o;Parado;;0%;Tentei contato com Toninho v·rias vezes, na ida para SP tentar novo contato e visita;12/05/2026;;;
-03/04/2026;OPP-EZ -0426-013;EZ VOLT;Felipe Hanke;; QualificaÁ„o ;Parado;;0%;EZ volt tem aproximadamente 60% dos apps de frotas nas garagens, verificar sobre aproximaÁ„o e ver se compram carregadores da Livoltek, n„o fabricam.;12/05/2026;;;
-13/04/2026;OPP-EZ -0426-014;EZ VOLT;Felipe Hanke;; NegociaÁ„o ;Parado;;0%;;13/04/2026;;;#REF!
-12/05/2026;OPP-GOV-0526-033;GOVER DE PERNAMBUCO;Bruno Reis;; NegociaÁ„o ; Aguardando cliente ;MÈdio;;Dia do Bid dia 26/06;08/06/2026;;;
-13/04/2026;OPP-GRE-0426-024;GREEN YELLOW;Felipe Hanke;; NegociaÁ„o ;Em andamento;;0%;Contato realizado, aguardando jurÌdico analizar contrato e;12/05/2026;;;
-13/04/2026;OPP-GRU-0426-023;GRUPO SEKITA;Felipe Hanke;;QualificaÁ„o;Em andamento;;0%;Fazer visita em S„o Gotardo, usa gerador ‡ diesel no Plantio;12/05/2026;;;
-13/04/2026;OPP-HS -0426-020;HS PRATES;Felipe Hanke;;QualificaÁ„o;Em andamento;;;Fazer visita em S„o Gotardo, usa gerador ‡ diesel no Plantio;13/04/2026;;;12/05/2026
-13/04/2026;OPP-HS -0426-022;HS PRATES;Felipe Hanke;;Lead;Em andamento;;0%;Fazer visita em S„o Gotardo, usa gerador ‡ diesel no Plantio;12/05/2026;;;
-13/04/2026;OPP-JUN-0426-013;JUNDU;Felipe Hanke;; Proposta ;Aguardando interno;;80%;Verificando com Kelly sobre novo Bess para POC, Felipe est· em contato com Jener;12/05/2026;;;
-13/04/2026;OPP-JUN-0426-018;JUNDU;Felipe Hanke;; NegociaÁ„o ;Aguardando interno;;;Verificando com Kelly sobre novo Bess para POC, Felipe est· em contato com Jener;13/04/2026;;;12/05/2026
-13/04/2026;OPP-KBP-0426-013;KBPX;Bruno Reis; R$ 10.000.000,00 ; Proposta ; Aguardando cliente ;Baixo;100%;Proposta est· com engenharia. Retornar daqui alguns meses;08/06/2026;;;#REF!
-03/04/2026;OPP-KBP-0426-014;KBPX;Bruno Reis; R$ 4.257.000,00 ; Proposta ; Aguardando cliente ;Baixo;100%;Proposta est· com engenharia. Retornar daqui alguns meses;08/06/2026;;;
-03/04/2026;OPP-MAC-0426-023;MACA…;Bruno Reis; R$ 5.250.000,00 ; Lead ; Aguardando cliente ;Baixo;100%;Aguardando abertura do Lead;08/06/0206;;;
-03/04/2026;OPP-MAR-0426-002;MARECHAL;Felipe Hanke; R$  200.567,00 ; Proposta ; Aguardando Engenharia ;;100%;Proposta apresentada, porÈm cliente disse que n„o possui carga para conex„o do carregador, temos de revisar o escopo incluindo 1 Bess de 261;08/06/0206;;;
-12/05/2026;OPP-MON-0526-032;MONTES CLAROS;Bruno Reis;; Lead ; Aguardando cliente ;MÈdio;100%;Aguardando a licitaÁ„o;08/06/2026;;;
-04/03/2026;OPP-MOV-0326-031;MOVEBUSS;Bruno Reis;; Fechamento ;Aguardando cliente;MÈdio;100%;Aguardando decis„o do cliente;08/06/2026;;;
-13/04/2026;OPP-NOR-0426-015;NORTEBUSS;Bruno Reis; R$ 10.000.000,00 ; Proposta ; Aguardando interno ;Baixo;100%;V„o para alta tens„o e estamos aguardando proposta;05/06/2026;;;#REF!
-03/04/2026;OPP-NOR-0426-016;NORTEBUSS;Bruno Reis; R$ 4.257.000,00 ; Proposta ; Aguardando Pricing ;Baixo;100%;V„o para alta tens„o e estamos aguardando proposta;05/06/2026;;;
-03/04/2026;OPP-P S-0426-009;P SSEGO;Bruno Reis; R$ - ; Lead ; Parado ;Alto;0%;Retornar em alguns meses;08/06/2026;;;
-03/04/2026;OPP-POR-0426-024;PORTO ALEGRE;Felipe Hanke; R$ 1.312.500,00 ; NegociaÁ„o ;Parado;MÈdio;25%;;25/05/2026;;;
+03/04/2026;OPP-EVO-0426-009;EVMOBILITY (GBT);Felipe Hanke; R$  250.000,00 ;Proposta;Aguardando Engenharia;;15%;Est√£o comprando um carregador GBT √† 65k, por√©m precisam com urg√™ncia, enviei o valor de frete a√©reo na sexta, por√©m ainda sem retorno.;12/05/2026;;;
+;;EVMOBILITY (HUB MERCADO LIVRE);Felipe Hanke;;Proposta;Aguardando Engenharia;;10%;Estamos criando um modelo de neg√≥cio em conjunto para ser apresentado ao Mercado Livre, est√° ainda em desenvolvimento da solu√ß√£o;12/05/2026;;;
+03/04/2026;OPP-EVO-0426-003;EVMOBILITY (lISTA DE PRE√áOS);Felipe Hanke; R$  29.000,00 ;Negocia√ß√£o;Aguardando parceiro;;100%;Contato realizado com Pedro, solicitou que envi√°ssemos lista de pre√ßos e mantivessemos estoque no  Brasil, lista de pre√ßos enviada, reuni√£o agendada com fl√°vio para falarmos sobre estoque no Brasil;12/05/2026;;;
+13/04/2026;OPP-EVO-0426-003;EVOLUTION MOBILITY (GRUPO P√ÅTRIA);Felipe Hanke; R$ 29.000,00 ; Negocia√ß√£o ;Parado;;100%;Contato est√° no Hist√≥rico com a Anna;13/04/2026;;;#REF!
+13/04/2026;OPP-EVO-0426-009;EVOLUTION MOBILITY (GRUPO P√ÅTRIA);Felipe Hanke; R$ 37.500,00 ; Negocia√ß√£o ;Aguardando cliente;;15%;Est√£o comprando um carregador GBT √† 65k, por√©m precisam com urg√™ncia, enviei o valor de frete a√©reo na sexta, por√©m ainda sem retorno.;13/04/2026;;;#REF!
+13/04/2026;OPP-EVO-0426-010;EVOLUTION MOBILITY (GRUPO P√ÅTRIA);Felipe Hanke; R$ 348.000,00 ; Negocia√ß√£o ;Aguardando cliente;;15%;Est√£o comprando um carregador GBT √† 65k, por√©m precisam com urg√™ncia, enviei o valor de frete a√©reo na sexta, por√©m ainda sem retorno.;13/04/2026;;;#REF!
+03/04/2026;OPP-EXP-0426-011;EXPRESS;Felipe Hanke;;Qualifica√ß√£o;Parado;;0%;Tentei contato com Toninho v√°rias vezes, na ida para SP tentar novo contato e visita;12/05/2026;;;
+03/04/2026;OPP-EZ -0426-013;EZ VOLT;Felipe Hanke;; Qualifica√ß√£o ;Parado;;0%;EZ volt tem aproximadamente 60% dos apps de frotas nas garagens, verificar sobre aproxima√ß√£o e ver se compram carregadores da Livoltek, n√£o fabricam.;12/05/2026;;;
+13/04/2026;OPP-EZ -0426-014;EZ VOLT;Felipe Hanke;; Negocia√ß√£o ;Parado;;0%;;13/04/2026;;;#REF!
+12/05/2026;OPP-GOV-0526-033;GOVER DE PERNAMBUCO;Bruno Reis;; Negocia√ß√£o ; Aguardando cliente ;M√©dio;;Dia do Bid dia 26/06;08/06/2026;;;
+13/04/2026;OPP-GRE-0426-024;GREEN YELLOW;Felipe Hanke;; Negocia√ß√£o ;Em andamento;;0%;Contato realizado, aguardando jur√≠dico analizar contrato e;12/05/2026;;;
+13/04/2026;OPP-GRU-0426-023;GRUPO SEKITA;Felipe Hanke;;Qualifica√ß√£o;Em andamento;;0%;Fazer visita em S√£o Gotardo, usa gerador √† diesel no Plantio;12/05/2026;;;
+13/04/2026;OPP-HS -0426-020;HS PRATES;Felipe Hanke;;Qualifica√ß√£o;Em andamento;;;Fazer visita em S√£o Gotardo, usa gerador √† diesel no Plantio;13/04/2026;;;12/05/2026
+13/04/2026;OPP-HS -0426-022;HS PRATES;Felipe Hanke;;Lead;Em andamento;;0%;Fazer visita em S√£o Gotardo, usa gerador √† diesel no Plantio;12/05/2026;;;
+13/04/2026;OPP-JUN-0426-013;JUNDU;Felipe Hanke;; Proposta ;Aguardando interno;;80%;Verificando com Kelly sobre novo Bess para POC, Felipe est√° em contato com Jener;12/05/2026;;;
+13/04/2026;OPP-JUN-0426-018;JUNDU;Felipe Hanke;; Negocia√ß√£o ;Aguardando interno;;;Verificando com Kelly sobre novo Bess para POC, Felipe est√° em contato com Jener;13/04/2026;;;12/05/2026
+13/04/2026;OPP-KBP-0426-013;KBPX;Bruno Reis; R$ 10.000.000,00 ; Proposta ; Aguardando cliente ;Baixo;100%;Proposta est√° com engenharia. Retornar daqui alguns meses;08/06/2026;;;#REF!
+03/04/2026;OPP-KBP-0426-014;KBPX;Bruno Reis; R$ 4.257.000,00 ; Proposta ; Aguardando cliente ;Baixo;100%;Proposta est√° com engenharia. Retornar daqui alguns meses;08/06/2026;;;
+03/04/2026;OPP-MAC-0426-023;MACA√â;Bruno Reis; R$ 5.250.000,00 ; Lead ; Aguardando cliente ;Baixo;100%;Aguardando abertura do Lead;08/06/0206;;;
+03/04/2026;OPP-MAR-0426-002;MARECHAL;Felipe Hanke; R$  200.567,00 ; Proposta ; Aguardando Engenharia ;;100%;Proposta apresentada, por√©m cliente disse que n√£o possui carga para conex√£o do carregador, temos de revisar o escopo incluindo 1 Bess de 261;08/06/0206;;;
+12/05/2026;OPP-MON-0526-032;MONTES CLAROS;Bruno Reis;; Lead ; Aguardando cliente ;M√©dio;100%;Aguardando a licita√ß√£o;08/06/2026;;;
+04/03/2026;OPP-MOV-0326-031;MOVEBUSS;Bruno Reis;; Fechamento ;Aguardando cliente;M√©dio;100%;Aguardando decis√£o do cliente;08/06/2026;;;
+13/04/2026;OPP-NOR-0426-015;NORTEBUSS;Bruno Reis; R$ 10.000.000,00 ; Proposta ; Aguardando interno ;Baixo;100%;V√£o para alta tens√£o e estamos aguardando proposta;05/06/2026;;;#REF!
+03/04/2026;OPP-NOR-0426-016;NORTEBUSS;Bruno Reis; R$ 4.257.000,00 ; Proposta ; Aguardando Pricing ;Baixo;100%;V√£o para alta tens√£o e estamos aguardando proposta;05/06/2026;;;
+03/04/2026;OPP-P√äS-0426-009;P√äSSEGO;Bruno Reis; R$ - ; Lead ; Parado ;Alto;0%;Retornar em alguns meses;08/06/2026;;;
+03/04/2026;OPP-POR-0426-024;PORTO ALEGRE;Felipe Hanke; R$ 1.312.500,00 ; Negocia√ß√£o ;Parado;M√©dio;25%;;25/05/2026;;;
 03/04/2026;OPP-PRE-0426-004;PREFEITURA DE BELO HORIZONTE;Bruno Reis; R$ 14.971.578,66 ; Perdido ; Perdido ;Baixo;0%;Temos recurso para o dia 16/06;08/06/2026;;;
-03/04/2026;OPP-PRE-0426-005;PREFEITURA DE S√O JOS… DOS CAMPOS;Felipe Hanke;; NegociaÁ„o ;Parado;;0%;Verificar alternativa de quem investir·;12/05/2026;;;
-03/04/2026;OPP-SAM-0426-017;SAMBAÕBA;Bruno Reis; R$ - ; NegociaÁ„o ; Aguardando Engenharia ;MÈdio;50%;Aguardando time de engenharia;08/06/2026;;;
-03/04/2026;OPP-SAM-0426-018;SAMBAÕBA G1;Bruno Reis; R$ - ; NegociaÁ„o ; Aguardando Engenharia ;MÈdio;50%;Aguardando time de engenharia;08/06/2026;;;
-13/04/2026;OPP-SAM-0426-019;SAMBAIBA G3;Bruno Reis; R$ - ; NegociaÁ„o ; Aguardando Engenharia ;MÈdio;50%;Aguardando time de engenharia;08/06/2026;;;
-14/04/2026;OPP-SAM-0426-020;SAMBAIBA G4;Bruno Reis; R$ - ; NegociaÁ„o ; Aguardando Engenharia ;MÈdio;50%;Aguardando time de engenharia;08/06/2026;;;
-03/04/2026;OPP-SHC-0426-012;SHC JAC MOTORS;Felipe Hanke; R$ 90.000,00 ;NegociaÁ„o;Parado;;30%;Verificar com Fl·vio;12/05/2026;;;
+03/04/2026;OPP-PRE-0426-005;PREFEITURA DE S√ÉO JOS√â DOS CAMPOS;Felipe Hanke;; Negocia√ß√£o ;Parado;;0%;Verificar alternativa de quem investir√°;12/05/2026;;;
+03/04/2026;OPP-SAM-0426-017;SAMBA√çBA;Bruno Reis; R$ - ; Negocia√ß√£o ; Aguardando Engenharia ;M√©dio;50%;Aguardando time de engenharia;08/06/2026;;;
+03/04/2026;OPP-SAM-0426-018;SAMBA√çBA G1;Bruno Reis; R$ - ; Negocia√ß√£o ; Aguardando Engenharia ;M√©dio;50%;Aguardando time de engenharia;08/06/2026;;;
+13/04/2026;OPP-SAM-0426-019;SAMBAIBA G3;Bruno Reis; R$ - ; Negocia√ß√£o ; Aguardando Engenharia ;M√©dio;50%;Aguardando time de engenharia;08/06/2026;;;
+14/04/2026;OPP-SAM-0426-020;SAMBAIBA G4;Bruno Reis; R$ - ; Negocia√ß√£o ; Aguardando Engenharia ;M√©dio;50%;Aguardando time de engenharia;08/06/2026;;;
+03/04/2026;OPP-SHC-0426-012;SHC JAC MOTORS;Felipe Hanke; R$ 90.000,00 ;Negocia√ß√£o;Parado;;30%;Verificar com Fl√°vio;12/05/2026;;;
 ;;SP TRANS;Bruno Reis; R$ 23.400,00 ; Ganho ;Ganho;;100%;;;;;
-03/04/2026;OPP-TRA-0426-029;TRANSPASS (RV TRANS);Bruno Reis; R$ - ; NegociaÁ„o ; Aguardando Engenharia ;MÈdio;50%;Aguardando time de engenharia;08/06/2026;;;
-03/04/2026;OPP-UBE-0426-016;UBERLANDIA;Felipe Hanke;; NegociaÁ„o ;Parado;;0%;Conversa realizada com Paulo, enviei datasheet do BESS para esclarecimento, fazer contato para entender sobre outras oportunidades;12/05/2026;;;
-13/04/2026;OPP-VAL-0426-021;VALE VARGEM GRANDE;Felipe Hanke;; Proposta ; Aguardando Engenharia ;;80%;Aguardando envio de informaÁıes para especificaÁ„o de Bess para canteiro de obras e Bombas;12/05/2026;;;
-03/04/2026;OPP-VIA-0426-006;VIA«√O CIDADE SORRISO;Felipe Hanke; R$  2.115.818,00 ;Fechamento;Aguardando cliente;;100%;Revis„o para carregador de 180kW, Fl·vio est· alinhando com Cao e Beto CWBus;12/05/2026;;;
-03/04/2026;OPP-VIA-0426-007;VIA«√O GL”RIA;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis„o para carregador de 180kW, Fl·vio est· alinhando com Cao e Beto CWBus;12/05/2026;;;
-03/04/2026;OPP-Via-0426-024;ViaÁ„o MetrÛpole;Bruno Reis; R$ 2.800.000,00 ; NegociaÁ„o ;Aguardando cliente;;50%;Aguardar retorno Julho;08/06/2026;;;12/05/2026
-04/04/2026;OPP-VIA-0426-028;VIA«√O METR”POLE A E Carvalho (ZL);Bruno Reis; R$ 2.800.000,00 ; NegociaÁ„o ;Parado;;100%;Retornar em alguns meses;05/06/2026;;;
-03/04/2026;OPP-VIA-0426-027;VIA«√O METR”POLE M'Boi Mirim;Bruno Reis; R$ 2.800.000,00 ; NegociaÁ„o ;Aguardando cliente;;50%;Aguardar retorno Julho;05/06/2026;;;
-03/04/2026;OPP-VIA-0426-008;VIA«√O REDENTOR;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis„o para carregador de 180kW, Fl·vio est· alinhando com Cao e Beto CWBus;12/05/2026;;;
-03/04/2026;OPP-VIA-0426-017;VIA«√O SANTA BRÕGIDA;Felipe Hanke;;Proposta;Parado;;0%;Tentar aproximar e agendar uma conversa, Fl·vio quem possui o contato do pessoal, pegar detalhe da negociaÁ„o;12/05/2026;;;
-03/04/2026;OPP-VIA-0426-015;VIA«√O S√O GABRIEL;Felipe Hanke; R$  1.599.067,75 ; Proposta ; Aguardando Pricing ;;100%;Previs„o de envio da proposta dia 15/04;12/05/2026;;;
-13/04/2026;OPP-XCM-0426-011;XCMG;Felipe Hanke; R$  419.389,00 ;NegociaÁ„o; Aguardando cliente ;;0%;Proposta enviada, Rodrigo disse que agora È com setor de compras e que ele n„o tem mais controle da negociaÁ„o, na Intermodal vi ele muito proximo no Stand da Nansen, verificar avanÁo.;12/05/2026;;;
+03/04/2026;OPP-TRA-0426-029;TRANSPASS (RV TRANS);Bruno Reis; R$ - ; Negocia√ß√£o ; Aguardando Engenharia ;M√©dio;50%;Aguardando time de engenharia;08/06/2026;;;
+03/04/2026;OPP-UBE-0426-016;UBERLANDIA;Felipe Hanke;; Negocia√ß√£o ;Parado;;0%;Conversa realizada com Paulo, enviei datasheet do BESS para esclarecimento, fazer contato para entender sobre outras oportunidades;12/05/2026;;;
+13/04/2026;OPP-VAL-0426-021;VALE VARGEM GRANDE;Felipe Hanke;; Proposta ; Aguardando Engenharia ;;80%;Aguardando envio de informa√ß√µes para especifica√ß√£o de Bess para canteiro de obras e Bombas;12/05/2026;;;
+03/04/2026;OPP-VIA-0426-006;VIA√á√ÉO CIDADE SORRISO;Felipe Hanke; R$  2.115.818,00 ;Fechamento;Aguardando cliente;;100%;Revis√£o para carregador de 180kW, Fl√°vio est√° alinhando com Cao e Beto CWBus;12/05/2026;;;
+03/04/2026;OPP-VIA-0426-007;VIA√á√ÉO GL√ìRIA;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis√£o para carregador de 180kW, Fl√°vio est√° alinhando com Cao e Beto CWBus;12/05/2026;;;
+03/04/2026;OPP-Via-0426-024;Via√ß√£o Metr√≥pole;Bruno Reis; R$ 2.800.000,00 ; Negocia√ß√£o ;Aguardando cliente;;50%;Aguardar retorno Julho;08/06/2026;;;12/05/2026
+04/04/2026;OPP-VIA-0426-028;VIA√á√ÉO METR√ìPOLE A E Carvalho (ZL);Bruno Reis; R$ 2.800.000,00 ; Negocia√ß√£o ;Parado;;100%;Retornar em alguns meses;05/06/2026;;;
+03/04/2026;OPP-VIA-0426-027;VIA√á√ÉO METR√ìPOLE M'Boi Mirim;Bruno Reis; R$ 2.800.000,00 ; Negocia√ß√£o ;Aguardando cliente;;50%;Aguardar retorno Julho;05/06/2026;;;
+03/04/2026;OPP-VIA-0426-008;VIA√á√ÉO REDENTOR;Felipe Hanke; R$  2.115.818,00 ; Fechamento ;Aguardando cliente;;100%;Revis√£o para carregador de 180kW, Fl√°vio est√° alinhando com Cao e Beto CWBus;12/05/2026;;;
+03/04/2026;OPP-VIA-0426-017;VIA√á√ÉO SANTA BR√çGIDA;Felipe Hanke;;Proposta;Parado;;0%;Tentar aproximar e agendar uma conversa, Fl√°vio quem possui o contato do pessoal, pegar detalhe da negocia√ß√£o;12/05/2026;;;
+03/04/2026;OPP-VIA-0426-015;VIA√á√ÉO S√ÉO GABRIEL;Felipe Hanke; R$  1.599.067,75 ; Proposta ; Aguardando Pricing ;;100%;Previs√£o de envio da proposta dia 15/04;12/05/2026;;;
+13/04/2026;OPP-XCM-0426-011;XCMG;Felipe Hanke; R$  419.389,00 ;Negocia√ß√£o; Aguardando cliente ;;0%;Proposta enviada, Rodrigo disse que agora √© com setor de compras e que ele n√£o tem mais controle da negocia√ß√£o, na Intermodal vi ele muito proximo no Stand da Nansen, verificar avan√ßo.;12/05/2026;;;
 ;;;;;;;;;;;;;
 ;;;;;;;;;;;;;
 ;;;;;;;;;;;;;
