@@ -31,9 +31,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .p-err{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 .sec{font-family:var(--fh);font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:32px 0 16px 0;display:flex;align-items:center;gap:12px}
 .sec::before{content:'';width:3px;height:1.2rem;background:var(--blue);border-radius:2px}
-.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px;position:relative;overflow:hidden;transition:all .3s}
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:14px;position:relative;transition:all .3s}
 .kpi:hover{border-color:#D1D5DB;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:12px 12px 0 0}
 .kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}.kpi.amber::before{background:var(--amber)}.kpi.blue::before{background:var(--blue)}
 .kpi-l{font-size:.7rem;color:var(--muted2);font-weight:700;text-transform:uppercase;margin-bottom:6px;letter-spacing:.05em}
 .kpi-v{font-family:var(--fh);font-size:1.5rem;font-weight:900;color:var(--text);margin-bottom:4px;line-height:1}
@@ -89,7 +89,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .kpi-tip .tip-box{display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:.72rem;font-weight:500;line-height:1.4;padding:8px 12px;border-radius:6px;width:220px;text-align:left;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .kpi-tip:hover .tip-box, .kpi-tip.tip-active .tip-box{display:block}
 .kpi-tip .tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1F2937}
-.exec-kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.exec-kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:16px;position:relative}
 .exec-kpi.attention{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-bg) inset}
 .exec-kpi.warn{border-color:var(--red);box-shadow:0 0 0 1px var(--red-bg) inset}
 .exec-kpi-l{font-size:.7rem;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center}
@@ -121,6 +121,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     <button class="tab-btn" data-tab="bruno">Bruno Reis</button>
     <button class="tab-btn" data-tab="felipe">Felipe Hanke</button>
     <button class="tab-btn" data-tab="evolucao">Evolução do Pipeline</button>
+    <button class="tab-btn" data-tab="pendencias">Pendências</button>
   </div>
 
   <!-- ============ VISAO GERAL ============ -->
@@ -447,7 +448,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="card">
             <div class="card-t">👤 Bruno Reis</div>
             <table class="tbl" style="font-size:0.85rem">
-              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th><th>Próximos Passos</th></tr></thead>
               <tbody id="evo-top10-bruno"></tbody>
             </table>
           </div>
@@ -456,7 +457,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="card">
             <div class="card-t">👤 Felipe Hanke</div>
             <table class="tbl" style="font-size:0.85rem">
-              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th><th>Próximos Passos</th></tr></thead>
               <tbody id="evo-top10-felipe"></tbody>
             </table>
           </div>
@@ -597,6 +598,28 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
     </div>
   </div>
 
+  <!-- ============ PENDÊNCIAS ============ -->
+  <div class="tab-panel" id="panel-pendencias">
+    <div class="card" style="font-size:.85rem;color:var(--muted)">
+      ℹ️ Esta aba busca por palavras-chave dentro do campo "Próximos Passos" das oportunidades (Bruno + Felipe). Não depende de uma etapa fixa no sistema — funciona com qualquer texto que mencione "engenharia" ou "pré-venda".
+    </div>
+
+    <div class="sec">🔧 Pendências de Engenharia</div>
+    <div class="card">
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>Cliente</th><th>Produto</th><th>Vendedor</th><th>Previsão de Fechamento</th><th>Valor</th><th>Próximos Passos</th><th>Última Atualização</th></tr></thead>
+        <tbody id="pend-engenharia"></tbody>
+      </table>
+    </div>
+
+    <div class="sec">🤝 Pendências de Pré-Vendas</div>
+    <div class="card">
+      <table class="tbl" style="font-size:0.85rem">
+        <thead><tr><th>Cliente</th><th>Produto</th><th>Vendedor</th><th>Previsão de Fechamento</th><th>Valor</th><th>Próximos Passos</th><th>Última Atualização</th></tr></thead>
+        <tbody id="pend-prevendas"></tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 
@@ -644,12 +667,33 @@ function normalize(){
   });
 }
 
+function renderPendencias(rows){
+  function normalize(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function matches(r, keywords){
+    const text=normalize(r['PROX PASSO']);
+    return keywords.some(function(k){return text.includes(k);});
+  }
+  function renderTable(tbodyId, keywords){
+    const filtered=rows.filter(function(r){return matches(r, keywords);}).sort(function(a,b){return b._val-a._val;});
+    document.getElementById(tbodyId).innerHTML=filtered.map(function(r){
+      const closeStr=r._close?r._close.toLocaleDateString('pt-BR'):'-';
+      const updStr=r._atua?r._atua.toLocaleDateString('pt-BR'):'-';
+      return '<tr><td>'+(r.CUSTOMER||'-')+'</td><td>'+(r.PRODUCT||'-')+'</td><td>'+(r.VENDEDOR||'-')+'</td><td>'+closeStr+'</td><td class="num">'+fK(r._val)+'</td><td style="font-size:0.75rem">'+(r['PROX PASSO']||'-')+'</td><td>'+updStr+'</td></tr>';
+    }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted2)">Nenhuma pendência encontrada</td></tr>';
+  }
+  renderTable('pend-engenharia', ['engenharia']);
+  renderTable('pend-prevendas', ['pre-venda','pre venda','prevenda']);
+}
+
 function renderAll(){
   const rows=DATA.base;
   const bruno=rows.filter(r=>r._vendor.includes('bruno'));
   const felipe=rows.filter(r=>r._vendor.includes('felipe'));
 
   renderKPIs(rows, 'all', METAS.bruno+METAS.felipe);
+  renderPendencias(rows);
   renderPerf('bruno', bruno);
   renderPerf('felipe', felipe);
   renderClosureChartCombined(bruno, felipe, 'chart-closures-all');
@@ -1148,17 +1192,20 @@ function renderEvoTop10Clientes(rows){
     const byCustomer={};
     filtered.forEach(function(r){
       const c=r.CUSTOMER||'-';
-      if(!byCustomer[c]) byCustomer[c]={val:0,nearestClose:null};
+      if(!byCustomer[c]) byCustomer[c]={val:0,nearestClose:null,steps:[]};
       byCustomer[c].val+=r._val;
       if(r._close&&(!byCustomer[c].nearestClose||r._close<byCustomer[c].nearestClose)){
         byCustomer[c].nearestClose=r._close;
       }
+      const step=(r['PROX PASSO']||'').trim();
+      if(step&&!byCustomer[c].steps.includes(step)) byCustomer[c].steps.push(step);
     });
-    const top10=Object.keys(byCustomer).map(function(c){return {customer:c, val:byCustomer[c].val, nearestClose:byCustomer[c].nearestClose};}).sort(function(a,b){return b.val-a.val;}).slice(0,10);
+    const top10=Object.keys(byCustomer).map(function(c){return {customer:c, val:byCustomer[c].val, nearestClose:byCustomer[c].nearestClose, steps:byCustomer[c].steps};}).sort(function(a,b){return b.val-a.val;}).slice(0,10);
     document.getElementById(tbodyId).innerHTML=top10.map(function(c,i){
       const dateStr=c.nearestClose?c.nearestClose.toLocaleDateString('pt-BR'):'-';
-      return '<tr><td><strong>'+(i+1)+'</strong></td><td>'+c.customer+'</td><td class="num">'+fK(c.val)+'</td><td>'+dateStr+'</td></tr>';
-    }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
+      const stepsStr=c.steps.length?c.steps.join(' | '):'-';
+      return '<tr><td><strong>'+(i+1)+'</strong></td><td>'+c.customer+'</td><td class="num">'+fK(c.val)+'</td><td>'+dateStr+'</td><td style="font-size:0.75rem">'+stepsStr+'</td></tr>';
+    }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
   }
   top10For('bruno', 'evo-top10-bruno');
   top10For('felipe', 'evo-top10-felipe');
