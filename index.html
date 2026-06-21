@@ -87,7 +87,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
 .tabs{display:flex;gap:8px;margin-bottom:8px;border-bottom:2px solid var(--brd)}
 .kpi-tip{display:inline-block;position:relative;cursor:help;color:var(--muted2);font-size:.8rem;margin-left:4px}
 .kpi-tip .tip-box{display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;font-size:.72rem;font-weight:500;line-height:1.4;padding:8px 12px;border-radius:6px;width:220px;text-align:left;z-index:20;box-shadow:0 4px 12px rgba(0,0,0,.2)}
-.kpi-tip:hover .tip-box{display:block}
+.kpi-tip:hover .tip-box, .kpi-tip.tip-active .tip-box{display:block}
 .kpi-tip .tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1F2937}
 .exec-kpi{background:var(--s1);border:1px solid var(--brd);border-radius:12px;padding:16px;position:relative;overflow:hidden}
 .exec-kpi.attention{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber-bg) inset}
@@ -447,7 +447,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="card">
             <div class="card-t">👤 Bruno Reis</div>
             <table class="tbl" style="font-size:0.85rem">
-              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Oportunidades</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th></tr></thead>
               <tbody id="evo-top10-bruno"></tbody>
             </table>
           </div>
@@ -456,7 +456,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.
           <div class="card">
             <div class="card-t">👤 Felipe Hanke</div>
             <table class="tbl" style="font-size:0.85rem">
-              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Oportunidades</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Valor Pipeline</th><th>Data Prevista de Fechamento</th></tr></thead>
               <tbody id="evo-top10-felipe"></tbody>
             </table>
           </div>
@@ -986,6 +986,7 @@ function normalizeSnapshotRow(r){
   r._ponderado=(r._val*r._prob)/100;
   r._id=(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE']||'').trim();
   r._estagio=(r.ESTAGIO||'').trim();
+  r._close=parseData(r['DATA DE FECHAMENTO']||'');
   return r;
 }
 
@@ -1147,13 +1148,16 @@ function renderEvoTop10Clientes(rows){
     const byCustomer={};
     filtered.forEach(function(r){
       const c=r.CUSTOMER||'-';
-      if(!byCustomer[c]) byCustomer[c]={val:0,count:0};
+      if(!byCustomer[c]) byCustomer[c]={val:0,nearestClose:null};
       byCustomer[c].val+=r._val;
-      byCustomer[c].count+=1;
+      if(r._close&&(!byCustomer[c].nearestClose||r._close<byCustomer[c].nearestClose)){
+        byCustomer[c].nearestClose=r._close;
+      }
     });
-    const top10=Object.keys(byCustomer).map(function(c){return {customer:c, val:byCustomer[c].val, count:byCustomer[c].count};}).sort(function(a,b){return b.val-a.val;}).slice(0,10);
+    const top10=Object.keys(byCustomer).map(function(c){return {customer:c, val:byCustomer[c].val, nearestClose:byCustomer[c].nearestClose};}).sort(function(a,b){return b.val-a.val;}).slice(0,10);
     document.getElementById(tbodyId).innerHTML=top10.map(function(c,i){
-      return '<tr><td><strong>'+(i+1)+'</strong></td><td>'+c.customer+'</td><td class="num">'+fK(c.val)+'</td><td>'+c.count+'</td></tr>';
+      const dateStr=c.nearestClose?c.nearestClose.toLocaleDateString('pt-BR'):'-';
+      return '<tr><td><strong>'+(i+1)+'</strong></td><td>'+c.customer+'</td><td class="num">'+fK(c.val)+'</td><td>'+dateStr+'</td></tr>';
     }).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--muted2)">Sem dados</td></tr>';
   }
   top10For('bruno', 'evo-top10-bruno');
@@ -1165,6 +1169,17 @@ function setGrowthKPI(id, value, formatter){
   el.textContent=(value>=0?'+':'')+formatter(value);
   el.className='exec-kpi-v '+(value>=0?'green':'red');
 }
+
+document.addEventListener('click', function(e){
+  const tip=e.target.closest('.kpi-tip');
+  document.querySelectorAll('.kpi-tip.tip-active').forEach(function(t){
+    if(t!==tip) t.classList.remove('tip-active');
+  });
+  if(tip){
+    tip.classList.toggle('tip-active');
+    e.stopPropagation();
+  }
+});
 
 initEvolucao();
 loadData();
