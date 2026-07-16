@@ -644,9 +644,6 @@ async function loadData(){
     }
     const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
     const dataFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    dataBruno.forEach(r=>{ r.VENDEDOR='Bruno Reis'; });
-    dataFelipe.forEach(r=>{ r.VENDEDOR='Felipe Hanke'; });
-    console.log('Loaded — Bruno:',dataBruno.length,'Felipe:',dataFelipe.length);
     DATA.base=[...dataBruno,...dataFelipe];
     normalize();
     renderAll();
@@ -667,6 +664,7 @@ function normalize(){
     r._prob=parseFloat(r.PROBABILIDADE||'0')||0;
     r._ponderado=(r._val*r._prob)/100;
     r._close=parseData(r['DATA DE FECHAMENTO']||'');
+    r._id=(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE']||'').trim()||(r['CUSTOMER']||'').trim();
   });
 }
 
