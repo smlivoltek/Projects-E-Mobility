@@ -642,8 +642,20 @@ async function loadData(){
     if(!resBruno.ok||!resFelipe.ok){
       throw new Error(`CSVs não encontrados. Bruno: ${resBruno.status}, Felipe: ${resFelipe.status}`);
     }
-    const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    const dataFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    const rawBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data;
+    const rawFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data;
+    // Normaliza CUSTOMER: aceita CUSTOMER ou CLIENTE como nome da coluna
+    const normCustomer = rows => rows.map(r => {
+      if (!r.CUSTOMER && r.CLIENTE) r.CUSTOMER = r.CLIENTE;
+      if (!r.CUSTOMER && r['Nome do Cliente']) r.CUSTOMER = r['Nome do Cliente'];
+      return r;
+    }).filter(r => r.CUSTOMER);
+    const dataBruno  = normCustomer(rawBruno);
+    const dataFelipe = normCustomer(rawFelipe);
+    // Garante VENDEDOR correto independente do CSV
+    dataBruno.forEach(r=>{ if(!r.VENDEDOR||!r.VENDEDOR.toLowerCase().includes('bruno')) r.VENDEDOR='Bruno Reis'; });
+    dataFelipe.forEach(r=>{ if(!r.VENDEDOR||!r.VENDEDOR.toLowerCase().includes('felipe')) r.VENDEDOR='Felipe Hanke'; });
+    console.log('Bruno rows:', dataBruno.length, '| Felipe rows:', dataFelipe.length);
     DATA.base=[...dataBruno,...dataFelipe];
     normalize();
     renderAll();
