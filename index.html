@@ -642,8 +642,25 @@ async function loadData(){
     if(!resBruno.ok||!resFelipe.ok){
       throw new Error(`CSVs não encontrados. Bruno: ${resBruno.status}, Felipe: ${resFelipe.status}`);
     }
-    const dataBruno=Papa.parse(await resBruno.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
-    const dataFelipe=Papa.parse(await resFelipe.text(),{header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    // Remove linha de totais antes do cabeçalho (ex: "Total in Oportunities,...")
+    function cleanCSV(txt) {
+      const lines = txt.split(/?
+/);
+      // Acha a linha do cabeçalho real (contém "CUSTOMER" ou "DATA_CRIACAO")
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(lines.length, 5); i++) {
+        if (lines[i].includes('CUSTOMER') || lines[i].includes('DATA_CRIACAO')) {
+          headerIdx = i;
+          break;
+        }
+      }
+      return lines.slice(headerIdx).join('\n');
+    }
+    const dataBruno  = Papa.parse(cleanCSV(await resBruno.text()),  {header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    const dataFelipe = Papa.parse(cleanCSV(await resFelipe.text()), {header:true,skipEmptyLines:true}).data.filter(r=>r.CUSTOMER);
+    dataBruno.forEach(r=>{ r.VENDEDOR='Bruno Reis'; });
+    dataFelipe.forEach(r=>{ r.VENDEDOR='Felipe Hanke'; });
+    console.log('Loaded — Bruno:',dataBruno.length,'| Felipe:',dataFelipe.length);
     DATA.base=[...dataBruno,...dataFelipe];
     normalize();
     renderAll();
@@ -1029,7 +1046,7 @@ function normalizeSnapshotRow(r){
   r._vendor=(r.VENDEDOR||'').toLowerCase().trim();
   r._prob=parseFloat((r.PROBABILIDADE||'0').toString().replace('%',''))||0;
   r._ponderado=(r._val*r._prob)/100;
-  r._id=(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE']||'').trim();
+  r._id=(r['ID AUTOMÁTICO']||r['ID_OPORTUNIDADE']||'').trim()||(r['CUSTOMER']||'').trim();
   r._estagio=(r.ESTAGIO||'').trim();
   r._close=parseData(r['DATA DE FECHAMENTO']||'');
   return r;
